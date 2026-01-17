@@ -1,0 +1,266 @@
+<?php
+
+use App\Http\Controllers\AttributeController;
+use App\Http\Controllers\Auth\CustomerLoginController;
+use App\Http\Controllers\Auth\CustomerPasswordResetController;
+use App\Http\Controllers\Auth\CustomerRegisterController;
+use App\Http\Controllers\BannerController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CartController; // Assuming you have this
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CustomerAddressController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PosController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductSerialController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReturnController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ShopController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TrackOrderController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\WishlistController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// ====================================================
+//  FRONTEND ROUTES (Public Access)
+// ====================================================
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/shop', [HomeController::class, 'shop'])->name('shop.index'); // Example
+Route::get('/category/{slug}', [HomeController::class, 'category'])->name('category.show');
+Route::get('/product/{slug}', [HomeController::class, 'product'])->name('product.show');
+
+// Cart Routes (Example)
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+Route::get('/order/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+
+Route::match(['get', 'post'], '/track-order', [TrackOrderController::class, 'index'])->name('track.order');
+Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+// ====================================================
+//  BACKEND / ADMIN ROUTES (Protected)
+// ====================================================
+
+// We apply 'auth' middleware AND the 'backend' prefix here
+Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
+
+    // --- COMMON BACKEND ROUTES ---
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Notifications
+    Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/mark-as-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-as-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::delete('/notifications/clear', [\App\Http\Controllers\Admin\NotificationController::class, 'clear'])->name('notifications.clear');
+
+    // Profile Management
+
+    // --- POS TERMINAL (Cashier, Manager, Admin) ---
+    // URL: /backend/pos
+    Route::group(['middleware' => ['role:Cashier|Manager|Admin']], function () {
+        Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+        Route::get('/pos/search', [PosController::class, 'search'])->name('pos.search');
+        Route::get('/pos/check-serial', [PosController::class, 'checkSerial'])->name('pos.check-serial');
+        Route::post('/pos/store', [PosController::class, 'store'])->name('pos.store');
+
+        Route::get('/orders/{order}/print', [OrderController::class, 'print'])->name('orders.print');
+    });
+
+    // --- INVENTORY & SALES MANAGEMENT (Manager, Admin) ---
+    Route::group(['middleware' => ['role:Manager|Admin']], function () {
+
+        // Products & Catalog
+        Route::post('/products/print-barcodes', [ProductController::class, 'printBarcode'])->name('products.print_barcodes');
+        Route::resource('products', ProductController::class);
+        Route::resource('brands', BrandController::class);
+        Route::resource('categories', CategoryController::class);
+
+        // Attributes
+        Route::resource('attributes', AttributeController::class);
+        Route::delete('/attributes/value/{id}', [AttributeController::class, 'destroyValue'])->name('attributes.value.destroy');
+
+        // Purchases & Suppliers
+        Route::get('/purchases/{purchase_order}/print', [PurchaseOrderController::class, 'print'])->name('purchases.print');
+        Route::get('/purchases/search', [PurchaseOrderController::class, 'searchProducts'])->name('purchases.search');
+        Route::get('/purchases/{purchase_order}/serials', [ProductSerialController::class, 'entry'])->name('purchases.serials');
+        Route::post('/serials/store', [ProductSerialController::class, 'store'])->name('serials.store');
+        Route::get('/serials/check', [ProductSerialController::class, 'check'])->name('serials.check');
+        Route::resource('purchases', PurchaseOrderController::class);
+        Route::resource('suppliers', SupplierController::class);
+
+        // Customers & Returns
+        Route::resource('customers', CustomerController::class);
+        Route::post('/returns/find-order', [ReturnController::class, 'findOrder'])->name('returns.find');
+        Route::resource('returns', ReturnController::class)->except(['edit', 'update', 'destroy']);
+    });
+
+    // --- ADMIN ONLY (Reports, Settings, Full Order Access) ---
+    Route::group(['middleware' => ['role:Admin']], function () {
+
+        // Orders Management
+        Route::resource('orders', OrderController::class);
+
+        // Reports
+        Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
+        Route::get('/reports/vat', [ReportController::class, 'vat'])->name('reports.vat');
+
+        // System Settings
+        Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+        // User Management
+        Route::resource('users', UserController::class);
+
+        // Banner Management
+        Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+        Route::post('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+
+        // Offers Popup Management
+        Route::get('popups/{popup}/preview', [\App\Http\Controllers\Admin\OfferPopupController::class, 'preview'])->name('popups.admin.preview');
+        Route::resource('popups', \App\Http\Controllers\Admin\OfferPopupController::class)->names([
+            'index' => 'popups.admin.index',
+            'create' => 'popups.admin.create',
+            'store' => 'popups.admin.store',
+            'edit' => 'popups.admin.edit',
+            'update' => 'popups.admin.update',
+            'destroy' => 'popups.admin.destroy',
+        ]);
+
+        // Solutions Management
+        Route::resource('solutions', \App\Http\Controllers\Admin\SolutionController::class)->names([
+            'index' => 'solutions.admin.index',
+            'create' => 'solutions.admin.create',
+            'store' => 'solutions.admin.store',
+            'show' => 'solutions.admin.show',
+            'edit' => 'solutions.admin.edit',
+            'update' => 'solutions.admin.update',
+            'destroy' => 'solutions.admin.destroy',
+        ]);
+
+        // Dynamic Pages Management
+        Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->names([
+            'index' => 'pages.admin.index',
+            'create' => 'pages.admin.create',
+            'store' => 'pages.admin.store',
+            'edit' => 'pages.admin.edit',
+            'update' => 'pages.admin.update',
+            'destroy' => 'pages.admin.destroy',
+        ]);
+
+        // Coupon Management
+        Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class)->names([
+            'index' => 'coupons.admin.index',
+            'create' => 'coupons.admin.create',
+            'store' => 'coupons.admin.store',
+            'edit' => 'coupons.admin.edit',
+            'update' => 'coupons.admin.update',
+            'destroy' => 'coupons.admin.destroy',
+        ]);
+    });
+
+});
+
+// Authentication Routes (Login, Register, Password Reset)
+require __DIR__ . '/auth.php';
+
+
+// Guest Routes
+Route::prefix('account')->name('customer.')->group(function () {
+
+    // Guest Middleware: prevent logged-in customers from seeing login page
+    Route::middleware('guest:customer')->group(function () {
+
+        // Login Routes
+        Route::get('login', [CustomerLoginController::class, 'create'])->name('login');
+        Route::post('login', [CustomerLoginController::class, 'store'])->name('login.store');
+
+        // Register Routes
+        Route::get('register', [CustomerRegisterController::class, 'create'])->name('register');
+        Route::post('register', [CustomerRegisterController::class, 'store'])->name('register.store');
+
+        // Forgot Password (Request Link)
+        Route::get('forgot-password', [CustomerPasswordResetController::class, 'create'])
+            ->name('password.request');
+
+        Route::post('forgot-password', [CustomerPasswordResetController::class, 'store'])
+            ->name('password.email');
+
+        // Reset Password (Enter New Password)
+        Route::get('reset-password/{token}', [CustomerPasswordResetController::class, 'edit'])
+            ->name('password.reset');
+
+        Route::post('reset-password', [CustomerPasswordResetController::class, 'update'])
+            ->name('password.update');
+    });
+
+    // Auth Middleware: Only for logged-in customers
+    Route::middleware('auth:customer')->group(function () {
+        Route::post('logout', [CustomerLoginController::class, 'destroy'])->name('logout');
+
+        Route::get('profile', [CustomerProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('profile', [CustomerProfileController::class, 'update'])->name('profile.update');
+
+        // Customer Dashboard
+        Route::get('dashboard', [App\Http\Controllers\CustomerController::class, 'dashboard'])->name('dashboard');
+        Route::get('orders', [App\Http\Controllers\CustomerController::class, 'orders'])->name('orders');
+        Route::get('orders/{order}', [App\Http\Controllers\CustomerController::class, 'showOrder'])->name('orders.show');
+
+        Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+        Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+
+
+        Route::get('addresses', [CustomerAddressController::class, 'index'])->name('addresses');
+        Route::post('addresses', [CustomerAddressController::class, 'store'])->name('addresses.store');
+        Route::put('addresses/{id}', [CustomerAddressController::class, 'update'])->name('addresses.update');
+        Route::delete('addresses/{id}', [CustomerAddressController::class, 'destroy'])->name('addresses.destroy');
+        Route::get('addresses/{id}/default', [CustomerAddressController::class, 'setDefault'])->name('addresses.default');
+
+    });
+
+
+
+});
+
+
+Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/category/{slug}', [ShopController::class, 'index'])->name('category.show');
+Route::get('/cart/mini', [App\Http\Controllers\CartController::class, 'miniCart'])->name('cart.mini');
+
+Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+Route::resource('expense-categories', App\Http\Controllers\ExpenseCategoryController::class)->except(['create', 'edit', 'show', 'update']);
+Route::resource('expenses', App\Http\Controllers\ExpenseController::class);
+
+// IT Solutions Routes
+Route::get('/solutions', [App\Http\Controllers\SolutionController::class, 'index'])->name('solutions.index');
+Route::get('/solutions/{slug}', [App\Http\Controllers\SolutionController::class, 'show'])->name('solutions.show');
+
+// Coupon Routes
+Route::post('/cart/coupon/apply', [App\Http\Controllers\CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
+Route::post('/cart/coupon/remove', [App\Http\Controllers\CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
+
+// Public Dynamic Pages (MUST BE LAST)
+Route::get('/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('pages.show');

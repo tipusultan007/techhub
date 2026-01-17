@@ -1,0 +1,202 @@
+@extends('layouts.admin')
+
+@section('header', 'New Purchase Order (Stock In)')
+
+@section('content')
+<div class="max-w-7xl mx-auto bg-white rounded-lg shadow p-6">
+    <form action="{{ route('purchases.store') }}" method="POST" id="po-form">
+        @csrf
+        
+        <!-- Header Info -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="md:col-span-1">
+                <label class="block text-sm font-bold text-gray-700">Supplier</label>
+                <select name="supplier_id" class="w-full border rounded p-2 mt-1 bg-gray-50" required>
+                    <option value="">Select Supplier</option>
+                    @foreach($suppliers as $supplier)
+                        <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                    @endforeach
+                </select>
+                <a href="{{ route('suppliers.create') }}" class="text-xs text-blue-600 hover:underline">+ Add Supplier</a>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700">Date</label>
+                <input type="date" name="date" class="w-full border rounded p-2 mt-1" value="{{ date('Y-m-d') }}" required>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700">Reference / Invoice #</label>
+                <input type="text" name="reference_no" placeholder="e.g. INV-998877" class="w-full border rounded p-2 mt-1" required>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700">Status</label>
+                <select name="status" class="w-full border rounded p-2 mt-1">
+                    <option value="received">Received (Update Stock)</option>
+                    <option value="pending">Pending (No Stock Update)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Product Search Box -->
+        <div class="bg-blue-50 p-4 rounded border mb-6">
+            <label class="block text-sm font-bold text-blue-800 mb-1">Search Product to Add</label>
+            <div class="relative">
+                <input type="text" id="product_search" class="w-full border rounded p-3 pl-10 focus:ring-2 focus:ring-blue-500" placeholder="Type product name or SKU..." autocomplete="off">
+                <div class="absolute left-3 top-3.5 text-gray-400"><i class="fas fa-search"></i></div>
+                <div id="search_results" class="absolute z-10 bg-white shadow-lg border w-full mt-1 rounded hidden max-h-60 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="overflow-x-auto mb-6 border rounded">
+            <table class="min-w-full text-sm divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-3 text-left font-bold text-gray-600">Product / SKU</th>
+                        <th class="p-3 w-32 font-bold text-gray-600">Unit Cost (Excl. VAT)</th>
+                        <th class="p-3 w-24 font-bold text-gray-600">Qty</th>
+                        <th class="p-3 w-32 font-bold text-gray-600 text-right">Row Total</th>
+                        <th class="p-3 w-10"></th>
+                    </tr>
+                </thead>
+                <tbody id="po_items_body" class="bg-white divide-y divide-gray-200">
+                    <!-- Rows added via jQuery -->
+                </tbody>
+                <tfoot class="bg-gray-50">
+                    <tr>
+                        <td colspan="3" class="text-right p-2 font-bold text-gray-600">Subtotal (Net):</td>
+                        <td class="p-2 text-right font-bold text-gray-800" id="display_subtotal">0.00</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-right p-2 font-bold text-gray-600">Input VAT (5%):</td>
+                        <td class="p-2 text-right font-bold text-red-600" id="display_vat">0.00</td>
+                        <td></td>
+                    </tr>
+                    <tr class="bg-blue-50 border-t border-blue-200">
+                        <td colspan="3" class="text-right p-3 font-bold text-lg text-blue-900">GRAND TOTAL:</td>
+                        <td class="p-3 text-right font-bold text-lg text-blue-900">AED <span id="display_grand_total">0.00</span></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-700">Notes</label>
+            <textarea name="notes" class="w-full border rounded p-2 mt-1" rows="2"></textarea>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-700 shadow flex items-center transition transform active:scale-95">
+                <i class="fas fa-save mr-2"></i> Save Purchase Order
+            </button>
+        </div>
+    </form>
+</div>
+
+
+@endsection
+@section('scripts')
+<script>
+    $(document).ready(function() {
+        let rowIdx = 0;
+
+        // 1. Live Search Logic
+        $('#product_search').on('keyup', function() {
+            let term = $(this).val();
+            if(term.length > 1) {
+                $.ajax({
+                    url: "{{ route('purchases.search') }}",
+                    data: { term: term },
+                    success: function(data) {
+                        let html = '';
+                        if(data.length === 0) {
+                            html = '<div class="p-2 text-gray-500">No products found</div>';
+                        } else {
+                            data.forEach(item => {
+                                let itemStr = JSON.stringify(item).replace(/"/g, "&quot;");
+                                html += `<div class="p-2 hover:bg-blue-100 cursor-pointer border-b text-sm" onclick="addItem(${itemStr})">
+                                            <div class="font-bold">${item.label}</div>
+                                            <div class="text-xs text-gray-500">Curr Cost: ${item.cost}</div>
+                                         </div>`;
+                            });
+                        }
+                        $('#search_results').html(html).removeClass('hidden');
+                    }
+                });
+            } else {
+                $('#search_results').addClass('hidden');
+            }
+        });
+
+        // Hide dropdown on click outside
+        $(document).click(function(e) {
+            if (!$(e.target).closest('#product_search, #search_results').length) {
+                $('#search_results').addClass('hidden');
+            }
+        });
+
+        // 2. Add Item to Table
+        window.addItem = function(item) {
+            $('#search_results').addClass('hidden');
+            $('#product_search').val('');
+
+            let html = `
+            <tr id="row_${rowIdx}">
+                <input type="hidden" name="items[${rowIdx}][product_id]" value="${item.id}">
+                <input type="hidden" name="items[${rowIdx}][variant_id]" value="${item.variant_id || ''}">
+                
+                <td class="p-2 align-middle">
+                    <div class="font-medium text-gray-800">${item.label}</div>
+                </td>
+                <td class="p-2 align-middle">
+                    <input type="number" step="0.01" name="items[${rowIdx}][cost]" value="${item.cost}" class="w-full border rounded p-1 cost-input text-right" oninput="calculateTotal()" required>
+                </td>
+                <td class="p-2 align-middle">
+                    <input type="number" name="items[${rowIdx}][qty]" value="1" min="1" class="w-full border rounded p-1 qty-input text-center" oninput="calculateTotal()" required>
+                </td>
+                <td class="p-2 align-middle text-right font-mono bg-gray-50 subtotal-display">
+                    ${item.cost}
+                </td>
+                <td class="p-2 text-center align-middle">
+                    <button type="button" class="text-red-500 hover:text-red-700 bg-red-50 p-1 rounded" onclick="removeRow(${rowIdx})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+            
+            $('#po_items_body').append(html);
+            rowIdx++;
+            calculateTotal();
+        };
+
+        // 3. Calculate Totals (Subtotal, VAT, Grand Total)
+        window.calculateTotal = function() {
+            let netTotal = 0;
+            
+            $('#po_items_body tr').each(function() {
+                let cost = parseFloat($(this).find('.cost-input').val()) || 0;
+                let qty = parseFloat($(this).find('.qty-input').val()) || 0;
+                let rowTotal = cost * qty;
+                
+                $(this).find('.subtotal-display').text(rowTotal.toFixed(2));
+                netTotal += rowTotal;
+            });
+
+            // VAT Calculation (Input VAT is usually Exclusive on B2B purchases)
+            // Example: Buy item for 100 + 5% VAT = 105 Total Payable
+            let vatRate = 0.05; 
+            let vatAmount = netTotal * vatRate;
+            let grandTotal = netTotal + vatAmount;
+
+            $('#display_subtotal').text(netTotal.toFixed(2));
+            $('#display_vat').text(vatAmount.toFixed(2));
+            $('#display_grand_total').text(grandTotal.toFixed(2));
+        };
+
+        // 4. Remove Row
+        window.removeRow = function(id) {
+            $('#row_' + id).remove();
+            calculateTotal();
+        };
+    });
+</script>
+@endsection

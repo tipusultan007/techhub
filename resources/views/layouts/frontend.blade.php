@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- Dynamic SEO Tags --}}
+    <title>@yield('title', 'Tech Hub | Computer Trading')</title>
+    <meta name="description" content="@yield('meta_description', 'Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'computer, gaming pc, laptop, dubai, tech hub')">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', 'Tech Hub | Computer Trading')">
+    <meta property="og:description" content="@yield('meta_description')">
+    <meta property="og:image" content="@yield('meta_image', asset('images/default-share-image.jpg'))">
+
+    {{-- Fonts & Icons --}}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS (for modern UI components) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="{{ asset('frontend/css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <style>
+        /* Animation for Cart Update */
+        @keyframes bump {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .action-item.bump {
+            animation: bump 0.3s ease-out;
+            color: var(--brand-magenta); /* Flash color */
+        }
+        /* --- OFFCANVAS CART --- */
+        .cart-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5); z-index: 1040;
+            opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .cart-overlay.open { opacity: 1; pointer-events: all; }
+
+        .cart-sidebar {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 350px; background: white; z-index: 1050;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+            transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            display: flex; flex-direction: column;
+        }
+        .cart-sidebar.open { transform: translateX(0); }
+
+        .cart-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .cart-header h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .btn-close { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+        .btn-close:hover { color: var(--accent-red); }
+
+        .cart-body { flex: 1; overflow-y: auto; padding: 20px; }
+        .cart-item-mini { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; position: relative; }
+        .cart-item-mini:last-child { border-bottom: none; }
+        .mini-img { width: 60px; height: 60px; border: 1px solid var(--border); border-radius: 6px; padding: 5px; display: flex; align-items: center; justify-content: center; }
+        .mini-img img { max-height: 100%; }
+        .mini-info h4 { font-size: 0.9rem; font-weight: 600; margin: 0 0 5px; line-height: 1.3; }
+        .mini-meta { font-size: 0.8rem; color: var(--text-muted); }
+        .mini-price { font-weight: 700; color: var(--brand-deep-blue); margin-top: 5px; display: block; }
+        /* --- UPDATED SIDEBAR CSS --- */
+        .cart-item-mini {
+            position: relative; /* Needed for absolute positioning of remove btn */
+            display: flex; gap: 15px; margin-bottom: 20px;
+            border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn-remove-mini {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #fff1f2; /* Light Red Background */
+            color: #ef4444;       /* Red Icon */
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .btn-remove-mini:hover {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
+        }
+
+        .cart-footer { padding: 20px; border-top: 1px solid var(--border); background: #f8fafc; }
+        .mini-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; margin-bottom: 15px; }
+        .btn-cart-view, .btn-checkout-mini { display: block; width: 100%; text-align: center; padding: 12px; border-radius: var(--radius); font-weight: 600; transition: 0.2s; margin-bottom: 10px; }
+        .btn-cart-view { background: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-cart-view:hover { border-color: var(--brand-deep-blue); color: var(--brand-deep-blue); }
+        .btn-checkout-mini { background: var(--brand-gradient); color: white; border: none; }
+        .btn-checkout-mini:hover { opacity: 0.9; }
+    </style>
+    @stack('styles')
+</head>
+<body x-data="{ isCartOpen: false, cartCount: {{ count(session('cart', [])) }} }"
+      @cart-updated.window="cartCount = $event.detail.count; $dispatch('refresh-mini-cart');">
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <div class="container">
+        <div class="top-links">
+            <a href="tel:+97140000000"><i class="ri-phone-line"></i> +971 4 000 0000</a>
+            <a href="mailto:sales@techhub.ae"><i class="ri-mail-line"></i> sales@techhub.ae</a>
+        </div>
+        <div class="top-links">
+            <a href="{{ url('/store-locator') }}">Store Locator</a>
+            <a href="{{ url('/track-order') }}">Track Order</a>
+            <span style="color:#334155">|</span>
+            <a href="#"><b>العربية</b></a>
+            <a href="#"><b>AED</b></a>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<header>
+    <div class="container header-wrapper">
+        <a href="{{ url('/') }}" class="logo">
+            <div class="logo-main">
+                <span class="logo-tech">TECH</span>
+                <span class="logo-hub">HUB</span>
+            </div>
+            <div class="logo-sub">COMPUTER TRADING</div>
+        </a>
+
+        <div class="search-box">
+            <form action="{{ url('/search') }}" method="GET">
+                <input type="text" name="q" placeholder="Search for components, laptops, or accessories...">
+                <button type="submit" class="search-btn"><i class="ri-search-line"></i></button>
+            </form>
+        </div>
+
+        <div class="user-actions">
+
+            <!-- 1. Dynamic Login / Account Link -->
+            @auth('customer')
+                <a href="{{ route('customer.dashboard') }}" class="action-item">
+                    <i class="ri-user-smile-line"></i>
+                    <span>Account</span>
+                </a>
+            @else
+                <a href="{{ route('customer.login') }}" class="action-item">
+                    <i class="ri-user-line"></i>
+                    <span>Login</span>
+                </a>
+            @endauth
+
+            <!-- 2. Dynamic Wishlist Icon -->
+            <a href="{{ route('customer.wishlist') }}"
+               class="action-item"
+               x-data="{ count: {{ $wishlistCount ?? 0 }} }"
+               @wishlist-updated.window="count = $event.detail.count; $el.classList.add('bump'); setTimeout(() => $el.classList.remove('bump'), 300)">
+
+                <i class="ri-heart-line"></i>
+                <span>Saved</span>
+
+                <!-- Badge -->
+                <div class="cart-count"
+                     x-show="count > 0"
+                     x-text="count"
+                     style="display: none;"
+                     :style="count > 0 ? 'display:flex' : 'display:none'">
+                    {{ $wishlistCount ?? 0 }}
+                </div>
+            </a>
+
+            <!-- 3. Existing Cart Icon -->
+            <a href="#" class="action-item" @click.prevent="isCartOpen = true; $dispatch('refresh-mini-cart')">
+                <i class="ri-shopping-cart-2-line"></i>
+                <span>Cart</span>
+                <div class="cart-count" x-show="cartCount > 0" x-text="cartCount" x-transition.scale>
+                    {{ count(session('cart', [])) }}
+                </div>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<div class="nav-bar">
+    <div class="container">
+        <ul class="nav-list">
+            <li class="{{ request()->is('/') ? 'active' : '' }}">
+                <a href="{{ url('/') }}">Home</a>
+            </li>
+            @foreach($headerCategories as $category)
+                <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}">
+                    <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
+                        {{ $category->name }}
+                    </a>
+                </li>
+            @endforeach
+
+            <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
+                <a href="{{ route('solutions.index') }}">IT Solutions</a>
+            </li>
+
+            <li style="color: var(--accent-red)">
+                <a href="{{ url('/clearance') }}" style="color: #ef4444">Clearance</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Main Dynamic Content -->
+<main>
+    @yield('content')
+</main>
+
+<!-- OFFCANVAS CART COMPONENT -->
+<div class="cart-overlay" :class="{ 'open': isCartOpen }" @click="isCartOpen = false"></div>
+
+<div class="cart-sidebar" :class="{ 'open': isCartOpen }">
+
+    <!-- Header -->
+    <div class="cart-header">
+        <h3>Shopping Cart (<span x-text="cartCount"></span>)</h3>
+        <span class="btn-close" @click="isCartOpen = false">&times;</span>
+    </div>
+
+    <!-- Body (Dynamic Content) -->
+    <div class="cart-body"
+         x-data="{ cartHtml: '<div class=\'text-center p-5 text-gray-500\'>Loading...</div>' }"
+         @refresh-mini-cart.window="fetch('{{ route('cart.mini') }}').then(r => r.text()).then(h => cartHtml = h)">
+
+        <div x-html="cartHtml"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="cart-footer">
+        <a href="{{ route('cart.index') }}" class="btn-cart-view">View Cart</a>
+        <a href="{{ route('checkout.index') }}" class="btn-checkout-mini">Checkout</a>
+    </div>
+</div>
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="foot-grid">
+            <div class="f-col">
+                <div class="logo" style="margin-bottom:15px; font-size:18px;">
+                    <div class="logo-main">
+                        <span class="logo-tech">TECH</span>
+                        <span class="logo-hub">HUB</span>
+                    </div>
+                </div>
+                <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin-bottom:20px;">
+                    Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions in the UAE.
+                </p>
+                <div class="social-icons">
+                    <i class="ri-instagram-fill"></i>
+                    <i class="ri-facebook-circle-fill"></i>
+                    <i class="ri-linkedin-box-fill"></i>
+                    <i class="ri-twitter-x-fill"></i>
+                </div>
+            </div>
+
+            <div class="f-col">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a href="#">Gaming PCs</a></li>
+                    <li><a href="#">Workstations</a></li>
+                    <li><a href="#">Laptops</a></li>
+                    <li><a href="#">PC Components</a></li>
+                    <li><a href="#">Networking</a></li>
+                </ul>
+            </div>
+
+            <div class="f-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Track Order</a></li>
+                    <li><a href="#">Return & Exchange</a></li>
+                    <li><a href="#">Warranty Policy</a></li>
+                    <li><a href="#">Business Inquiries</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <div class="f-col">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="#"><i class="ri-map-pin-line"></i> Computer Street, Bur Dubai, UAE</a></li>
+                    <li><a href="#"><i class="ri-phone-fill"></i> +971 4 000 0000</a></li>
+                    <li><a href="#"><i class="ri-mail-fill"></i> support@techhub.ae</a></li>
+                </ul>
+                <div class="payment-icons">
+                    <i class="ri-visa-line"></i>
+                    <i class="ri-mastercard-line"></i>
+                    <i class="ri-paypal-line"></i>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align:center; border-top:1px solid #1e293b; padding-top:20px; color:#64748b; font-size:12px;">
+            &copy; {{ date('Y') }} Tech Hub Computer Trading LLC. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-bottom-right", // or toast-top-right
+        "timeOut": "3000",
+    };
+
+    // GLOBAL ADD TO CART FUNCTION
+    async function addToCart(productId, quantity = 1, variantId = null) {
+
+        const formData = new FormData();
+        formData.append('product_id', productId);
+        formData.append('quantity', quantity);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        if (variantId) {
+            formData.append('variant_id', variantId);
+        }
+
+        try {
+            const response = await fetch("{{ route('cart.add') }}", {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // 1. Show Success Toast
+                toastr.success(data.message);
+
+                // 2. Dispatch Event to Update Header Badge
+                // This talks to the x-data in the header we set up in Step B
+                window.dispatchEvent(new CustomEvent('cart-updated', {
+                    detail: { count: data.cartCount }
+                }));
+
+            } else {
+                // Show Error Toast (e.g., Out of Stock)
+                toastr.error(data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toastr.error('Something went wrong. Please try again.');
+        }
+    }
+
+    // GLOBAL REMOVE FROM CART FUNCTION
+    async function removeFromCart(cartKey) {
+
+        const formData = new FormData();
+        formData.append('key', cartKey);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        try {
+            const response = await fetch("{{ route('cart.remove') }}", {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // 1. Show Toast
+                toastr.info(data.message);
+
+                // 2. Update Header Badge
+                window.dispatchEvent(new CustomEvent('cart-updated', {
+                    detail: { count: data.cartCount }
+                }));
+
+                // 3. Refresh Sidebar Content
+                window.dispatchEvent(new CustomEvent('refresh-mini-cart'));
+
+                // 4. (Optional) If on the main cart page, reload to update the big table
+                if (window.location.pathname === '/cart') {
+                    window.location.reload();
+                }
+
+            } else {
+                toastr.error('Could not remove item.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toastr.error('Something went wrong.');
+        }
+    }
+
+    // Toggle Wishlist Function
+    async function toggleWishlist(productId, btnElement = null) {
+        try {
+            const response = await fetch("{{ route('wishlist.toggle') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ product_id: productId })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'guest') {
+                toastr.warning(data.message);
+                // Optional: window.location.href = "{{ route('customer.login') }}";
+            } else {
+                // Success Message
+                data.status === 'added' ? toastr.success(data.message) : toastr.info(data.message);
+
+                // 1. UPDATE HEADER BADGE (Realtime)
+                window.dispatchEvent(new CustomEvent('wishlist-updated', {
+                    detail: { count: data.count }
+                }));
+
+                // 2. TOGGLE BUTTON VISUALS (If button element passed)
+                if (btnElement) {
+                    if (data.status === 'added') {
+                        btnElement.classList.add('active');
+                        if(btnElement.querySelector('i'))
+                            btnElement.querySelector('i').classList.replace('ri-heart-line', 'ri-heart-fill');
+                    } else {
+                        btnElement.classList.remove('active');
+                        if(btnElement.querySelector('i'))
+                            btnElement.querySelector('i').classList.replace('ri-heart-fill', 'ri-heart-line');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            toastr.error('Something went wrong.');
+        }
+    }
+</script>
+<script src="//unpkg.com/alpinejs" defer></script>
+
+@include('frontend.partials.offer-popup')
+
+@stack('scripts')
+
+</body>
+</html>
