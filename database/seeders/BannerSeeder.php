@@ -2,57 +2,56 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Banner;
+use Illuminate\Database\Seeder;
 
 class BannerSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // 1. Main Hero Banner - Typically wide (e.g., 1400x500)
+        // Clear existing banners
+        Banner::truncate();
+
+        // 1. MAIN BANNER
         $main = Banner::create([
+            'title'       => 'Ultimate Gaming <br> Experience',
+            'subtitle'    => 'Build your dream setup with our premium gaming components.',
+            'badge_text'  => 'New Arrival',
+            'button_text' => 'Shop Now',
+            'link'        => '/category/gaming-pcs',
             'position'    => 'main',
-            'badge_text'  => 'NEW ARRIVALS',
-            'title'       => 'Ultimate <br>Performance',
-            'subtitle'    => 'Custom loops, RTX 4090s, and high-airflow cases. Build your dream rig today.',
-            'button_text' => 'Shop Custom Builds',
-            'link'        => '/custom-builds',
             'is_active'   => true,
         ]);
-
-        // Placeholder for Main Banner (1400x500, Purple/Blue, Text: MAIN BANNER)
-        $main->addMediaFromUrl('https://placehold.co/1400x500/7F00FF/FFFFFF/png?text=MAIN+BANNER')
+        $main->addMedia('C:/Users/Tipusultan/.gemini/antigravity/brain/afe2ebaa-b4cd-4b5d-b462-f0b614a15799/main_banner_tech_1769014234094.png')
+            ->preservingOriginal()
             ->toMediaCollection('banner_image');
 
-
-        // 2. Side Top Banner - Typically narrow/square (e.g., 600x300)
+        // 2. SIDE TOP
         $sideTop = Banner::create([
-            'position' => 'side_top',
-            'title'    => 'Graphics Cards',
-            'subtitle' => 'RTX 40-Series Stock',
-            'link'     => '/components/gpu',
-            'is_active'=> true,
+            'title'       => 'Latest Smartphones',
+            'subtitle'    => 'Up to 20% Off',
+            'badge_text'  => null,
+            'button_text' => null,
+            'link'        => '/category/smartphones',
+            'position'    => 'side_top',
+            'is_active'   => true,
         ]);
-
-        // Placeholder for Side Top Banner (600x300, Red, Text: SIDE TOP)
-        $sideTop->addMediaFromUrl('https://placehold.co/600x300/FF5733/FFFFFF/png?text=SIDE+TOP')
+        $sideTop->addMedia('C:/Users/Tipusultan/.gemini/antigravity/brain/afe2ebaa-b4cd-4b5d-b462-f0b614a15799/side_top_tech_1769014261485.png')
+            ->preservingOriginal()
             ->toMediaCollection('banner_image');
 
-
-        // 3. Side Bottom Banner - Typically narrow/square (e.g., 600x300)
+        // 3. SIDE BOTTOM
         $sideBottom = Banner::create([
-            'position' => 'side_bottom',
-            'title'    => 'Gaming Gear',
-            'subtitle' => 'Mechanical Keyboards',
-            'link'     => '/peripherals/keyboards',
-            'is_active'=> true,
+            'title'       => 'Modern Workspace',
+            'subtitle'    => 'Productivity focused',
+            'badge_text'  => null,
+            'button_text' => null,
+            'link'        => '/category/laptops',
+            'position'    => 'side_bottom',
+            'is_active'   => true,
         ]);
-
-        // Placeholder for Side Bottom Banner (600x300, Green, Text: SIDE BOTTOM)
-        $sideBottom->addMediaFromUrl('https://placehold.co/600x300/33FF57/000000/png?text=SIDE+BOTTOM')
+        $sideBottom->addMedia('C:/Users/Tipusultan/.gemini/antigravity/brain/afe2ebaa-b4cd-4b5d-b462-f0b614a15799/side_bottom_tech_1769014290216.png')
+            ->preservingOriginal()
             ->toMediaCollection('banner_image');
     }
 }

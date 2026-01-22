@@ -33,28 +33,33 @@ class DatabaseSeeder extends Seeder
         DB::table('product_serials')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 2. ADMIN USER
-        User::create([
+        // 2. RUN SUB-SEEDERS
+        $this->call([
+            CategorySeeder::class,
+        ]);
+
+        // 3. ADMIN USER
+        \App\Models\User::create([
             'name' => 'Super Admin',
             'email' => 'admin@admin.com',
-            'password' => Hash::make('password'), // Login: admin@admin.com / password
+            'password' => \Illuminate\Support\Facades\Hash::make('password'), // Login: admin@admin.com / password
             'email_verified_at' => now(),
         ]);
         $this->command->info('User Created: admin@admin.com / password');
 
-        // 3. CATEGORIES
-        $catMobiles = Category::create(['name' => 'Smartphones','slug' => 'smartphones']);
-        $catLaptops = Category::create(['name' => 'Laptops','slug' => 'laptops']);
-        $catAccessories = Category::create(['name' => 'Accessories','slug' => 'accessories']);
+        // 4. CATEGORIES (Fallbacks for products)
+        $catMobiles = Category::where('slug', 'smartphones')->first();
+        $catLaptops = Category::where('slug', 'computers-laptops')->first();
+        $catAccessories = Category::where('slug', 'accessories')->first();
 
-        // 4. BRANDS
-        $brandApple = Brand::create(['name' => 'Apple']);
-        $brandSamsung = Brand::create(['name' => 'Samsung']);
-        $brandSony = Brand::create(['name' => 'Sony']);
-        $brandDell = Brand::create(['name' => 'Dell']);
+        // 5. BRANDS
+        $brandApple = \App\Models\Brand::create(['name' => 'Apple']);
+        $brandSamsung = \App\Models\Brand::create(['name' => 'Samsung']);
+        $brandSony = \App\Models\Brand::create(['name' => 'Sony']);
+        $brandDell = \App\Models\Brand::create(['name' => 'Dell']);
 
-        // 5. SUPPLIERS
-        Supplier::create([
+        // 6. SUPPLIERS
+        \App\Models\Supplier::create([
             'name' => 'Tech Distributors LLC',
             'company_name' => 'Tech Distro UAE',
             'trn_number' => '100200300400500',

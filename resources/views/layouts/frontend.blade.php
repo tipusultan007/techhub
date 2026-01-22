@@ -112,7 +112,7 @@
     </style>
     @stack('styles')
 </head>
-<body x-data="{ isCartOpen: false, cartCount: {{ count(session('cart', [])) }} }"
+<body x-data="{ isCartOpen: false, isNavOpen: false, cartCount: {{ count(session('cart', [])) }} }"
       @cart-updated.window="cartCount = $event.detail.count; $dispatch('refresh-mini-cart');">
 
 <!-- Top Bar -->
@@ -142,6 +142,10 @@
             </div>
             <div class="logo-sub">COMPUTER TRADING</div>
         </a>
+
+        <button class="nav-toggle" @click="isNavOpen = true">
+            <i class="ri-menu-line"></i>
+        </button>
 
         <div class="search-box">
             <form action="{{ url('/search') }}" method="GET">
@@ -250,6 +254,49 @@
     <div class="cart-footer">
         <a href="{{ route('cart.index') }}" class="btn-cart-view">View Cart</a>
         <a href="{{ route('checkout.index') }}" class="btn-checkout-mini">Checkout</a>
+    </div>
+</div>
+
+<!-- OFFCANVAS NAV MENU -->
+<div class="nav-overlay" :class="{ 'open': isNavOpen }" @click="isNavOpen = false"></div>
+
+<div class="nav-sidebar" :class="{ 'open': isNavOpen }">
+    <div class="nav-sidebar-header">
+        <div class="logo">
+            <div class="logo-main">
+                <span class="logo-tech">TECH</span>
+                <span class="logo-hub">HUB</span>
+            </div>
+        </div>
+        <span class="btn-close" @click="isNavOpen = false">&times;</span>
+    </div>
+
+    <div class="nav-sidebar-body">
+        <ul class="mobile-nav-list">
+            <li class="{{ request()->is('/') ? 'active' : '' }}">
+                <a href="{{ url('/') }}">Home</a>
+            </li>
+            @foreach($headerCategories as $category)
+                <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}">
+                    <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
+                        {{ $category->name }}
+                    </a>
+                </li>
+            @endforeach
+
+            <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
+                <a href="{{ route('solutions.index') }}">IT Solutions</a>
+            </li>
+
+            <li>
+                <a href="{{ url('/clearance') }}" style="color: #ef4444">Clearance</a>
+            </li>
+        </ul>
+        
+        <div class="mobile-nav-contact" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <a href="tel:+97140000000" style="display: block; margin-bottom: 10px;"><i class="ri-phone-line"></i> +971 4 000 0000</a>
+            <a href="mailto:sales@techhub.ae" style="display: block;"><i class="ri-mail-line"></i> sales@techhub.ae</a>
+        </div>
     </div>
 </div>
 <!-- Footer -->

@@ -43,22 +43,22 @@
                 <!-- Side Top -->
                 @if($sideTop)
                     <a href="{{ $sideTop->link }}" class="promo-box">
+                        <img src="{{ $sideTop->getFirstMediaUrl('banner_image') }}" alt="{{ $sideTop->title }}">
                         <div class="promo-text">
                             <h4>{{ $sideTop->title }}</h4>
                             <p>{{ $sideTop->subtitle }}</p>
                         </div>
-                        <img src="{{ $sideTop->getFirstMediaUrl('banner_image') }}" width="70" alt="{{ $sideTop->title }}">
                     </a>
                 @endif
 
                 <!-- Side Bottom -->
                 @if($sideBottom)
                     <a href="{{ $sideBottom->link }}" class="promo-box">
+                        <img src="{{ $sideBottom->getFirstMediaUrl('banner_image') }}" alt="{{ $sideBottom->title }}">
                         <div class="promo-text">
                             <h4>{{ $sideBottom->title }}</h4>
                             <p>{{ $sideBottom->subtitle }}</p>
                         </div>
-                        <img src="{{ $sideBottom->getFirstMediaUrl('banner_image') }}" width="70" alt="{{ $sideBottom->title }}">
                     </a>
                 @endif
 
@@ -154,19 +154,19 @@
                 <p style="color: #64748b; margin-top: 10px;">Enterprise-ready IT services delivering reliability across the UAE.</p>
             </div>
 
-            <div class="solutions-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-top: 40px;">
+            <div class="solutions-grid">
                 @php 
-                    $homeSolutions = \App\Models\Solution::where('is_active', '=', 1)->orderBy('order', 'asc')->take(6)->get();
+                    $homeSolutions = \App\Models\Solution::where('is_active', true)->orderBy('order', 'asc')->take(6)->get();
                 @endphp
                 @foreach($homeSolutions as $solution)
-                    <a href="{{ route('solutions.show', $solution->slug) }}" class="sol-card" style="background: white; border: 1px solid var(--border); padding: 30px; border-radius: 20px; transition: all 0.3s ease; text-decoration: none; display: block; box-shadow: var(--shadow);">
-                        <div class="sol-icon" style="width: 50px; height: 50px; background: rgba(3, 166, 150, 0.1); color: var(--brand-emerald); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px;">
+                    <a href="{{ route('solutions.show', $solution->slug) }}" class="sol-card">
+                        <div class="sol-icon">
                             <i class="{{ $solution->icon_class }}"></i>
                         </div>
-                        <h4 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">{{ $solution->title }}</h4>
-                        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 15px;">{{ $solution->summary }}</p>
-                        <span style="color: var(--brand-navy); font-weight: 700; font-size: 13px; display: flex; align-items: center;">
-                            Learn More <i class="ri-arrow-right-line" style="margin-left: 8px;"></i>
+                        <h4>{{ $solution->title }}</h4>
+                        <p>{{ $solution->summary }}</p>
+                        <span class="learn-more">
+                            Learn More <i class="ri-arrow-right-line"></i>
                         </span>
                     </a>
                 @endforeach
