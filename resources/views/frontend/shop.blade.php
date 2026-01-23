@@ -276,7 +276,7 @@
                         @endforeach
                     </div>
 
-                    <div class="mt-8">
+                    <div class="shop-pagination mt-8">
                         {{ $products->links() }}
                     </div>
                 @else

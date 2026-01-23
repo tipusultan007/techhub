@@ -11,8 +11,8 @@ class TrackOrderController extends Controller
     {
         $order = null;
 
-        // If form is submitted
-        if ($request->isMethod('post')) {
+        // If form is submitted OR query params are present (for GET links)
+        if ($request->isMethod('post') || ($request->has('invoice_no') && $request->has('email'))) {
             $request->validate([
                 'invoice_no' => 'required|string',
                 'email'      => 'required|email',
@@ -29,7 +29,8 @@ class TrackOrderController extends Controller
                 })
                 ->first();
 
-            if (!$order) {
+            // Only redirect back with error if it was a POST request
+            if (!$order && $request->isMethod('post')) {
                 return back()->with('error', 'Order not found or email does not match.');
             }
         }

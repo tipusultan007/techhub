@@ -55,6 +55,10 @@ class ProductController extends Controller
             $rules['variants'] = 'required|array';
             $rules['variants.*.sku'] = 'required|distinct|unique:product_variants,sku';
         }
+        
+        $rules['image'] = 'nullable|image|max:2048';
+        $rules['gallery'] = 'nullable|array';
+        $rules['gallery.*'] = 'image|max:2048';
 
         $request->validate($rules);
 
@@ -80,6 +84,18 @@ class ProductController extends Controller
             }
 
             $product = Product::create($data);
+            
+            // Handle Main Image
+            if ($request->hasFile('image')) {
+                $product->addMediaFromRequest('image')->toMediaCollection('product_image');
+            }
+            
+            // Handle Gallery Images
+            if ($request->hasFile('gallery')) {
+                foreach ($request->file('gallery') as $file) {
+                    $product->addMedia($file)->toMediaCollection('product_gallery');
+                }
+            }
 
             if ($request->type === 'variable') {
                 foreach ($request->variants as $variantData) {
@@ -148,6 +164,8 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'specifications' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
+            'gallery' => 'nullable|array',
+            'gallery.*' => 'image|max:2048',
         ]);
 
         // 2. Specific Validation based on Type
@@ -192,6 +210,13 @@ class ProductController extends Controller
             if ($request->hasFile('image')) {
                 $product->clearMediaCollection('product_image');
                 $product->addMediaFromRequest('image')->toMediaCollection('product_image');
+            }
+            
+            // 6. Handle Gallery Update (Append new images)
+            if ($request->hasFile('gallery')) {
+                foreach ($request->file('gallery') as $file) {
+                    $product->addMedia($file)->toMediaCollection('product_gallery');
+                }
             }
 
             // 6. Update Variable Product Logic

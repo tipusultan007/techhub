@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Notifications\NewCustomerNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CustomerController extends Controller
 {
@@ -147,5 +148,16 @@ class CustomerController extends Controller
             abort(403);
         }
         return view('frontend.customer.order-details', compact('order'));
+    }
+
+    public function downloadInvoice(Order $order)
+    {
+        // Ensure order belongs to logged in customer
+        if ($order->customer_id !== Auth::guard('customer')->id()) {
+            abort(403);
+        }
+
+        $pdf = Pdf::loadView('frontend.customer.invoice-pdf', compact('order'));
+        return $pdf->download('invoice-' . $order->invoice_no . '.pdf');
     }
 }

@@ -13,6 +13,27 @@ class Product extends Model implements HasMedia
     use InteractsWithMedia;
     protected $guarded = [];
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('product_image')->singleFile();
+        $this->addMediaCollection('product_gallery');
+    }
+
+    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(200)
+            ->height(200)
+            ->sharpen(10)
+            ->nonQueued();
+
+        $this->addMediaConversion('medium')
+            ->width(600)
+            ->height(600)
+            ->sharpen(10)
+            ->nonQueued();
+    }
+
      protected $fillable = [
         'name', 'slug', 'brand_id', 'category_id', 'description',
         'type', 'specifications',

@@ -350,6 +350,18 @@ header {
     color: var(--brand-emerald);
 }
 
+
+/* --- UTILITIES --- */
+.text-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 3.6em;
+}
+
 /* --- LAYOUT UTILITIES --- */
 .section-wrapper {
     margin: 40px 0;
@@ -590,8 +602,9 @@ header {
 }
 
 .category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 15px;
 }
 
@@ -608,6 +621,7 @@ header {
     text-align: center;
     transition: all 0.2s ease;
     box-shadow: var(--shadow);
+    flex: 0 1 110px;
 }
 
 .cat-item i {
@@ -785,6 +799,180 @@ header {
     color: white;
     border-color: transparent;
 }
+
+
+/* Product Card Refactor Utilties */
+.badge-sold-out {
+    background: #64748b;
+}
+
+.currency-symbol {
+    font-size: 0.7em;
+    margin-right: 2px;
+}
+
+.btn-disabled {
+    background: #e2e8f0 !important;
+    /* Force override hover styles */
+    border-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+}
+
+.btn-block-link {
+    text-align: center;
+    display: block;
+    text-decoration: none;
+}
+
+/* --- PAGINATION --- */
+.shop-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+/* Target Bootstrap 5 Internal Structure - Force Clean Layout */
+
+/* 1. Hide the mobile-only simple pagination (Previous/Next buttons) */
+.shop-pagination nav>div.d-sm-none {
+    display: none !important;
+}
+
+/* 2. Target the main desktop wrapper */
+.shop-pagination nav>div.d-none.d-sm-flex {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100%;
+}
+
+/* 3. Hide the "Showing results" text container (Key fix) */
+.shop-pagination nav>div.d-none.d-sm-flex>div:first-child {
+    display: none !important;
+}
+
+/* 4. Ensure the pagination list container is visible and flexible */
+.shop-pagination nav>div.d-none.d-sm-flex>div:last-child {
+    display: block;
+}
+
+.shop-pagination .pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.shop-pagination .page-item {
+    margin: 0;
+    padding: 0;
+}
+
+/* Double check to hide text just in case structure differs slightly */
+.shop-pagination p.small.text-muted {
+    display: none !important;
+}
+
+/* General Link Styling (Bootstrap uses .page-link) */
+.shop-pagination .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text-main);
+}
+
+/* Active Page */
+.shop-pagination .page-item.active .page-link,
+.shop-pagination .page-link.active {
+    background: var(--brand-deep-blue);
+    color: white;
+    border-color: var(--brand-deep-blue);
+    z-index: 2;
+}
+
+/* --- MINI CART --- */
+.mini-total {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 15px;
+    margin-top: 10px;
+}
+
+.mini-empty-cart {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+
+.mini-empty-icon {
+    background: #f8fafc;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+}
+
+.mini-empty-icon i {
+    font-size: 2.5rem;
+    color: #cbd5e1;
+}
+
+.mini-empty-text {
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.btn-continue-shopping {
+    margin-top: 15px;
+    color: var(--brand-magenta);
+    background: none;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Hover Effects */
+.shop-pagination .page-link:hover {
+    border-color: var(--brand-magenta);
+    color: var(--brand-magenta);
+    background: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 3;
+}
+
+/* Disabled Arrows */
+.shop-pagination .page-item.disabled .page-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+    color: #cbd5e1;
+}
+
+/* Fix for icons if fontawesome is used in prev/next */
+.shop-pagination .page-link svg,
+.shop-pagination .page-link i {
+    width: 14px;
+    height: 14px;
+}
+
 
 /* --- EXTRAS --- */
 .deal-header {

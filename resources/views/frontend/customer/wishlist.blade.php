@@ -76,7 +76,7 @@
                             <div class="wish-card">
 
                                 <!-- Remove Button Form -->
-                                <form action="{{ route('wishlist.destroy', $item->id) }}" method="POST">
+                                <form action="{{ route('customer.wishlist.destroy', $item->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="wish-remove" title="Remove">
@@ -85,7 +85,7 @@
                                 </form>
 
                                 <div class="wish-img">
-                                    <img src="{{ $item->product->getFirstMediaUrl('product_images', 'thumb') ?: asset('images/placeholder.jpg') }}" alt="{{ $item->product->name }}">
+                                    <img src="{{ $item->product->getFirstMediaUrl('product_image', 'thumb') ?: asset('images/placeholder.jpg') }}" alt="{{ $item->product->name }}">
                                 </div>
 
                                 <div class="wish-body">

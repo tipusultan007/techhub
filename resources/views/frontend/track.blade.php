@@ -270,7 +270,7 @@
             height: 56px;
             border: 1px solid #f1f5f9;
             border-radius: 8px;
-            padding: 6px;
+            flex-shrink: 0;
             background: #fafafa;
         }
         .mini-thumb img {
@@ -538,16 +538,16 @@
                         <div class="card-head">Items ({{ $order->items->count() }})</div>
                         @foreach($order->items as $item)
                             @php
-                                $product = \App\Models\Product::find($item->product_id);
-                                $img = $product?->getFirstMediaUrl('product_images', 'thumb') ?: asset('images/placeholder.jpg');
+                                $product = \App\Models\Product::where([['id', $item->product_id]])->first();
+                                $img = ($product) ? $product->getFirstMediaUrl('product_image', 'thumb') : asset('images/placeholder.jpg');
                             @endphp
                             <div class="mini-item">
                                 <div class="mini-thumb">
                                     <img src="{{ $img }}" alt="{{ $item->product_name }}">
                                 </div>
                                 <div class="mini-text">
-                                    {{ $item->product_name }} <br>
-                                    <small style="color:var(--text-muted);">Qty: {{ $item->quantity }} × {{ number_format($item->price, 2) }} AED</small>
+                                    <span style="font-size: 12px;">{{ $item->product_name }}</span> <br>
+                                    <small style="color:var(--text-muted); font-size: 11px;">Qty: {{ $item->quantity }} × {{ number_format($item->price, 2) }} AED</small>
                                 </div>
                             </div>
                         @endforeach

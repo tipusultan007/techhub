@@ -2,7 +2,7 @@
 
 @php
     // 1. Image
-    $image = $product->getFirstMediaUrl('product_images', 'thumb') ?: asset('images/placeholder.jpg');
+    $image = $product->getFirstMediaUrl('product_image') ?: asset('images/placeholder.jpg');
 
     // 2. Settings
     $currency = settings('currency_symbol', 'AED');
@@ -64,7 +64,7 @@
 
     {{-- BADGES --}}
     @if($isOutOfStock)
-        <div class="badge-sale" style="background: #64748b;">Sold Out</div>
+        <div class="badge-sale badge-sold-out">Sold Out</div>
     @elseif($isOnSale)
         <div class="badge-sale">-{{ $discountPercent }}%</div>
     @elseif($isNew)
@@ -83,28 +83,28 @@
         </div>
 
         {{-- Title --}}
-        <a href="{{ route('product.show', $product->slug) }}" class="p-title">
+        <a href="{{ route('product.show', $product->slug) }}" class="p-title text-clamp-3">
             {{ $product->name }}
         </a>
 
         {{-- PRICE --}}
         <div class="p-price">
             {{-- Main Price --}}
-            {{ $priceDisplay }} <span style="font-size:0.7em; margin-left:2px;">{{ $currency }}</span>
+            <span class="currency-symbol">{{ $currency }}</span> {{ $priceDisplay }}
 
             {{-- Crossed Out Price (Only for Simple Products usually, ranges get messy) --}}
             @if($oldPriceDisplay)
-                <span class="p-old">{{ $oldPriceDisplay }}</span>
+                <span class="p-old">{{ $currency }} {{ $oldPriceDisplay }}</span>
             @endif
         </div>
 
         {{-- ACTIONS --}}
         @if($isOutOfStock)
-            <button class="add-cart-hover" disabled style="background: #e2e8f0; border-color: #e2e8f0; color: #94a3b8; cursor: not-allowed;">
+            <button class="add-cart-hover btn-disabled" disabled>
                 Out of Stock
             </button>
         @elseif($isVariable)
-            <a href="{{ route('product.show', $product->slug) }}" class="add-cart-hover" style="text-align: center; display: block; text-decoration: none;">
+            <a href="{{ route('product.show', $product->slug) }}" class="add-cart-hover btn-block-link">
                 Select Options
             </a>
         @else

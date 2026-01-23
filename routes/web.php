@@ -227,6 +227,7 @@ Route::prefix('account')->name('customer.')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\CustomerController::class, 'dashboard'])->name('dashboard');
         Route::get('orders', [App\Http\Controllers\CustomerController::class, 'orders'])->name('orders');
         Route::get('orders/{order}', [App\Http\Controllers\CustomerController::class, 'showOrder'])->name('orders.show');
+        Route::get('orders/{order}/download', [App\Http\Controllers\CustomerController::class, 'downloadInvoice'])->name('orders.download');
 
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
         Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
@@ -247,6 +248,11 @@ Route::prefix('account')->name('customer.')->group(function () {
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/category/{slug}', [ShopController::class, 'index'])->name('category.show');
+Route::get('/search', [App\Http\Controllers\SearchController::class, 'index'])->name('search');
+Route::get('/search/ajax', [App\Http\Controllers\SearchController::class, 'ajaxSearch'])
+    ->middleware('throttle:30,1')
+    ->name('search.ajax');
+
 Route::get('/cart/mini', [App\Http\Controllers\CartController::class, 'miniCart'])->name('cart.mini');
 
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');

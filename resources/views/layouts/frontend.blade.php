@@ -109,6 +109,41 @@
         .btn-cart-view:hover { border-color: var(--brand-deep-blue); color: var(--brand-deep-blue); }
         .btn-checkout-mini { background: var(--brand-gradient); color: white; border: none; }
         .btn-checkout-mini:hover { opacity: 0.9; }
+
+        /* --- AJAX SEARCH RESULTS --- */
+        .search-results {
+            position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+            background: white; border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 1060; overflow: hidden;
+            border: 1px solid var(--border);
+            display: none;
+        }
+        .search-results.open { display: block; }
+
+        .result-item {
+            display: flex; gap: 12px; padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: 0.2s; cursor: pointer;
+            align-items: center;
+        }
+        .result-item:last-child { border-bottom: none; }
+        .result-item:hover { background: #f8fafc; }
+
+        .res-img { width: 45px; height: 45px; border-radius: 4px; border: 1px solid #f1f5f9; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; flex-shrink: 0; }
+        .res-img img { max-height: 100%; object-fit: contain; }
+
+        .res-info { flex: 1; min-width: 0; }
+        .res-name { font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .res-price { font-size: 0.8rem; font-weight: 700; color: var(--brand-deep-blue); }
+        .res-old { font-size: 0.75rem; color: var(--text-muted); text-decoration: line-through; margin-left: 5px; font-weight: 400; }
+
+        .no-results { padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+        .search-loader { position: absolute; right: 45px; top: 18px; color: var(--brand-magenta); font-size: 1.2rem; display: none; }
+        .search-loader.active { display: block; }
+        .search-box input{
+            color: var(--text-main);
+        }
     </style>
     @stack('styles')
 </head>
@@ -147,11 +182,54 @@
             <i class="ri-menu-line"></i>
         </button>
 
-        <div class="search-box">
-            <form action="{{ url('/search') }}" method="GET">
-                <input type="text" name="q" placeholder="Search for components, laptops, or accessories...">
+        <div class="search-box" x-data="searchHandler()" @click.away="isOpen = false">
+            <form action="{{ url('/search') }}" method="GET" @submit="isLoading = true">
+                <input type="text" name="q" 
+                       placeholder="Search for components, laptops, or accessories..."
+                       x-model="query"
+                       @input.debounce.300ms="search()"
+                       @focus="if(query.length > 1) isOpen = true"
+                       autocomplete="off">
                 <button type="submit" class="search-btn"><i class="ri-search-line"></i></button>
             </form>
+
+            <!-- Loader Icon -->
+            <div class="search-loader" :class="{ 'active': isLoading }">
+                <i class="ri-loader-4-line animate-spin"></i>
+            </div>
+
+            <!-- Results Dropdown -->
+            <div class="search-results" :class="{ 'open': isOpen }">
+                <template x-if="results.length > 0">
+                    <div>
+                        <template x-for="item in results" :key="item.id">
+                            <a :href="item.url" class="result-item">
+                                <div class="res-img">
+                                    <img :src="item.image" :alt="item.name">
+                                </div>
+                                <div class="res-info">
+                                    <div class="res-name" x-text="item.name"></div>
+                                    <div class="res-price">
+                                        <span x-text="item.price"></span>
+                                        <template x-if="item.is_sale">
+                                            <span class="res-old" x-text="item.original_price"></span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </a>
+                        </template>
+                        <a :href="'{{ url('/search') }}?q=' + query" class="result-item" style="justify-content: center; background: #f1f5f9; font-weight: 700; color: var(--brand-deep-blue);">
+                            View All Results
+                        </a>
+                    </div>
+                </template>
+                <template x-if="results.length === 0 && query.length > 1 && !isLoading">
+                    <div class="no-results">
+                        <i class="ri-search-line" style="font-size: 1.5rem; display: block; margin-bottom: 5px; opacity: 0.5;"></i>
+                        No products found for "<span x-text="query"></span>"
+                    </div>
+                </template>
+            </div>
         </div>
 
         <div class="user-actions">
@@ -500,6 +578,34 @@
         } catch (error) {
             console.error(error);
             toastr.error('Something went wrong.');
+        }
+    }
+    // Alpine.js Search Handler
+    function searchHandler() {
+        return {
+            query: '',
+            results: [],
+            isOpen: false,
+            isLoading: false,
+            async search() {
+                if (this.query.length < 2) {
+                    this.results = [];
+                    this.isOpen = false;
+                    return;
+                }
+
+                this.isLoading = true;
+                this.isOpen = true;
+
+                try {
+                    const response = await fetch(`{{ route('search.ajax') }}?q=${encodeURIComponent(this.query)}`);
+                    this.results = await response.json();
+                } catch (error) {
+                    console.error('Search error:', error);
+                } finally {
+                    this.isLoading = false;
+                }
+            }
         }
     }
 </script>

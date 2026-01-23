@@ -181,9 +181,13 @@
                         <h3 style="margin-bottom:20px; font-size:1.1rem; font-weight:800; color:var(--text-main);">Order Summary</h3>
 
                         @foreach($cart as $item)
+                            @php
+                                $product = \App\Models\Product::find($item['product_id']);
+                                $productImage = $product ? $product->getFirstMediaUrl('product_image') : asset('frontend/assets/images/placeholder.jpg');
+                            @endphp
                             <div class="item-row">
                                 <div class="item-thumb">
-                                    <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
+                                    <img src="{{ $productImage }}" alt="{{ $item['name'] }}">
                                 </div>
                                 <div style="flex:1;">
                                     <div class="item-name">{{ $item['name'] }}</div>

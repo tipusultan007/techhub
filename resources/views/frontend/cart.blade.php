@@ -105,9 +105,15 @@
 
                     <!-- Loop through Cart Items using Blade to set initial structure -->
                     @foreach($cart as $key => $item)
+
+                     @php
+                        $product = \App\Models\Product::find($item['product_id']);
+                        $productImage = $product ? $product->getFirstMediaUrl('product_image') : asset('frontend/assets/images/placeholder.jpg');
+                    @endphp
+                    
                         <div class="cart-item" id="item-{{ $key }}">
                             <div class="item-img">
-                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}">
+                                <img src="{{ $productImage }}" alt="{{ $item['name'] }}">
                             </div>
 
                             <div class="item-details">
@@ -194,7 +200,7 @@
                         <span x-text="total + ' AED'">{{ number_format($total, 2) }} AED</span>
                     </div>
 
-                    <a href="#" class="checkout-btn">
+                    <a href="{{ route('checkout.index') }}" class="checkout-btn">
                         Secure Checkout <i class="ri-lock-line"></i>
                     </a>
 
@@ -225,7 +231,7 @@
 
                     <!-- Payment Icons -->
                     <div class="payment-methods">
-                        <p style="font-size: 0.8rem; color: #64748b;">We Accept:</p>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px;">We Accept:</p>
                         <div class="pm-icons" style="display:flex; justify-content:center; gap:10px; font-size:1.5rem; color:#94a3b8; margin-top:5px;">
                             <i class="ri-visa-line"></i>
                             <i class="ri-mastercard-line"></i>

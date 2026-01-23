@@ -418,7 +418,7 @@
                                     @foreach($order->items->take(3) as $item)
                                         @php
                                             $product = \App\Models\Product::find($item->product_id);
-                                            $img = $product ? $product->getFirstMediaUrl('product_images', 'thumb') : asset('images/placeholder.jpg');
+                                            $img = $product ? $product->getFirstMediaUrl('product_image') : asset('frontend/assets/images/placeholder.jpg');
                                         @endphp
                                         <div class="o-thumb" title="{{ $item->product_name }}">
                                             <img src="{{ $img }}" alt="{{ $item->product_name }}">
@@ -443,7 +443,7 @@
                                 <a href="{{ route('customer.orders.show', $order) }}" class="btn-outline">View
                                     Details</a>
                                 @if($order->status !== 'completed' && $order->status !== 'cancelled')
-                                    <a href="#" class="btn-solid">Track Order</a>
+                                    <a href="{{ route('track.order', ['invoice_no' => $order->invoice_no, 'email' => $order->guest_email ?? ($order->customer ? $order->customer->email : '')]) }}" class="btn-solid">Track Order</a>
                                 @endif
                             </div>
                         </div>

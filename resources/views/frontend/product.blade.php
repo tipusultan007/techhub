@@ -37,7 +37,7 @@
         /* Info Section */
         .info-section { padding: 40px; }
         .p-brand { color: var(--brand-magenta); font-weight: 700; font-size: 13px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
-        .p-title { font-size: 26px; font-weight: 800; line-height: 1.3; margin-bottom: 10px; color: var(--text-main); }
+        .product-title { font-size: 26px; font-weight: 800; line-height: 1.3; margin-bottom: 10px; color: var(--text-main); }
 
         .p-rating { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 13px; }
         .stars { color: var(--accent-gold); }
@@ -154,7 +154,24 @@
 
         /* Fix Tab Visibility */
         [x-cloak] { display: none !important; }
+
+        /* --- SWIPER & ZOOM CUSTOM --- */
+        .gallery-section { padding: 30px; border-right: 1px solid var(--border); overflow: hidden; }
+        .main-swiper { width: 100%; height: 450px; margin-bottom: 20px; border-radius: var(--radius); position: relative; overflow: hidden; }
+        .main-swiper .swiper-slide { display: flex; align-items: center; justify-content: center; background: white; overflow: hidden; }
+        
+        /* Custom Scale & Pan Zoom */
+        .zoom-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: zoom-in; position: relative; overflow: hidden; }
+        .zoom-container img { max-height: 100%; max-width: 100%; object-fit: contain; mix-blend-mode: multiply; transition: transform 0.2s ease-out; transform-origin: center center; }
+        .zoom-container.zoomed img { transform: scale(2.5); cursor: zoom-out; }
+
+        .thumb-swiper { height: 90px; box-sizing: border-box; width: 100%; margin-top: 10px; }
+        .thumb-swiper .swiper-slide { width: 80px !important; height: 80px !important; opacity: 0.5; cursor: pointer; transition: 0.3s; border: 1px solid var(--border); border-radius: var(--radius); padding: 5px; background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .thumb-swiper .swiper-slide-thumb-active { opacity: 1; border-color: var(--brand-magenta); box-shadow: 0 0 0 2px rgba(192, 77, 238, 0.1); }
+        .thumb-swiper img { max-width: 100%; max-height: 100%; object-fit: contain; }
     </style>
+    <!-- Assets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 @endpush
 @section('content')
 
@@ -164,9 +181,9 @@
             product: @json($product),
             variants: @json($product->variants),
             inWishlist: @json($inWishlist),
-            defaultImage: "{{ $product->getFirstMediaUrl('product_images') ?: asset('images/placeholder.jpg') }}",
+            defaultImage: "{{ $product->getFirstMediaUrl('product_image') ?: asset('images/placeholder.jpg') }}",
             currency: "{{ settings('currency_symbol', 'AED') }}",
-            galleryImages: @json($product->getMedia('product_images')->skip(1)->map(fn($m) => ['thumb' => $m->getUrl('thumb'), 'full' => $m->getUrl()]))
+            galleryImages: @json($product->getMedia('product_gallery')->map(fn($m) => ['thumb' => $m->getUrl('thumb'), 'full' => $m->getUrl()]))
         };
     </script>
 
@@ -188,23 +205,41 @@
 
             <!-- Gallery Section -->
             <div class="gallery-section">
-                <div class="main-image">
-                    <img :src="activeImage" :alt="product.name">
+                <!-- Main Swiper -->
+                <div class="swiper main-swiper">
+                    <div class="swiper-wrapper">
+                        <!-- Default Image first -->
+                        <div class="swiper-slide">
+                            <div class="zoom-container" onmouseenter="enterZoom(event)" onmousemove="zoom(event)" onmouseleave="leaveZoom(event)">
+                                <img :src="defaultImage" :alt="product.name">
+                            </div>
+                        </div>
+                        <!-- Gallery Images -->
+                        <template x-for="img in galleryImages" :key="img.full">
+                            <div class="swiper-slide">
+                                <div class="zoom-container" onmouseenter="enterZoom(event)" onmousemove="zoom(event)" onmouseleave="leaveZoom(event)">
+                                    <img :src="img.full" :alt="product.name">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <!-- Navigation Buttons -->
+                    <div class="swiper-button-next" style="color: var(--brand-magenta);"></div>
+                    <div class="swiper-button-prev" style="color: var(--brand-magenta);"></div>
                 </div>
 
-                <div class="thumbnails">
-                    <div class="thumb"
-                         :class="activeImage === defaultImage ? 'active' : ''"
-                         @click="activeImage = defaultImage">
-                        <img :src="defaultImage" alt="Main">
-                    </div>
-                    <template x-for="img in galleryImages">
-                        <div class="thumb"
-                             :class="activeImage === img.full ? 'active' : ''"
-                             @click="activeImage = img.full">
-                            <img :src="img.thumb" alt="Gallery">
+                <!-- Thumbs Swiper -->
+                <div class="swiper thumb-swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img :src="defaultImage" alt="Thumb">
                         </div>
-                    </template>
+                        <template x-for="img in galleryImages" :key="img.thumb">
+                            <div class="swiper-slide">
+                                <img :src="img.thumb" alt="Thumb">
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
 
@@ -214,7 +249,7 @@
                     <div class="p-brand">{{ $product->brand->name }}</div>
                 @endif
 
-                <h1 class="p-title">{{ $product->name }}</h1>
+                <h1 class="product-title">{{ $product->name }}</h1>
 
                 <div class="p-rating">
                     <div class="stars">
@@ -476,3 +511,70 @@
 
 
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        // --- CUSTOM ZOOM LOGIC (WooCommerce Style) ---
+        function enterZoom(e) {
+            e.currentTarget.classList.add('zoomed');
+            zoom(e);
+        }
+
+        function leaveZoom(e) {
+            const container = e.currentTarget;
+            const img = container.querySelector('img');
+            container.classList.remove('zoomed');
+            img.style.transformOrigin = 'center center';
+        }
+
+        function zoom(e) {
+            const container = e.currentTarget;
+            if (!container.classList.contains('zoomed')) return;
+            
+            const img = container.querySelector('img');
+            const rect = container.getBoundingClientRect();
+            
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const xPercent = (x / rect.width) * 100;
+            const yPercent = (y / rect.height) * 100;
+            
+            img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for Alpine and potential transitions
+            setTimeout(() => {
+                const thumbSwiper = new Swiper(".thumb-swiper", {
+                    spaceBetween: 10,
+                    slidesPerView: "auto",
+                    freeMode: true,
+                    watchSlidesProgress: true,
+                    observer: true,
+                    observeParents: true,
+                });
+
+                const mainSwiper = new Swiper(".main-swiper", {
+                    spaceBetween: 10,
+                    navigation: {
+                        nextEl: ".swiper-button-next",
+                        prevEl: ".swiper-button-prev",
+                    },
+                    thumbs: {
+                        swiper: thumbSwiper,
+                    },
+                    observer: true,
+                    observeParents: true,
+                    on: {
+                        slideChange: function() {
+                            // Reset zoom on all slides when changing
+                            document.querySelectorAll('.zoom-container').forEach(c => c.classList.remove('zoomed'));
+                        }
+                    }
+                });
+            }, 500);
+        });
+    </script>
+@endpush
