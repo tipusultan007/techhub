@@ -38,9 +38,9 @@
                     </div>
 
                     <!-- Brand -->
-                    <div>
+                    <div id="brand_field_container" class="{{ $product->type === 'service' ? 'hidden' : '' }}">
                         <label class="block text-sm font-bold text-gray-700">Brand <span class="text-red-500">*</span></label>
-                        <select name="brand_id" class="w-full mt-1 border border-gray-300 rounded-md p-2 bg-white" required>
+                        <select name="brand_id" id="brand_input" class="w-full mt-1 border border-gray-300 rounded-md p-2 bg-white" required>
                             @foreach ($brands as $brand)
                                 <option value="{{ $brand->id }}" {{ $product->brand_id == $brand->id ? 'selected' : '' }}>
                                     {{ $brand->name }}
@@ -90,7 +90,7 @@
             </div>
 
             <!-- === SECTION 2: ELECTRONICS SETTINGS === -->
-            <div class="mb-8 border-b pb-6">
+            <div id="electronics_section" class="mb-8 border-b pb-6 {{ $product->type === 'service' ? 'hidden' : '' }}">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-yellow-500 pl-2">Electronics Settings</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
 
@@ -159,7 +159,7 @@
             </div>
 
             <!-- === SECTION 5: SIMPLE PRODUCT INVENTORY === -->
-            @if($product->type === 'simple')
+            @if($product->type === 'simple' || $product->type === 'service')
             <div id="simple_section" class="mb-8">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center border-l-4 border-blue-600 pl-2">
                     <i class="fas fa-box text-blue-600 mr-2"></i> Simple Product Inventory
@@ -170,9 +170,9 @@
                         <input type="number" step="0.01" name="price" value="{{ $product->selling_price }}"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" required>
                     </div>
-                    <div>
+                    <div id="cost_field_container" class="{{ $product->type === 'service' ? 'hidden' : '' }}">
                         <label class="block text-xs uppercase font-bold text-gray-500">Cost Price (AED)</label>
-                        <input type="number" step="0.01" name="cost" value="{{ $product->cost_price }}"
+                        <input type="number" step="0.01" name="cost" value="{{ $product->cost_price }}" id="cost_input"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" required>
                     </div>
                     <div>
@@ -180,12 +180,12 @@
                         <input type="text" name="sku" value="{{ $product->sku }}"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" required>
                     </div>
-                    <div>
+                    <div id="stock_field_container" class="{{ $product->type === 'service' ? 'hidden' : '' }}">
                         <label class="block text-xs uppercase font-bold text-gray-500">Current Stock</label>
                         <input type="number" name="stock" value="{{ $product->stock_quantity }}"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500">
                     </div>
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-4" id="barcode_field_container" class="{{ $product->type === 'service' ? 'hidden' : '' }}">
                         <label class="block text-xs uppercase font-bold text-gray-500">Barcode</label>
                         <input type="text" name="barcode" value="{{ $product->barcode }}"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500">

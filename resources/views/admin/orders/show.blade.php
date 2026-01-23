@@ -9,9 +9,14 @@
         <a href="{{ route('orders.index') }}" class="text-gray-600 hover:text-gray-900 flex items-center font-medium">
             <i class="fas fa-arrow-left mr-2"></i> Back to Orders
         </a>
-        <a href="{{ route('orders.print', $order) }}" target="_blank" class="bg-gray-800 text-white px-5 py-2 rounded shadow hover:bg-gray-700 font-bold transition">
-            <i class="fas fa-print mr-2"></i> Print Receipt
-        </a>
+        <div class="flex gap-3">
+            <a href="{{ route('orders.print', $order) }}" target="_blank" class="bg-gray-800 text-white px-5 py-2 rounded shadow hover:bg-gray-700 font-bold transition">
+                <i class="fas fa-print mr-2"></i> Print Receipt
+            </a>
+            <a href="{{ route('orders.download-pdf', $order) }}" class="bg-blue-600 text-white px-5 py-2 rounded shadow hover:bg-blue-700 font-bold transition">
+                <i class="fas fa-file-pdf mr-2"></i> Download PDF
+            </a>
+        </div>
     </div>
 
     <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
@@ -20,7 +25,7 @@
         <div class="px-8 py-6 border-b bg-gray-50 flex justify-between items-start">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800 tracking-tight">
-                     {{ $order->vat_amount > 0 ? 'TAX INVOICE' : 'SALES RECEIPT' }}
+                     {{ $order->vat_amount > 0 ? 'INVOICE' : 'SALES RECEIPT' }}
                 </h1>
                 <div class="mt-2 text-sm text-gray-600 space-y-1">
                     <p>Invoice #: <span class="font-mono font-bold text-gray-900">{{ $order->invoice_no }}</span></p>

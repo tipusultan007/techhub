@@ -26,9 +26,9 @@
                     </div>
 
                     <!-- Brand -->
-                    <div>
+                    <div id="brand_field_container">
                         <label class="block text-sm font-bold text-gray-700">Brand <span class="text-red-500">*</span></label>
-                        <select name="brand_id" class="w-full mt-1 border border-gray-300 rounded-md p-2 bg-white" required>
+                        <select name="brand_id" id="brand_input" class="w-full mt-1 border border-gray-300 rounded-md p-2 bg-white" required>
                             <option value="">Select Brand</option>
                             @foreach ($brands as $brand)
                                 <option value="{{ $brand->id }}">{{ $brand->name }}</option>
@@ -61,13 +61,14 @@
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 bg-gray-50 font-semibold border-blue-200">
                             <option value="simple">Simple Product (Single Item)</option>
                             <option value="variable">Variable Product (Sizes/Colors)</option>
+                            <option value="service">Service (Installation, Support, etc.)</option>
                         </select>
                     </div>
                 </div>
             </div>
 
             <!-- === SECTION 2: ELECTRONICS SETTINGS === -->
-            <div class="mb-8 border-b pb-6">
+            <div id="electronics_section" class="mb-8 border-b pb-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-yellow-500 pl-2">Electronics Settings</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
 
@@ -151,9 +152,9 @@
                         <input type="number" step="0.01" name="price"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 simple-input focus:border-blue-500" required>
                     </div>
-                    <div>
+                    <div id="cost_field_container">
                         <label class="block text-xs uppercase font-bold text-gray-500">Cost Price (AED) <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.01" name="cost"
+                        <input type="number" step="0.01" name="cost" id="cost_input"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 simple-input focus:border-blue-500" required>
                     </div>
                     <div>
@@ -161,15 +162,15 @@
                         <input type="text" name="sku"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 simple-input focus:border-blue-500" required>
                     </div>
-                    <div>
+                    <div id="stock_field_container">
                         <label class="block text-xs uppercase font-bold text-gray-500">Current Stock</label>
-                        <input type="number" name="stock"
-                            class="w-full mt-1 border border-gray-300 rounded-md p-2 simple-input focus:border-blue-500" value="0">
+                        <input type="number" name="stock" id="stock_input"
+                            class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" value="0">
                     </div>
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-4" id="barcode_field_container">
                         <label class="block text-xs uppercase font-bold text-gray-500">Barcode (Scanner Input)</label>
-                        <input type="text" name="barcode"
-                            class="w-full mt-1 border border-gray-300 rounded-md p-2 simple-input focus:border-blue-500"
+                        <input type="text" name="barcode" id="barcode_input"
+                            class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500"
                             placeholder="Click here and scan barcode...">
                     </div>
                 </div>
@@ -256,15 +257,50 @@
                 if (type === 'simple') {
                     $('#simple_section').removeClass('hidden');
                     $('#variable_section').addClass('hidden');
+                    $('#electronics_section').removeClass('hidden');
+                    $('#stock_field_container').removeClass('hidden');
+                    $('#barcode_field_container').removeClass('hidden');
+                    $('#brand_field_container').removeClass('hidden');
+                    $('#cost_field_container').removeClass('hidden');
+
                     // Enable required for simple fields
                     $('.simple-input').prop('required', true);
+                    $('#brand_input').prop('required', true);
+                    $('#cost_input').prop('required', true);
+                    $('#barcode_input').prop('required', false); // Barcode is always optional
+                } else if (type === 'service') {
+                    $('#simple_section').removeClass('hidden');
+                    $('#variable_section').addClass('hidden');
+                    $('#electronics_section').addClass('hidden'); 
+                    $('#stock_field_container').addClass('hidden');
+                    $('#barcode_field_container').addClass('hidden');
+                    $('#brand_field_container').addClass('hidden');
+                    $('#cost_field_container').addClass('hidden');
+                    
+                    $('#stock_input').val(0); // Reset stock for service
+                    
+                    // Enable required for simple fields except hidden ones
+                    $('.simple-input').prop('required', true);
+                    $('#stock_input').prop('required', false);
+                    $('#brand_input').prop('required', false);
+                    $('#cost_input').prop('required', false);
+                    $('#barcode_input').prop('required', false);
                 } else {
                     $('#simple_section').addClass('hidden');
                     $('#variable_section').removeClass('hidden');
+                    $('#electronics_section').removeClass('hidden');
+                    $('#brand_field_container').removeClass('hidden');
+                    $('#cost_field_container').removeClass('hidden');
+
                     // Disable required for simple fields so form can submit
                     $('.simple-input').prop('required', false);
+                    $('#brand_input').prop('required', true);
+                    $('#cost_input').prop('required', false); // Cost is handled per variant
                 }
             });
+
+            // Trigger change on load to ensure UI matches current selection (handles old input)
+            $('#type_selector').trigger('change');
 
             // --- 2. Rich Text Editors Init ---
             let summernoteOptions = {

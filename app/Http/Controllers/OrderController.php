@@ -15,13 +15,43 @@ class OrderController extends Controller
     /**
      * Display a listing of sales orders.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with(['customer', 'user'])
-                       ->latest()
-                       ->paginate(15);
+        $query = Order::with(['customer', 'user']);
 
-        return view('admin.orders.index', compact('orders'));
+        // Filter by Invoice No
+        if ($request->filled('invoice_no')) {
+            $query->where('invoice_no', 'LIKE', '%' . $request->invoice_no . '%');
+        }
+
+        // Filter by Customer
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+
+        // Filter by Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by Payment Method
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        // Filter by Date Range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $orders = $query->latest()->paginate(15)->withQueryString();
+        
+        $customers = \App\Models\Customer::select('id', 'name')->orderBy('name')->get();
+
+        return view('admin.orders.index', compact('orders', 'customers'));
     }
 
     /**
@@ -50,6 +80,16 @@ class OrderController extends Controller
     {
         $order->load(['items']);
         return view('admin.orders.print', compact('order'));
+    }
+
+    /**
+     * Download Invoice as PDF.
+     */
+    public function downloadPdf(Order $order)
+    {
+        $order->load(['items']);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.orders.pdf', compact('order'));
+        return $pdf->download('Invoice-' . $order->invoice_no . '.pdf');
     }
 
     // App\Http\Controllers\OrderController.php

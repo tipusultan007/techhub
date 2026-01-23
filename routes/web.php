@@ -20,6 +20,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductSerialController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\SettingController;
@@ -84,6 +85,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::get('/pos/search', [PosController::class, 'search'])->name('pos.search');
         Route::get('/pos/check-serial', [PosController::class, 'checkSerial'])->name('pos.check-serial');
         Route::post('/pos/store', [PosController::class, 'store'])->name('pos.store');
+        Route::post('/pos/customer', [PosController::class, 'storeCustomer'])->name('pos.customer.store');
 
         Route::get('/orders/{order}/print', [OrderController::class, 'print'])->name('orders.print');
     });
@@ -114,12 +116,21 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::resource('customers', CustomerController::class);
         Route::post('/returns/find-order', [ReturnController::class, 'findOrder'])->name('returns.find');
         Route::resource('returns', ReturnController::class)->except(['edit', 'update', 'destroy']);
+
+        // Quotations
+        Route::get('/quotations/search', [QuotationController::class, 'search'])->name('quotations.search');
+        Route::post('/quotations/{quotation}/convert', [QuotationController::class, 'convertToSale'])->name('quotations.convert');
+        Route::get('/quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print');
+        Route::get('/quotations/{quotation}/download-pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.download-pdf');
+        Route::resource('quotations', QuotationController::class);
     });
 
     // --- ADMIN ONLY (Reports, Settings, Full Order Access) ---
     Route::group(['middleware' => ['role:Admin']], function () {
 
         // Orders Management
+        Route::get('/orders/{order}/print', [OrderController::class, 'print'])->name('orders.print');
+        Route::get('/orders/{order}/download-pdf', [OrderController::class, 'downloadPdf'])->name('orders.download-pdf');
         Route::resource('orders', OrderController::class);
 
         // Reports
@@ -136,7 +147,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
 
         // Banner Management
         Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+        Route::post('/banners', [BannerController::class, 'store'])->name('banners.store');
         Route::post('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+        Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
 
         // Offers Popup Management
         Route::get('popups/{popup}/preview', [\App\Http\Controllers\Admin\OfferPopupController::class, 'preview'])->name('popups.admin.preview');
@@ -263,6 +276,9 @@ Route::resource('expenses', App\Http\Controllers\ExpenseController::class);
 // IT Solutions Routes
 Route::get('/solutions', [App\Http\Controllers\SolutionController::class, 'index'])->name('solutions.index');
 Route::get('/solutions/{slug}', [App\Http\Controllers\SolutionController::class, 'show'])->name('solutions.show');
+
+// Store Locator Route
+Route::get('/store-locator', [App\Http\Controllers\StoreLocatorController::class, 'index'])->name('store.locator');
 
 // Coupon Routes
 Route::post('/cart/coupon/apply', [App\Http\Controllers\CartController::class, 'applyCoupon'])->name('cart.coupon.apply');

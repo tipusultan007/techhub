@@ -175,6 +175,11 @@
                     <i class="fas fa-user-friends"></i> <span>Customer CRM</span>
                 </a>
 
+                <a href="{{ route('quotations.index') }}"
+                   class="sidebar-item {{ request()->routeIs('quotations*') ? 'active' : '' }}">
+                    <i class="fas fa-file-invoice"></i> <span>Quotations</span>
+                </a>
+
                 <!-- CATALOG & INVENTORY -->
                 <div class="sidebar-header">Catalog Management</div>
                 @role('Manager|Admin')

@@ -1,5 +1,21 @@
 @extends('layouts.admin')
 
+@push('styles')
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding-top: 4px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+    </style>
+@endpush
+
 @section('header', 'Sales Orders')
 
 @section('content')
@@ -7,6 +23,79 @@
     <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
         <h3 class="font-bold text-gray-700">All Transactions</h3>
         <span class="text-xs text-gray-500">Showing latest sales first</span>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="px-6 py-4 border-b bg-white">
+        <form action="{{ route('orders.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <!-- Invoice No -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Invoice No</label>
+                <input type="text" name="invoice_no" value="{{ request('invoice_no') }}" 
+                    class="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="INV-XXXXX">
+            </div>
+
+            <!-- Customer -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Customer</label>
+                <select name="customer_id" class="w-full select2 border border-gray-300 rounded-md p-2 text-sm">
+                    <option value="">All Customers</option>
+                    @foreach($customers as $customer)
+                        <option value="{{ $customer->id }}" {{ request('customer_id') == $customer->id ? 'selected' : '' }}>
+                            {{ $customer->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                <select name="status" class="w-full border border-gray-300 rounded-md p-2 text-sm">
+                    <option value="">All Statuses</option>
+                    @foreach(['pending','processing','shipped','completed','cancelled','returned'] as $status)
+                        <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>
+                            {{ ucfirst($status) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Payment Method -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment</label>
+                <select name="payment_method" class="w-full border border-gray-300 rounded-md p-2 text-sm">
+                    <option value="">All Methods</option>
+                    <option value="cash" {{ request('payment_method') == 'cash' ? 'selected' : '' }}>Cash</option>
+                    <option value="card" {{ request('payment_method') == 'card' ? 'selected' : '' }}>Card</option>
+                    <option value="transfer" {{ request('payment_method') == 'transfer' ? 'selected' : '' }}>Bank</option>
+                </select>
+            </div>
+
+            <!-- Date From -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">From Date</label>
+                <input type="date" name="date_from" value="{{ request('date_from') }}" 
+                    class="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Date To -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">To Date</label>
+                <input type="date" name="date_to" value="{{ request('date_to') }}" 
+                    class="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="md:col-span-3 lg:col-span-6 flex justify-end gap-2">
+                <a href="{{ route('orders.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm font-bold hover:bg-gray-300 transition">
+                    <i class="fas fa-undo mr-1"></i> Reset
+                </a>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md text-sm font-bold hover:bg-blue-700 transition shadow-md">
+                    <i class="fas fa-filter mr-1"></i> Apply Filters
+                </button>
+            </div>
+        </form>
     </div>
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-100">
@@ -50,6 +139,11 @@
                         <i class="fas fa-print"></i>
                     </a>
 
+                    <!-- Download PDF -->
+                    <a href="{{ route('orders.download-pdf', $order) }}" class="text-blue-500 hover:text-blue-700 mr-3" title="Download PDF">
+                        <i class="fas fa-file-pdf"></i>
+                    </a>
+
                     <!-- Delete Order -->
                     <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this order? This action cannot be undone.');">
                         @csrf
@@ -73,4 +167,18 @@
         {{ $orders->links() }}
     </div>
 </div>
+@endsection
+
+@section('scripts')
+    <!-- Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                width: '100%',
+                placeholder: "All Customers",
+                allowClear: true
+            });
+        });
+    </script>
 @endsection

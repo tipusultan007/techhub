@@ -19,6 +19,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
@@ -52,6 +56,17 @@
             50% {
                 opacity: 0;
             }
+        }
+
+        /* Select2 Custom Styling to match Tailwind */
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            padding-top: 4px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
         }
     </style>
 </head>
@@ -157,14 +172,14 @@
             <div class="p-4 border-b bg-gray-50 flex gap-2">
                 <div class="flex-1">
                     <select id="customer_id"
-                        class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
+                        class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none select2">
                         <option value="">Walk-in Customer</option>
                         @foreach ($customers as $c)
                             <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->phone }})</option>
                         @endforeach
                     </select>
                 </div>
-                <button class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700" title="Add Customer">
+                <button type="button" id="add-customer-btn" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700" title="Add Customer">
                     <i class="fas fa-user-plus"></i>
                 </button>
             </div>
@@ -284,6 +299,50 @@
         </div>
     </div>
 
+    <!-- Add Customer Modal -->
+    <div id="customerModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg p-6 transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-xl font-bold text-gray-900">Add New Customer</h3>
+                <button onclick="closeCustomerModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="customerForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Full Name *</label>
+                        <input type="text" name="name" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="john@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Phone</label>
+                        <input type="text" name="phone" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="+971 50 XXXXXXX">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Address</label>
+                        <textarea name="address" rows="2" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="123 Street, Dubai, UAE"></textarea>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">TRN Number (Optional)</label>
+                        <input type="text" name="trn_number" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="100XXXXXXXXXXXX">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 mt-6">
+                    <button type="button" onclick="closeCustomerModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition" id="saveCustomerBtn">
+                        Save Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Sound Effects -->
     <audio id="beep-sound" src="https://www.soundjay.com/button/sounds/beep-07.mp3"></audio>
     <audio id="error-sound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
@@ -300,6 +359,62 @@
             setInterval(() => {
                 $('#clock').text(new Date().toLocaleTimeString());
             }, 1000);
+
+            // Initialize Select2
+            $('.select2').select2({
+                placeholder: "Select a customer",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+
+        // --- CUSTOMER MODAL LOGIC ---
+        $('#add-customer-btn').click(function() {
+            $('#customerModal').removeClass('hidden').addClass('flex');
+            $('#customerForm')[0].reset();
+            setTimeout(() => $('#customerForm input[name="name"]').focus(), 100);
+        });
+
+        function closeCustomerModal() {
+            $('#customerModal').addClass('hidden').removeClass('flex');
+        }
+
+        $('#customerForm').on('submit', function(e) {
+            e.preventDefault();
+            let formData = $(this).serialize();
+            let btn = $('#saveCustomerBtn');
+
+            btn.prop('disabled', true).text('Saving...');
+
+            $.ajax({
+                url: "{{ route('pos.customer.store') }}",
+                method: 'POST',
+                data: formData,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    btn.prop('disabled', false).text('Save Customer');
+                    if (response.status === 'success') {
+                        toastr.success(response.message);
+                        
+                        // Add to Select2
+                        let phoneDisplay = response.customer.phone ? ' (' + response.customer.phone + ')' : '';
+                        let newOption = new Option(response.customer.name + phoneDisplay, response.customer.id, true, true);
+                        $('#customer_id').append(newOption).trigger('change');
+                        
+                        closeCustomerModal();
+                    }
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).text('Save Customer');
+                    let msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error creating customer';
+                    if (xhr.status === 422 && xhr.responseJSON.errors) {
+                        msg = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    }
+                    toastr.error(msg);
+                }
+            });
         });
 
         // --- 1. PRODUCT SEARCH ---
@@ -341,9 +456,12 @@
                     data.forEach(p => {
                         let pStr = JSON.stringify(p).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                         let image = p.image || 'https://placehold.co/150?text=No+Image';
-                        let stockBadge = p.stock > 0 ?
-                            `<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">${p.stock} In Stock</span>` :
-                            `<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-bold">Out of Stock</span>`;
+                        let stockBadge = '';
+                        if (p.type !== 'service') {
+                            stockBadge = p.stock > 0 ?
+                                `<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">${p.stock} In Stock</span>` :
+                                `<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-bold">Out of Stock</span>`;
+                        }
                         html += `
                         <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-400 transition relative overflow-hidden group" onclick='addToCart(${pStr})'>
                             <div class="h-32 bg-gray-50 flex items-center justify-center p-2"><img src="${image}" class="h-full object-contain group-hover:scale-105 transition"></div>
@@ -357,7 +475,7 @@
 
         // --- 2. CART LOGIC ---
         function addToCart(product) {
-            if (product.stock <= 0) {
+            if (product.type !== 'service' && product.stock <= 0) {
                 errorBeep.play();
                 toastr.error('Item is Out of Stock!');
                 return;
@@ -398,16 +516,26 @@
                 cart.forEach((item, index) => {
                     let itemTotal = item.price * item.qty;
                     cartTotal += itemTotal;
-                    let metaInfo = item.serial ?
-                        `<div class="text-xs text-blue-600 font-mono mt-0.5"><i class="fas fa-barcode"></i> SN: ${item.serial}</div>` :
-                        '';
+                    let metaInfo = item.serial ? `<div class="text-[10px] text-blue-600 font-mono">SN: ${item.serial}</div>` : `<div class="text-[10px] text-gray-400 font-mono">${item.sku}</div>`;
+
+                    let nameDisplay = item.type === 'service' ? 
+                        `<input type="text" value="${item.name}" class="w-full border rounded px-1 py-0.5 text-sm font-bold border-blue-300 focus:border-blue-500 outline-none" onchange="updateItemName(${index}, this.value)">` :
+                        `<div class="font-bold text-gray-700 text-sm leading-tight">${item.name}</div>`;
+                    
+                    let priceDisplay = item.type === 'service' ?
+                        `<div class="flex items-center justify-end gap-1">
+                            <span class="text-xs text-gray-400">AED</span>
+                            <input type="number" step="0.01" value="${item.price}" class="w-20 border rounded px-1 py-0.5 text-right text-sm font-bold text-blue-600 border-blue-300 focus:border-blue-500 outline-none" onchange="updateItemPrice(${index}, this.value)">
+                         </div>` :
+                        `<div class="font-bold text-gray-700">${itemTotal.toFixed(2)}</div>`;
+
                     html += `
                     <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-3"><div class="font-bold text-gray-700 text-sm leading-tight">${item.name}</div>${metaInfo}</td>
+                        <td class="p-3">${nameDisplay}${metaInfo}</td>
                         <td class="p-3 text-center">
                             ${item.serial ? `<span class="font-bold text-gray-800">1</span>` : `<div class="flex items-center justify-center border rounded bg-white"><button onclick="updateQty(${index}, -1)" class="px-2 py-1 text-gray-500 hover:text-red-500">-</button><span class="px-2 text-sm font-bold w-6 text-center">${item.qty}</span><button onclick="updateQty(${index}, 1)" class="px-2 py-1 text-gray-500 hover:text-green-500">+</button></div>`}
                         </td>
-                        <td class="p-3 text-right"><div class="font-bold text-gray-700">${itemTotal.toFixed(2)}</div><button onclick="removeItem(${index})" class="text-xs text-red-400 hover:text-red-600 mt-1"><i class="fas fa-trash"></i></button></td>
+                        <td class="p-3 text-right">${priceDisplay}<button onclick="removeItem(${index})" class="text-xs text-red-400 hover:text-red-600 mt-1"><i class="fas fa-trash"></i></button></td>
                     </tr>`;
                 });
             }
@@ -433,7 +561,7 @@
 
         function updateQty(index, change) {
             let item = cart[index];
-            if (item.qty + change > item.stock) {
+            if (item.type !== 'service' && item.qty + change > item.stock) {
                 toastr.warning('Insufficient stock');
                 return;
             }
@@ -442,6 +570,18 @@
                 return;
             }
             item.qty += change;
+            renderCart();
+        }
+
+        function updateItemName(index, newName) {
+            cart[index].name = newName;
+            // No need to re-render everything if we just updated memory, 
+            // but for safety with calculations if needed:
+            // renderCart(); 
+        }
+
+        function updateItemPrice(index, newPrice) {
+            cart[index].price = parseFloat(newPrice) || 0;
             renderCart();
         }
 

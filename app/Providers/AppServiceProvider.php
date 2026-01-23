@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
 //            View::share('settings', $settings);
 //        }
 
-        Paginator::useBootstrapFive();
+        Paginator::useTailwind();
         View::composer('layouts.frontend', function ($view) {
             // Get only Top Level categories (Parent is null)
             $categories = Category::whereNull('parent_id')

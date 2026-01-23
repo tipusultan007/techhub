@@ -17,6 +17,9 @@
             <a href="{{ route('orders.print', $order) }}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded shadow-sm hover:bg-blue-700">
                 <i class="fas fa-print mr-2"></i> Print Invoice
             </a>
+            <a href="{{ route('orders.download-pdf', $order) }}" class="bg-indigo-600 text-white px-4 py-2 rounded shadow-sm hover:bg-indigo-700">
+                <i class="fas fa-file-pdf mr-2"></i> Download PDF
+            </a>
         </div>
     </div>
 @endsection

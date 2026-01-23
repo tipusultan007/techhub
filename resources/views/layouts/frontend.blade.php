@@ -158,7 +158,7 @@
             <a href="mailto:sales@techhub.ae"><i class="ri-mail-line"></i> sales@techhub.ae</a>
         </div>
         <div class="top-links">
-            <a href="{{ url('/store-locator') }}">Store Locator</a>
+            <a href="{{ route('store.locator') }}">Store Locator</a>
             <a href="{{ url('/track-order') }}">Track Order</a>
             <span style="color:#334155">|</span>
             <a href="#"><b>العربية</b></a>
@@ -413,7 +413,8 @@
             <div class="f-col">
                 <h4>Support</h4>
                 <ul>
-                    <li><a href="#">Track Order</a></li>
+                    <li><a href="{{ url('/track-order') }}">Track Order</a></li>
+                    <li><a href="{{ route('store.locator') }}">Store Locator</a></li>
                     <li><a href="#">Return & Exchange</a></li>
                     <li><a href="#">Warranty Policy</a></li>
                     <li><a href="#">Business Inquiries</a></li>

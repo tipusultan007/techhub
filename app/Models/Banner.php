@@ -11,7 +11,7 @@ class Banner extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $fillable = [
-        'title', 'subtitle', 'badge_text', 'button_text', 'link', 'position', 'is_active'
+        'title', 'subtitle', 'badge_text', 'button_text', 'link', 'position', 'order', 'is_active'
     ];
 
     public function registerMediaCollections(): void

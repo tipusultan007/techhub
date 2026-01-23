@@ -15,14 +15,40 @@ use Picqer\Barcode\BarcodeGeneratorHTML;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Pagination + Eager Loading brands, categories, and variants (to calculate stock/price on index)
-        $products = Product::with(['brand', 'category', 'variants'])
-            ->latest()
-            ->paginate(10); // Use paginate instead of get()
+        $query = Product::with(['brand', 'category', 'variants']);
 
-        return view('admin.products.index', compact('products'));
+        // Filter by Search (Name or SKU)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', '%' . $search . '%')
+                  ->orWhere('sku', 'LIKE', '%' . $search . '%');
+            });
+        }
+
+        // Filter by Type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by Category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filter by Brand
+        if ($request->filled('brand_id')) {
+            $query->where('brand_id', $request->brand_id);
+        }
+
+        $products = $query->latest()->paginate(15)->withQueryString();
+        
+        $categories = Category::select('id', 'name')->orderBy('name')->get();
+        $brands = Brand::select('id', 'name')->orderBy('name')->get();
+
+        return view('admin.products.index', compact('products', 'categories', 'brands'));
     }
 
     public function create()
@@ -40,17 +66,17 @@ class ProductController extends Controller
         // 1. Validation Logic
         $rules = [
             'name' => 'required|string|max:255',
-            'type' => 'required|in:simple,variable',
-            'brand_id' => 'required',
-            'category_id' => 'required',
+            'type' => 'required|in:simple,variable,service',
+            'brand_id' => 'required_if:type,simple,variable',
+            'category_id' => 'nullable',
             'description' => 'nullable|string',
             'specifications' => 'nullable|string',
         ];
 
-        if ($request->type === 'simple') {
+        if ($request->type === 'simple' || $request->type === 'service') {
             $rules['sku'] = 'required|unique:products,sku';
             $rules['price'] = 'required|numeric';
-            $rules['cost'] = 'required|numeric';
+            $rules['cost'] = ($request->type === 'service') ? 'nullable|numeric' : 'required|numeric';
         } else {
             $rules['variants'] = 'required|array';
             $rules['variants.*.sku'] = 'required|distinct|unique:product_variants,sku';
@@ -74,8 +100,8 @@ class ProductController extends Controller
                 'specifications' => $request->specifications,
             ];
 
-            // 3. If Simple, Add Stock/Price Data to Main Table
-            if ($request->type === 'simple') {
+            // 3. If Simple/Service, Add Stock/Price Data to Main Table
+            if ($request->type === 'simple' || $request->type === 'service') {
                 $data['sku'] = $request->sku;
                 $data['barcode'] = $request->barcode;
                 $data['selling_price'] = $request->price;
@@ -159,8 +185,8 @@ class ProductController extends Controller
         // 1. Basic Validation
         $request->validate([
             'name' => 'required|string|max:255',
-            'brand_id' => 'required',
-            'category_id' => 'required',
+            'brand_id' => 'required_if:type,simple,variable',
+            'category_id' => 'nullable',
             'description' => 'nullable|string',
             'specifications' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
@@ -169,11 +195,11 @@ class ProductController extends Controller
         ]);
 
         // 2. Specific Validation based on Type
-        if ($product->type === 'simple') {
+        if ($product->type === 'simple' || $product->type === 'service') {
             $request->validate([
                 'sku' => ['required', Rule::unique('products')->ignore($product->id)],
                 'price' => 'required|numeric|min:0',
-                'cost' => 'required|numeric|min:0',
+                'cost' => ($product->type === 'service') ? 'nullable|numeric|min:0' : 'required|numeric|min:0',
                 'stock' => 'integer|min:0',
             ]);
         } else {
@@ -195,8 +221,8 @@ class ProductController extends Controller
                 'specifications' => $request->specifications,
             ];
 
-            // 4. Update Simple Product Logic
-            if ($product->type === 'simple') {
+            // 4. Update Simple/Service Product Logic
+            if ($product->type === 'simple' || $product->type === 'service') {
                 $data['sku'] = $request->sku;
                 $data['barcode'] = $request->barcode;
                 $data['selling_price'] = $request->price;

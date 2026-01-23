@@ -117,9 +117,12 @@ class PosController extends Controller
     {
         $queryLimit = 30;
 
-        // 1. Search Simple Products
-        $simple = Product::where('type', 'simple')
-            ->where('stock_quantity', '>', 0) // Only in stock
+        // 1. Search Simple & Service Products
+        $simple = Product::whereIn('type', ['simple', 'service'])
+            ->where(function ($q) {
+                $q->where('stock_quantity', '>', 0)
+                    ->orWhere('type', 'service'); // Services don't need stock
+            })
             ->when($term, function ($q) use ($term) {
                 $q->where(function($sub) use ($term) {
                     $sub->where('name', 'LIKE', "%$term%")
@@ -160,7 +163,7 @@ class PosController extends Controller
                 'stock' => $p->stock_quantity,
                 'sku' => $p->sku,
                 'has_serial_number' => $p->has_serial_number,
-                'type' => 'simple'
+                'type' => $p->type
             ];
         }
 
@@ -270,18 +273,22 @@ class PosController extends Controller
                     User::role('Admin')->get()->each->notify(new LowStockNotification($variant->product, $variant->stock_quantity));
                 }
             } else {
-                // Simple Product
+                // Simple or Service Product
                 $product = Product::lockForUpdate()->find($item['id']);
-                if (!$product || $product->stock_quantity < $item['qty']) {
-                    throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'Unknown'));
-                }
-                $product->decrement('stock_quantity', $item['qty']);
-                $productNameSnapshot = $product->name;
+                
+                if ($product->type !== 'service') {
+                    if (!$product || $product->stock_quantity < $item['qty']) {
+                        throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'Unknown'));
+                    }
+                    $product->decrement('stock_quantity', $item['qty']);
 
-                // Check Low Stock
-                if ($product->stock_quantity <= $product->alert_quantity) {
-                    User::role('Admin')->get()->each->notify(new LowStockNotification($product, $product->stock_quantity));
+                    // Check Low Stock
+                    if ($product->stock_quantity <= $product->alert_quantity) {
+                        User::role('Admin')->get()->each->notify(new LowStockNotification($product, $product->stock_quantity));
+                    }
                 }
+                
+                $productNameSnapshot = $item['name'] ?? $product->name;
             }
 
             // --- B. Serial Number & Warranty Logic ---
@@ -348,6 +355,32 @@ class PosController extends Controller
         ], 500);
     }
 }
+    public function storeCustomer(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|unique:customers,email',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'trn_number' => 'nullable|string|max:50',
+        ]);
+
+        $customer = Customer::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'trn_number' => $request->trn_number,
+            'password' => bcrypt('12345678'), // Default password, they can reset it
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'customer' => $customer,
+            'message' => 'Customer created successfully'
+        ]);
+    }
+
     public function checkSerial(Request $request)
     {
         $exists = \App\Models\ProductSerial::where('serial_number', $request->serial)

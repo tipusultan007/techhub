@@ -13,23 +13,20 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Fetch banners by position
-        $banners = Banner::where('is_active', true)->get()->keyBy('position');
-
-        $featuredCategories = Category::where('is_featured', true)
+        $featuredCategories = Category::where('is_featured', '=', true)
             ->orderBy('id', 'desc')
-            ->take(16) // Limit to grid size
+            ->take(16)
             ->get();
 
         $products = Product::with(['category', 'variants', 'media'])
-            ->latest() // Get newest first
-            ->take(10) // Limit to 10 items
+            ->latest()
+            ->take(10)
             ->get();
 
         return view('home', [
-            'mainBanner'   => $banners->get('main'),
-            'sideTop'      => $banners->get('side_top'),
-            'sideBottom'   => $banners->get('side_bottom'),
+            'mainBanners'  => Banner::where('position', '=', 'main')->where('is_active', '=', true)->orderBy('order')->get(),
+            'sideTop'      => Banner::where('position', '=', 'side_top')->where('is_active', '=', true)->first(),
+            'sideBottom'   => Banner::where('position', '=', 'side_bottom')->where('is_active', '=', true)->first(),
             'featuredCategories' => $featuredCategories,
             'products'      => $products,
         ]);
