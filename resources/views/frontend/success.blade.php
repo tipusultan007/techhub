@@ -173,7 +173,8 @@
                 </div>
 
                 <div class="action-buttons">
-                    <a href="#" class="btn-primary">Track My Order</a>
+                    <a href="{{ route('track.order', ['invoice_no' => $order->invoice_no, 'email' => $order->guest_email ?? ($order->customer ? $order->customer->email : '')]) }}" class="btn-primary">Track Order</a>
+
                     <a href="{{ url('/') }}" class="btn-outline">Continue Shopping</a>
                 </div>
 

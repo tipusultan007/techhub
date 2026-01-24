@@ -26,10 +26,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-//        if (Schema::hasTable('settings')) {
-//            $settings = Setting::all()->pluck('value', 'key')->toArray();
-//            View::share('settings', $settings);
-//        }
+        if (Schema::hasTable('settings')) {
+            $settings = Setting::all()->pluck('value', 'key')->toArray();
+            View::share('settings', $settings);
+        }
 
         Paginator::useTailwind();
         View::composer('layouts.frontend', function ($view) {

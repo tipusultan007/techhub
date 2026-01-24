@@ -6,15 +6,15 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Dynamic SEO Tags --}}
-    <title>@yield('title', 'Tech Hub | Computer Trading')</title>
-    <meta name="description" content="@yield('meta_description', 'Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'computer, gaming pc, laptop, dubai, tech hub')">
+    <title>@yield('title', ($settings['meta_title'] ?? 'Tech Hub') . ' | Computer Trading')</title>
+    <meta name="description" content="@yield('meta_description', $settings['meta_description'] ?? 'Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions.')">
+    <meta name="keywords" content="@yield('meta_keywords', $settings['meta_keywords'] ?? 'computer, gaming pc, laptop, dubai, tech hub')">
     <link rel="canonical" href="{{ url()->current() }}">
 
     {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:title" content="@yield('title', 'Tech Hub | Computer Trading')">
+    <meta property="og:title" content="@yield('title', ($settings['meta_title'] ?? 'Tech Hub') . ' | Computer Trading')">
     <meta property="og:description" content="@yield('meta_description')">
     <meta property="og:image" content="@yield('meta_image', asset('images/default-share-image.jpg'))">
 
@@ -154,14 +154,12 @@
 <div class="top-bar">
     <div class="container">
         <div class="top-links">
-            <a href="tel:+97140000000"><i class="ri-phone-line"></i> +971 4 000 0000</a>
-            <a href="mailto:sales@techhub.ae"><i class="ri-mail-line"></i> sales@techhub.ae</a>
+            <a href="tel:{{ $settings['contact_phone'] ?? '+971 4 000 0000' }}"><i class="ri-phone-line"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a>
+            <a href="mailto:{{ $settings['contact_email'] ?? 'sales@techhub.ae' }}"><i class="ri-mail-line"></i> {{ $settings['contact_email'] ?? 'sales@techhub.ae' }}</a>
         </div>
         <div class="top-links">
             <a href="{{ route('store.locator') }}">Store Locator</a>
             <a href="{{ url('/track-order') }}">Track Order</a>
-            <span style="color:#334155">|</span>
-            <a href="#"><b>العربية</b></a>
             <a href="#"><b>AED</b></a>
         </div>
     </div>
@@ -296,10 +294,6 @@
             <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
                 <a href="{{ route('solutions.index') }}">IT Solutions</a>
             </li>
-
-            <li style="color: var(--accent-red)">
-                <a href="{{ url('/clearance') }}" style="color: #ef4444">Clearance</a>
-            </li>
         </ul>
     </div>
 </div>
@@ -372,8 +366,8 @@
         </ul>
         
         <div class="mobile-nav-contact" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
-            <a href="tel:+97140000000" style="display: block; margin-bottom: 10px;"><i class="ri-phone-line"></i> +971 4 000 0000</a>
-            <a href="mailto:sales@techhub.ae" style="display: block;"><i class="ri-mail-line"></i> sales@techhub.ae</a>
+            <a href="tel:{{ $settings['contact_phone'] ?? '+971 4 000 0000' }}" style="display: block; margin-bottom: 10px;"><i class="ri-phone-line"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a>
+            <a href="mailto:{{ $settings['contact_email'] ?? 'sales@techhub.ae' }}" style="display: block;"><i class="ri-mail-line"></i> {{ $settings['contact_email'] ?? 'sales@techhub.ae' }}</a>
         </div>
     </div>
 </div>
@@ -392,10 +386,18 @@
                     Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions in the UAE.
                 </p>
                 <div class="social-icons">
-                    <i class="ri-instagram-fill"></i>
-                    <i class="ri-facebook-circle-fill"></i>
-                    <i class="ri-linkedin-box-fill"></i>
-                    <i class="ri-twitter-x-fill"></i>
+                    @if($settings['social_instagram'] ?? false)
+                        <a href="{{ $settings['social_instagram'] }}" target="_blank"><i class="ri-instagram-fill"></i></a>
+                    @endif
+                    @if($settings['social_facebook'] ?? false)
+                        <a href="{{ $settings['social_facebook'] }}" target="_blank"><i class="ri-facebook-circle-fill"></i></a>
+                    @endif
+                    @if($settings['social_linkedin'] ?? false)
+                        <a href="{{ $settings['social_linkedin'] }}" target="_blank"><i class="ri-linkedin-box-fill"></i></a>
+                    @endif
+                    @if($settings['social_twitter'] ?? false)
+                        <a href="{{ $settings['social_twitter'] }}" target="_blank"><i class="ri-twitter-x-fill"></i></a>
+                    @endif
                 </div>
             </div>
 
@@ -425,9 +427,9 @@
             <div class="f-col">
                 <h4>Contact</h4>
                 <ul>
-                    <li><a href="#"><i class="ri-map-pin-line"></i> Computer Street, Bur Dubai, UAE</a></li>
-                    <li><a href="#"><i class="ri-phone-fill"></i> +971 4 000 0000</a></li>
-                    <li><a href="#"><i class="ri-mail-fill"></i> support@techhub.ae</a></li>
+                    <li><a href="#"><i class="ri-map-pin-line"></i> {{ $settings['contact_address'] ?? 'Computer Street, Bur Dubai, UAE' }}</a></li>
+                    <li><a href="tel:{{ $settings['contact_phone'] ?? '+971 4 000 0000' }}"><i class="ri-phone-fill"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a></li>
+                    <li><a href="mailto:{{ $settings['contact_email'] ?? 'support@techhub.ae' }}"><i class="ri-mail-fill"></i> {{ $settings['contact_email'] ?? 'support@techhub.ae' }}</a></li>
                 </ul>
                 <div class="payment-icons">
                     <i class="ri-visa-line"></i>
@@ -438,7 +440,7 @@
         </div>
 
         <div style="text-align:center; border-top:1px solid #1e293b; padding-top:20px; color:#64748b; font-size:12px;">
-            &copy; {{ date('Y') }} Tech Hub Computer Trading LLC. All Rights Reserved.
+            &copy; {{ date('Y') }} {{ $settings['site_name'] ?? 'Tech Hub' }} Computer Trading LLC. All Rights Reserved.
         </div>
     </div>
 </footer>
