@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Picqer\Barcode\BarcodeGeneratorHTML;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ProductsImport;
 
 class ProductController extends Controller
 {
@@ -71,15 +73,19 @@ class ProductController extends Controller
             'category_id' => 'nullable',
             'description' => 'nullable|string',
             'specifications' => 'nullable|string',
+            'tax_method' => 'required|in:inclusive,exclusive',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
         ];
 
         if ($request->type === 'simple' || $request->type === 'service') {
             $rules['sku'] = 'required|unique:products,sku';
             $rules['price'] = 'required|numeric';
+            $rules['sale_price'] = 'nullable|numeric|lt:price';
             $rules['cost'] = ($request->type === 'service') ? 'nullable|numeric' : 'required|numeric';
         } else {
             $rules['variants'] = 'required|array';
             $rules['variants.*.sku'] = 'required|distinct|unique:product_variants,sku';
+            $rules['variants.*.sale_price'] = 'nullable|numeric|lt:variants.*.price';
         }
         
         $rules['image'] = 'nullable|image|max:2048';
@@ -98,6 +104,8 @@ class ProductController extends Controller
                 'type' => $request->type,
                 'description' => $request->description,
                 'specifications' => $request->specifications,
+                'tax_method' => $request->tax_method,
+                'tax_rate' => $request->tax_rate ?? 0,
             ];
 
             // 3. If Simple/Service, Add Stock/Price Data to Main Table
@@ -105,8 +113,10 @@ class ProductController extends Controller
                 $data['sku'] = $request->sku;
                 $data['barcode'] = $request->barcode;
                 $data['selling_price'] = $request->price;
+                $data['sale_price'] = $request->sale_price;
                 $data['cost_price'] = $request->cost;
                 $data['stock_quantity'] = $request->stock ?? 0;
+                $data['alert_quantity'] = $request->alert_quantity;
             }
 
             $product = Product::create($data);
@@ -132,7 +142,9 @@ class ProductController extends Controller
                         'sku' => $variantData['sku'],
                         'cost_price' => $variantData['cost'],
                         'selling_price' => $variantData['price'],
+                        'sale_price' => $variantData['sale_price'] ?? null,
                         'stock_quantity' => $variantData['stock'],
+                        'alert_quantity' => $variantData['alert_quantity'] ?? 5,
                         'barcode' => $variantData['barcode'] ?? null,
                     ]);
 
@@ -159,9 +171,23 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        // Eager load relationships for performance
-        $product->load(['brand', 'category', 'variants']);
-        return view('admin.products.show', compact('product'));
+        // Eager load basic details
+        $product->load(['brand', 'category', 'variants.attributeValues.attribute']);
+
+        // Fetch Sales History (Last 20)
+        $salesHistory = \App\Models\OrderItem::where('product_id', $product->id)
+            ->with(['order.user', 'variant'])
+            ->latest()
+            ->take(20)
+            ->get();
+
+        // Fetch Stock-In History (Last 20)
+        // Linking through PurchaseOrderItem to get PurchaseReceptionItem
+        $stockHistory = \App\Models\PurchaseReceptionItem::whereHas('poItem', function($q) use ($product) {
+            $q->where('product_id', $product->id);
+        })->with(['reception.purchaseOrder.supplier', 'poItem.variant'])->latest()->take(20)->get();
+
+        return view('admin.products.show', compact('product', 'salesHistory', 'stockHistory'));
     }
 
     /**
@@ -189,6 +215,8 @@ class ProductController extends Controller
             'category_id' => 'nullable',
             'description' => 'nullable|string',
             'specifications' => 'nullable|string',
+            'tax_method' => 'required|in:inclusive,exclusive',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
             'image' => 'nullable|image|max:2048',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|max:2048',
@@ -199,13 +227,16 @@ class ProductController extends Controller
             $request->validate([
                 'sku' => ['required', Rule::unique('products')->ignore($product->id)],
                 'price' => 'required|numeric|min:0',
+                'sale_price' => 'nullable|numeric|lt:price',
                 'cost' => ($product->type === 'service') ? 'nullable|numeric|min:0' : 'required|numeric|min:0',
                 'stock' => 'integer|min:0',
+                'alert_quantity' => 'nullable|integer|min:0',
             ]);
         } else {
             $request->validate([
                 'variants' => 'required|array',
                 'variants.*.sku' => 'required|distinct', // Unique check handled manually/softly for variants to allow updates
+                'variants.*.sale_price' => 'nullable|numeric|lt:variants.*.price',
             ]);
         }
 
@@ -219,6 +250,8 @@ class ProductController extends Controller
                 'category_id' => $request->category_id,
                 'description' => $request->description,
                 'specifications' => $request->specifications,
+                'tax_method' => $request->tax_method,
+                'tax_rate' => $request->tax_rate ?? 0,
             ];
 
             // 4. Update Simple/Service Product Logic
@@ -226,8 +259,10 @@ class ProductController extends Controller
                 $data['sku'] = $request->sku;
                 $data['barcode'] = $request->barcode;
                 $data['selling_price'] = $request->price;
+                $data['sale_price'] = $request->sale_price;
                 $data['cost_price'] = $request->cost;
                 $data['stock_quantity'] = $request->stock;
+                $data['alert_quantity'] = $request->alert_quantity;
             }
 
             $product->update($data);
@@ -313,7 +348,9 @@ class ProductController extends Controller
                             'barcode'        => $v['barcode'],
                             'cost_price'     => $v['cost'],
                             'selling_price'  => $v['price'],
-                            'stock_quantity' => $v['stock']
+                            'sale_price'     => $v['sale_price'],
+                            'stock_quantity' => $v['stock'],
+                            'alert_quantity' => $v['alert_quantity'] ?? 5
                         ]
                     );
 
@@ -377,4 +414,29 @@ class ProductController extends Controller
 
     return view('admin.products.barcode', compact('printQueue', 'generator'));
 }
+
+    /**
+     * Show the import form.
+     */
+    public function importForm()
+    {
+        return view('admin.products.import');
+    }
+
+    /**
+     * Handle the import process.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        try {
+            Excel::import(new ProductsImport, $request->file('file'));
+            return redirect()->route('products.index')->with('success', 'Products imported successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
 }

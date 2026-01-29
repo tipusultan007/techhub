@@ -64,7 +64,7 @@
     }
     .popup-cta { 
         display: inline-block; padding: 14px 28px; 
-        background: var(--brand-emerald, #03A696); color: white; 
+        background: var(--brand-emerald, #2dae9a); color: white; 
         font-weight: 600; border-radius: 8px; text-decoration: none; 
         transition: transform 0.2s, box-shadow 0.2s; align-self: start; 
     }

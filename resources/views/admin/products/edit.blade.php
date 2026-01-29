@@ -166,9 +166,14 @@
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-sm">
                     <div>
-                        <label class="block text-xs uppercase font-bold text-gray-500">Selling Price (AED)</label>
+                        <label class="block text-xs uppercase font-bold text-gray-500">Selling Price (AED) <span class="text-red-500">*</span></label>
                         <input type="number" step="0.01" name="price" value="{{ $product->selling_price }}"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-500">Sale Price (AED)</label>
+                        <input type="number" step="0.01" name="sale_price" value="{{ $product->sale_price }}"
+                            class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" placeholder="Optional">
                     </div>
                     <div id="cost_field_container" class="{{ $product->type === 'service' ? 'hidden' : '' }}">
                         <label class="block text-xs uppercase font-bold text-gray-500">Cost Price (AED)</label>
@@ -181,8 +186,13 @@
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" required>
                     </div>
                     <div id="stock_field_container" class="{{ $product->type === 'service' ? 'hidden' : '' }}">
-                        <label class="block text-xs uppercase font-bold text-gray-500">Current Stock</label>
+                       <label class="block text-xs uppercase font-bold text-gray-500">Current Stock</label>
                         <input type="number" name="stock" value="{{ $product->stock_quantity }}"
+                            class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-500">Low Stock Alert</label>
+                        <input type="number" name="alert_quantity" value="{{ $product->alert_quantity }}"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500">
                     </div>
                     <div class="md:col-span-4" id="barcode_field_container" class="{{ $product->type === 'service' ? 'hidden' : '' }}">
@@ -241,7 +251,9 @@
                                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">SKU</th>
                                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Cost</th>
                                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Price</th>
+                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Sale Price</th>
                                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Stock</th>
+                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Alert</th>
                                 <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Barcode</th>
                                 <th class="px-4 py-3"></th>
                             </tr>
@@ -271,7 +283,9 @@
                                 <td class="p-2"><input type="text" name="variants[{{ $index }}][sku]" value="{{ $variant->sku }}" class="w-full border rounded p-1.5 text-sm" required></td>
                                 <td class="p-2"><input type="number" step="0.01" name="variants[{{ $index }}][cost]" value="{{ $variant->cost_price }}" class="w-full border rounded p-1.5 text-sm" required></td>
                                 <td class="p-2"><input type="number" step="0.01" name="variants[{{ $index }}][price]" value="{{ $variant->selling_price }}" class="w-full border rounded p-1.5 text-sm" required></td>
+                                <td class="p-2"><input type="text" name="variants[{{ $index }}][sale_price]" value="{{ $variant->sale_price }}" class="w-full border rounded p-1.5 text-sm"></td>
                                 <td class="p-2"><input type="number" name="variants[{{ $index }}][stock]" value="{{ $variant->stock_quantity }}" class="w-full border rounded p-1.5 text-sm"></td>
+                                <td class="p-2"><input type="number" name="variants[{{ $index }}][alert_quantity]" value="{{ $variant->alert_quantity }}" class="w-full border rounded p-1.5 text-sm"></td>
                                 <td class="p-2"><input type="text" name="variants[{{ $index }}][barcode]" value="{{ $variant->barcode }}" class="w-full border rounded p-1.5 text-sm"></td>
                                 <td class="p-2 text-center">
                                     <button type="button" class="text-red-500 hover:text-red-700 bg-red-100 p-2 rounded remove-row transition" data-id="{{ $index }}">
@@ -356,7 +370,9 @@
                         <td class="p-2"><input type="text" name="variants[${rowIdx}][sku]" class="w-full border rounded p-1.5 text-sm" placeholder="SKU" required></td>
                         <td class="p-2"><input type="number" step="0.01" name="variants[${rowIdx}][cost]" class="w-full border rounded p-1.5 text-sm" placeholder="0.00" required></td>
                         <td class="p-2"><input type="number" step="0.01" name="variants[${rowIdx}][price]" class="w-full border rounded p-1.5 text-sm" placeholder="0.00" required></td>
+                        <td class="p-2"><input type="text" name="variants[${rowIdx}][sale_price]" class="w-full border rounded p-1.5 text-sm" placeholder="Optional"></td>
                         <td class="p-2"><input type="number" name="variants[${rowIdx}][stock]" class="w-full border rounded p-1.5 text-sm" value="0"></td>
+                        <td class="p-2"><input type="number" name="variants[${rowIdx}][alert_quantity]" class="w-full border rounded p-1.5 text-sm" value="5"></td>
                         <td class="p-2"><input type="text" name="variants[${rowIdx}][barcode]" class="w-full border rounded p-1.5 text-sm" placeholder="Scan"></td>
                         <td class="p-2 text-center">
                             <input type="hidden" name="variants[${rowIdx}][name]" value="Auto-Generated"> 

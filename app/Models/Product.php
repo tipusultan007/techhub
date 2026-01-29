@@ -36,17 +36,23 @@ class Product extends Model implements HasMedia
 
      protected $fillable = [
         'name', 'slug', 'brand_id', 'category_id', 'description',
+        'tax_method', 'tax_rate',
         'type', 'specifications',
         'sku', 'barcode', 'cost_price', 'selling_price','sale_price', 'stock_quantity', 'alert_quantity'
     ];
 
-    /**
-     * Scope to find products by name or description
-     */
     public function scopeSearch($query, $term)
     {
         return $query->where('name', 'like', "%{$term}%")
                      ->orWhere('description', 'like', "%{$term}%");
+    }
+
+    /**
+     * Scope to exclude services and other non-physical items
+     */
+    public function scopePhysical($query)
+    {
+        return $query->where('type', '!=', 'service');
     }
 
     public function brand(): BelongsTo
@@ -65,6 +71,16 @@ class Product extends Model implements HasMedia
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function purchaseOrderItems(): HasMany
+    {
+        return $this->hasMany(PurchaseOrderItem::class);
     }
 
     public function getActivePriceAttribute()

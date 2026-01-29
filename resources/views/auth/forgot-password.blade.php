@@ -179,7 +179,7 @@
         <!-- Visual Sidebar -->
         <div class="visual-side">
             <div class="visual-content">
-                <h1>ELECTROMART Admin</h1>
+                <h1>{{ settings('site_name', 'Tech Hub') }} Admin</h1>
                 <p>Forgot your password? No problem. Just let us know your email address and we will email you a password reset link.</p>
             </div>
         </div>
@@ -188,6 +188,11 @@
         <div class="form-side">
             <div class="login-card">
                 <div class="form-header">
+                    @if(settings('site_logo'))
+                        <div class="mb-6 flex justify-center">
+                            <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" class="h-16 w-auto">
+                        </div>
+                    @endif
                     <h2>Reset Password</h2>
                     <p>Enter your email address to receive a reset link</p>
                 </div>
@@ -202,7 +207,7 @@
                         <label for="email">Email Address</label>
                         <div class="input-wrapper">
                             <i class="ri-mail-line"></i>
-                            <input id="email" type="email" name="email" class="custom-input" value="{{ old('email') }}" required autofocus placeholder="admin@electromart.com">
+                            <input id="email" type="email" name="email" class="custom-input" value="{{ old('email') }}" required autofocus placeholder="Enter Email">
                         </div>
                         <x-input-error :messages="$errors->get('email')" class="error-msg" />
                     </div>
@@ -218,7 +223,7 @@
             </div>
 
             <p style="margin-top: 32px; color: var(--admin-text-muted); font-size: 0.875rem;">
-                &copy; {{ date('Y') }} Electromart. All rights reserved.
+                &copy; {{ date('Y') }} Tech Hub. All rights reserved.
             </p>
         </div>
     </div>

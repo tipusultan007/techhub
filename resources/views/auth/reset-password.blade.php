@@ -174,6 +174,11 @@
         <div class="form-side">
             <div class="login-card">
                 <div class="form-header">
+                    @if(settings('site_logo'))
+                        <div class="mb-6 flex justify-center">
+                            <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" class="h-16 w-auto">
+                        </div>
+                    @endif
                     <h2>New Password</h2>
                     <p>Enter your new credentials below</p>
                 </div>
@@ -221,7 +226,7 @@
             </div>
 
             <p style="margin-top: 32px; color: var(--admin-text-muted); font-size: 0.875rem;">
-                &copy; {{ date('Y') }} Electromart. All rights reserved.
+                &copy; {{ date('Y') }} Tech Hub. All rights reserved.
             </p>
         </div>
     </div>

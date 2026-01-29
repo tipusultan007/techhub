@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS | ElectroMart UAE</title>
+    <title>{{ settings('site_name', 'Tech Hub') }} POS</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,6 +26,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
+        :root {
+            --brand-navy: #024959;
+            --brand-emerald: #2dae9a;
+        }
         /* Custom Scrollbar for POS feel */
         ::-webkit-scrollbar {
             width: 6px;
@@ -76,10 +80,17 @@
     <!-- === HEADER === -->
     <header class="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shadow-md z-20">
         <div class="flex items-center gap-4">
-            <div class="font-bold text-xl tracking-wide">
-                <i class="fas fa-bolt text-yellow-400 mr-2"></i>ELECTROMART <span
-                    class="text-gray-400 text-sm font-normal">POS Terminal</span>
-            </div>
+             @if(settings('site_logo_scrolled'))
+                <img src="{{ settings('site_logo_scrolled') }}" alt="Logo" class="h-16 object-contain rounded p-1">
+                <div class="font-bold text-xl tracking-wide">
+                    <span class="text-gray-400 text-sm font-normal">POS Terminal</span>
+                </div>
+            @else
+                <div class="font-bold text-xl tracking-wide">
+                    <i class="fas fa-bolt text-yellow-400 mr-2"></i>{{ settings('site_name', 'Tech Hub') }} <span
+                        class="text-gray-400 text-sm font-normal">POS Terminal</span>
+                </div>
+            @endif
             <div id="connection-status" class="text-xs bg-green-600 px-2 py-0.5 rounded">Online</div>
         </div>
 
@@ -105,9 +116,9 @@
             <div class="p-4 bg-white shadow-sm z-10">
                 <div class="relative">
                     <input type="text" id="search"
-                        class="w-full border-2 border-blue-500 rounded-lg p-4 pl-12 text-lg focus:outline-none focus:ring-4 focus:ring-blue-100 shadow-inner"
+                        class="w-full border-2 border-[#2dae9a] rounded-lg p-4 pl-12 text-lg focus:outline-none focus:ring-4 focus:ring-emerald-100 shadow-inner"
                         placeholder="Scan Barcode or Type Product Name / SKU..." autofocus autocomplete="off">
-                    <div class="absolute left-4 top-5 text-blue-500 text-xl"><i class="fas fa-barcode"></i></div>
+                    <div class="absolute left-4 top-5 text-[#2dae9a] text-xl"><i class="fas fa-barcode"></i></div>
                     <button id="clear-search" class="absolute right-4 top-4 text-gray-400 hover:text-red-500 hidden">
                         <i class="fas fa-times-circle text-xl"></i>
                     </button>
@@ -116,8 +127,10 @@
 
             <!-- Categories -->
             <div class="px-4 py-2 bg-white border-b flex gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
-                <button class="bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow">All
-                    Items</button>
+                <button class="bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow">All Items</button>
+                <button onclick="openServiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow transition">
+                    <i class="fas fa-plus-circle mr-1"></i> Add Service
+                </button>
                 @foreach ($categories ?? [] as $cat)
                     <button
                         class="bg-gray-200 text-gray-700 hover:bg-slate-200 px-4 py-2 rounded-full text-sm font-bold transition">{{ $cat->name }}</button>
@@ -136,7 +149,7 @@
                             $stockText = $p['stock'] > 0 ? $p['stock'] . ' In Stock' : 'Out of Stock';
                         @endphp
 
-                        <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-400 transition relative overflow-hidden group"
+                        <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-[#2dae9a] transition relative overflow-hidden group"
                             onclick="addToCart({{ $pJson }})">
 
                             <div class="h-32 bg-gray-50 flex items-center justify-center p-2">
@@ -149,7 +162,7 @@
                                     {{ $p['name'] }}
                                 </div>
                                 <div class="flex justify-between items-end">
-                                    <div class="text-blue-600 font-bold text-lg">AED {{ number_format($p['price'], 2) }}
+                                    <div class="text-[#2dae9a] font-bold text-lg">AED {{ number_format($p['price'], 2) }}
                                     </div>
                                 </div>
                                 <div class="mt-2 flex justify-between items-center">
@@ -172,23 +185,24 @@
             <div class="p-4 border-b bg-gray-50 flex gap-2">
                 <div class="flex-1">
                     <select id="customer_id"
-                        class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none select2">
+                        class="w-full border border-gray-300 rounded p-2 text-sm focus:border-[#2dae9a] outline-none select2">
                         <option value="">Walk-in Customer</option>
                         @foreach ($customers as $c)
                             <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->phone }})</option>
                         @endforeach
                     </select>
                 </div>
-                <button type="button" id="add-customer-btn" class="bg-blue-600 text-white px-3 rounded hover:bg-blue-700" title="Add Customer">
+                <button type="button" id="add-customer-btn" class="bg-[#2dae9a] text-white px-3 rounded hover:bg-emerald-700" title="Add Customer">
                     <i class="fas fa-user-plus"></i>
                 </button>
             </div>
 
             <!-- Cart Header -->
             <div class="grid grid-cols-12 bg-slate-100 text-gray-600 text-xs font-bold uppercase p-2 border-b">
-                <div class="col-span-6 pl-2">Item</div>
-                <div class="col-span-3 text-center">Qty</div>
-                <div class="col-span-3 text-right pr-2">Total</div>
+                <div class="col-span-5 pl-2">Item</div>
+                <div class="col-span-2 text-center">Qty</div>
+                <div class="col-span-3 text-center">Tax %</div>
+                <div class="col-span-2 text-right pr-2">Total</div>
             </div>
 
             <!-- Cart Items (Scrollable) -->
@@ -227,7 +241,7 @@
                     </div>
 
                     <div class="flex justify-between text-gray-600">
-                        <span>VAT (5% Included)</span>
+                        <span>Total Tax</span>
                         <span class="font-mono" id="lbl-vat">0.00</span>
                     </div>
 
@@ -244,7 +258,7 @@
                     <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Method</label>
                         <select id="payment_method"
-                            class="w-full border border-gray-300 rounded p-2.5 font-bold text-gray-700 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm h-[44px]">
+                            class="w-full border border-gray-300 rounded p-2.5 font-bold text-gray-700 bg-white focus:ring-2 focus:ring-[#2dae9a] outline-none text-sm h-[44px]">
                             <option value="cash" selected>💵 Cash</option>
                             <option value="card">💳 Card</option>
                             <option value="transfer">🏦 Bank</option>
@@ -274,10 +288,10 @@
                 </div>
                 <h3 class="text-xl font-bold text-gray-900">Scan Serial Number</h3>
                 <p class="text-sm text-gray-500 mt-1">Product: <span id="modalProductName"
-                        class="font-bold text-blue-600"></span></p>
+                        class="font-bold text-[#2dae9a]"></span></p>
             </div>
             <input type="text" id="modalSerialInput"
-                class="w-full border-2 border-blue-500 rounded-lg p-3 text-lg text-center focus:outline-none focus:ring-4 focus:ring-blue-100 mb-2 font-mono"
+                class="w-full border-2 border-[#2dae9a] rounded-lg p-3 text-lg text-center focus:outline-none focus:ring-4 focus:ring-emerald-100 mb-2 font-mono"
                 placeholder="Scan IMEI / S/N..." autocomplete="off">
             <p id="serialError" class="text-red-500 text-sm text-center font-bold hidden mb-4"><i
                     class="fas fa-exclamation-circle"></i> Invalid Serial</p>
@@ -285,7 +299,47 @@
                 <button onclick="closeSerialModal()"
                     class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">Cancel</button>
                 <button onclick="confirmSerial()"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">Confirm</button>
+                    class="px-4 py-2 bg-[#2dae9a] text-white rounded-lg font-bold hover:bg-emerald-700">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Service Modal -->
+    <div id="serviceModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
+            <div class="text-center mb-6">
+                <div class="bg-indigo-100 text-indigo-600 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Add Instant Service</h3>
+                <p class="text-sm text-gray-500 mt-1">Add a non-inventory item to the cart</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Service Name</label>
+                    <input type="text" id="service_name" class="w-full border-2 border-indigo-100 rounded-lg p-3 focus:outline-none focus:border-indigo-500" placeholder="e.g. Installation Fee" autocomplete="off">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Price (AED)</label>
+                        <input type="number" id="service_price" class="w-full border-2 border-indigo-100 rounded-lg p-3 focus:outline-none focus:border-indigo-500" placeholder="0.00" step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Tax Rate (%)</label>
+                        <select id="service_tax" class="w-full border-2 border-indigo-100 rounded-lg p-3 focus:outline-none focus:border-indigo-500">
+                            <option value="0">0% (Tax Free)</option>
+                            <option value="5" selected>5% (Standard)</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-8">
+                <button onclick="closeServiceModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">Cancel</button>
+                <button onclick="addInstantService()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 shadow-lg active:scale-95 transition">Add to Cart</button>
             </div>
         </div>
     </div>
@@ -293,7 +347,7 @@
     <!-- Processing Overlay -->
     <div id="processingOverlay" class="fixed inset-0 bg-white bg-opacity-80 hidden items-center justify-center z-50">
         <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-[#2dae9a] mx-auto mb-4"></div>
             <h2 class="text-xl font-bold text-gray-700">Processing Sale...</h2>
             <p class="text-gray-500">Printing Invoice</p>
         </div>
@@ -335,7 +389,7 @@
                 
                 <div class="grid grid-cols-2 gap-3 mt-6">
                     <button type="button" onclick="closeCustomerModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition" id="saveCustomerBtn">
+                    <button type="submit" class="px-4 py-2 bg-[#2dae9a] text-white rounded-lg font-bold hover:bg-emerald-700 transition" id="saveCustomerBtn">
                         Save Customer
                     </button>
                 </div>
@@ -435,7 +489,7 @@
         });
 
         function fetchProducts(term, isScan = false) {
-            $.get('/admin/pos/search', {
+            $.get("{{ route('pos.search') }}", {
                 term: term
             }, function(data) {
                 let html = '';
@@ -463,9 +517,9 @@
                                 `<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-bold">Out of Stock</span>`;
                         }
                         html += `
-                        <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-400 transition relative overflow-hidden group" onclick='addToCart(${pStr})'>
+                        <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-[#2dae9a] transition relative overflow-hidden group" onclick='addToCart(${pStr})'>
                             <div class="h-32 bg-gray-50 flex items-center justify-center p-2"><img src="${image}" class="h-full object-contain group-hover:scale-105 transition"></div>
-                            <div class="p-3"><div class="font-bold text-gray-800 text-sm h-10 overflow-hidden leading-tight mb-1">${p.name}</div><div class="flex justify-between items-end"><div class="text-blue-600 font-bold text-lg">AED ${parseFloat(p.price).toFixed(2)}</div></div><div class="mt-2 flex justify-between items-center"><span class="text-xs text-gray-500 font-mono">${p.sku}</span>${stockBadge}</div></div>
+                            <div class="p-3"><div class="font-bold text-gray-800 text-sm h-10 overflow-hidden leading-tight mb-1">${p.name}</div><div class="flex justify-between items-end"><div class="text-[#2dae9a] font-bold text-lg">AED ${parseFloat(p.price).toFixed(2)}</div></div><div class="mt-2 flex justify-between items-center"><span class="text-xs text-gray-500 font-mono">${p.sku}</span>${stockBadge}</div></div>
                         </div>`;
                     });
                 }
@@ -506,57 +560,110 @@
 
         function renderCart() {
             let html = '';
-            let cartTotal = 0;
+            let totalVat = 0;
+            let totalPayable = 0;
 
             if (cart.length === 0) {
                 $('#empty-cart-msg').show();
                 $('#discount_input').val(0);
+                $('#lbl-cart-total').text('0.00');
+                $('#lbl-payable').text('0.00');
+                $('#lbl-vat').text('0.00');
+                $('#lbl-vat').prev().text('Total Tax');
             } else {
                 $('#empty-cart-msg').hide();
                 cart.forEach((item, index) => {
-                    let itemTotal = item.price * item.qty;
-                    cartTotal += itemTotal;
-                    let metaInfo = item.serial ? `<div class="text-[10px] text-blue-600 font-mono">SN: ${item.serial}</div>` : `<div class="text-[10px] text-gray-400 font-mono">${item.sku}</div>`;
+                    let itemTaxRate = parseFloat(item.tax_rate) / 100 || 0;
+                    let itemBasePrice = parseFloat(item.price) || 0; // Ensure it's a number
+                    let rowSubtotal = itemBasePrice * (parseFloat(item.qty) || 1);
+                    let rowTax = 0;
+                    let rowPayable = 0;
 
-                    let nameDisplay = item.type === 'service' ? 
-                        `<input type="text" value="${item.name}" class="w-full border rounded px-1 py-0.5 text-sm font-bold border-blue-300 focus:border-blue-500 outline-none" onchange="updateItemName(${index}, this.value)">` :
-                        `<div class="font-bold text-gray-700 text-sm leading-tight">${item.name}</div>`;
+                    // Support both inclusive/exclusive tax methods
+                    if (item.tax_method === 'exclusive') {
+                        rowTax = rowSubtotal * itemTaxRate;
+                        rowPayable = rowSubtotal + rowTax;
+                    } else { // inclusive (default)
+                        rowTax = rowSubtotal - (rowSubtotal / (1 + itemTaxRate));
+                        rowPayable = rowSubtotal;
+                    }
+
+                    // Accumulate Totals
+                    totalVat += rowTax;
+                    totalPayable += rowPayable;
+
+                    let metaInfo = item.serial ? `<div class="text-[10px] text-emerald-600 font-bold">SN: ${item.serial}</div>` : `<div class="text-[10px] text-gray-400 font-mono">${item.sku || 'SERVICE'}</div>`;
+
+                    let nameDisplay = item.is_service ? 
+                        `<input type="text" value="${item.name}" class="w-full border rounded px-1 py-0.5 text-xs font-medium border-indigo-200 focus:border-indigo-500 outline-none" onchange="updateItemName(${index}, this.value)">` :
+                        `<div class="font-bold text-gray-700 text-xs leading-tight">${item.name}</div>`;
                     
-                    let priceDisplay = item.type === 'service' ?
+                    let priceDisplay = item.is_service ?
                         `<div class="flex items-center justify-end gap-1">
-                            <span class="text-xs text-gray-400">AED</span>
-                            <input type="number" step="0.01" value="${item.price}" class="w-20 border rounded px-1 py-0.5 text-right text-sm font-bold text-blue-600 border-blue-300 focus:border-blue-500 outline-none" onchange="updateItemPrice(${index}, this.value)">
+                            <input type="number" step="0.01" value="${item.price}" class="w-16 border rounded px-1 py-0.5 text-right text-xs font-bold text-indigo-600 border-indigo-200 focus:border-indigo-500 outline-none" onchange="updateItemPrice(${index}, this.value)">
                          </div>` :
-                        `<div class="font-bold text-gray-700">${itemTotal.toFixed(2)}</div>`;
+                        `<div class="font-bold text-gray-700 text-xs">${rowPayable.toFixed(2)}</div>`; // Use calculated rowPayable
 
                     html += `
                     <tr class="border-b hover:bg-slate-50 transition">
-                        <td class="p-3">${nameDisplay}${metaInfo}</td>
-                        <td class="p-3 text-center">
-                            ${item.serial ? `<span class="font-bold text-gray-800">1</span>` : `<div class="flex items-center justify-center border rounded bg-white"><button onclick="updateQty(${index}, -1)" class="px-2 py-1 text-gray-500 hover:text-red-500">-</button><span class="px-2 text-sm font-bold w-6 text-center">${item.qty}</span><button onclick="updateQty(${index}, 1)" class="px-2 py-1 text-gray-500 hover:text-green-500">+</button></div>`}
+                        <td class="p-2 align-middle" style="width: 42%;">
+                            <div class="flex flex-col">
+                                ${nameDisplay}
+                                ${metaInfo}
+                            </div>
                         </td>
-                        <td class="p-3 text-right">${priceDisplay}<button onclick="removeItem(${index})" class="text-xs text-red-400 hover:text-red-600 mt-1"><i class="fas fa-trash"></i></button></td>
+                        <td class="p-2 text-center align-middle" style="width: 17%;">
+                            ${item.serial ? `<span class="font-bold text-gray-800">1</span>` : `
+                            <div class="flex items-center justify-center border rounded bg-white h-7">
+                                <button onclick="updateQty(${index}, -1)" class="w-6 h-full text-gray-500 hover:text-red-500">-</button>
+                                <span class="px-1 text-xs font-bold">${item.qty}</span>
+                                <button onclick="updateQty(${index}, 1)" class="w-6 h-full text-gray-500 hover:text-green-500">+</button>
+                            </div>`}
+                        </td>
+                        <td class="p-2 text-center align-middle" style="width: 25%;">
+                            <select onchange="updateItemTax(${index}, this.value)" class="w-full border rounded text-[10px] font-bold py-1 px-0.5 border-gray-200 outline-none focus:border-indigo-500 transition">
+                                <option value="0" ${item.tax_rate == 0 ? 'selected' : ''}>0%</option>
+                                <option value="5" ${item.tax_rate == 5 ? 'selected' : ''}>5%</option>
+                                <option value="10" ${item.tax_rate == 10 ? 'selected' : ''}>10%</option>
+                                <option value="15" ${item.tax_rate == 15 ? 'selected' : ''}>15%</option>
+                            </select>
+                        </td>
+                        <td class="p-2 text-right align-middle" style="width: 16%;">
+                            <div class="flex flex-col items-end">
+                                ${priceDisplay}
+                                <button onclick="removeItem(${index})" class="text-[10px] text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
                     </tr>`;
                 });
+                $('#cart-body').html(html);
             }
-            $('#cart-body').html(html);
 
             // --- MATHS ---
             let discount = parseFloat($('#discount_input').val()) || 0;
-            if (discount > cartTotal) {
-                discount = cartTotal;
+            if (discount > totalPayable) {
+                discount = totalPayable;
                 $('#discount_input').val(discount);
             }
 
-            let payable = cartTotal - discount;
-            let taxRate = 0.05;
-            let subtotal = payable / (1 + taxRate);
-            let vat = payable - subtotal;
+            let payableAfterDiscount = totalPayable - discount;
+            
+            // Recalculate VAT based on discount proportion
+            // But usually VAT remains same on Net, or reduces? 
+            // Standard approach: Display Total Tax as calculated from items, ignoring total discount for simplicity unless discount is applied pre-tax
+            // Here we just show the accumulated Tax
+            let displayVat = totalVat; 
+            
+            // If we want proportional VAT reduction:
+            if (totalPayable > 0 && discount > 0) {
+                 displayVat = totalVat * (payableAfterDiscount / totalPayable);
+            }
 
-            $('#lbl-cart-total').text(cartTotal.toFixed(2));
-            $('#lbl-payable').text(payable.toFixed(2));
-            $('#lbl-vat').text(vat.toFixed(2));
-            $('#lbl-subtotal').text(subtotal.toFixed(2));
+            $('#lbl-cart-total').text(totalPayable.toFixed(2));
+            $('#lbl-payable').text(payableAfterDiscount.toFixed(2));
+            $('#lbl-vat').text(displayVat.toFixed(2));
+            // Update label to remove hardcoded 5%
+            $('#lbl-vat').prev().text('Total Tax');
         }
 
         function updateQty(index, change) {
@@ -588,6 +695,53 @@
         function removeItem(index) {
             cart.splice(index, 1);
             renderCart();
+        }
+
+        function updateItemTax(index, newRate) {
+            cart[index].tax_rate = parseFloat(newRate) || 0;
+            renderCart();
+        }
+
+        // --- 3. SERVICE MODAL LOGIC ---
+        function openServiceModal() {
+            $('#service_name').val('');
+            $('#service_price').val('');
+            $('#service_tax').val('5');
+            $('#serviceModal').removeClass('hidden').addClass('flex');
+            setTimeout(() => $('#service_name').focus(), 100);
+        }
+
+        function closeServiceModal() {
+            $('#serviceModal').addClass('hidden').removeClass('flex');
+        }
+
+        function addInstantService() {
+            let name = $('#service_name').val().trim();
+            let price = parseFloat($('#service_price').val()) || 0;
+            let tax_rate = parseFloat($('#service_tax').val()) || 0;
+
+            if (!name) {
+                toastr.error('Please enter service name');
+                return;
+            }
+
+            beep.currentTime = 0;
+            beep.play();
+
+            cart.push({
+                id: null,
+                variant_id: null,
+                name: name,
+                price: price,
+                tax_rate: tax_rate,
+                tax_method: 'inclusive', // Defaulting to inclusive for POS
+                is_service: true,
+                qty: 1
+            });
+
+            renderCart();
+            closeServiceModal();
+            toastr.success('Service added to cart');
         }
 
         function clearCart() {
@@ -694,7 +848,7 @@
         data: data,
         success: function(response) {
             // Success Logic
-            let printUrl = '/admin/orders/' + response.order_id + '/print';
+            let printUrl = '/backend/orders/' + response.order_id + '/print';
             
             setTimeout(() => {
                 window.open(printUrl, '_blank', 'width=400,height=600');

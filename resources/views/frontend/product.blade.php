@@ -9,7 +9,7 @@
         /* Breadcrumbs */
         .breadcrumbs { margin: 20px 0; font-size: 13px; color: var(--text-muted); }
         .breadcrumbs span { margin: 0 8px; color: #cbd5e1; }
-        .breadcrumbs a:hover { color: var(--brand-magenta); }
+        .breadcrumbs a:hover { color: var(--brand-emerald); }
 
         /* Main Layout */
         .product-wrapper {
@@ -31,12 +31,12 @@
 
         .thumbnails { display: flex; gap: 15px; overflow-x: auto; max-width: 100%; padding-bottom: 5px; }
         .thumb { width: 70px; height: 70px; min-width: 70px; border: 1px solid var(--border); border-radius: var(--radius); padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; background: #fff; }
-        .thumb:hover, .thumb.active { border-color: var(--brand-magenta); box-shadow: 0 0 0 2px rgba(192, 77, 238, 0.2); }
+        .thumb:hover, .thumb.active { border-color: var(--brand-emerald); box-shadow: 0 0 0 2px rgba(45, 174, 154, 0.2); }
         .thumb img { max-height: 100%; max-width: 100%; }
 
         /* Info Section */
         .info-section { padding: 40px; }
-        .p-brand { color: var(--brand-magenta); font-weight: 700; font-size: 13px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .p-brand { color: var(--brand-emerald); font-weight: 700; font-size: 13px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
         .product-title { font-size: 26px; font-weight: 800; line-height: 1.3; margin-bottom: 10px; color: var(--text-main); }
 
         .p-rating { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 13px; }
@@ -56,17 +56,17 @@
 
         /* Branding Colors for Selection */
         .opt-radio:checked + .opt-label {
-            border-color: var(--brand-magenta);
-            background: linear-gradient(135deg, #fdf4ff 0%, #ffffff 100%);
+            border-color: var(--brand-emerald);
+            background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
             color: var(--brand-deep-blue);
             font-weight: 700;
-            box-shadow: 0 0 0 1px var(--brand-magenta);
+            box-shadow: 0 0 0 1px var(--brand-emerald);
         }
 
         /* Actions */
         .action-box { display: flex; gap: 15px; margin-top: 30px; }
-        .btn-main { flex: 1; background: var(--brand-gradient); color: white; padding: 16px; border-radius: var(--radius); font-weight: 700; font-size: 16px; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 4px 15px rgba(192, 77, 238, 0.3); }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(192, 77, 238, 0.4); }
+        .btn-main { flex: 1; background: var(--brand-emerald); color: white; padding: 16px; border-radius: var(--radius); font-weight: 700; font-size: 16px; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 4px 15px rgba(45, 174, 154, 0.3); }
+        .btn-main:hover { background: #248e7e; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 174, 154, 0.4); }
 
         .btn-wish { width: 54px; height: 54px; border: 1px solid var(--border); border-radius: var(--radius); background: white; font-size: 24px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .btn-wish:hover { color: var(--accent-red); border-color: var(--accent-red); background: #fef2f2; }
@@ -75,7 +75,7 @@
         .trust-box { margin-top: 30px; background: #f8fafc; border-radius: var(--radius); padding: 15px; border: 1px solid var(--border); }
         .trust-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: start; }
         .trust-item:last-child { margin-bottom: 0; }
-        .t-icon { color: var(--brand-magenta); font-size: 18px; margin-top: 2px; }
+        .t-icon { color: var(--brand-emerald); font-size: 18px; margin-top: 2px; }
         .t-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
         .t-text p { font-size: 12px; color: var(--text-muted); }
 
@@ -84,7 +84,7 @@
         .tabs-head { display: flex; gap: 30px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
         .tab-link { padding-bottom: 15px; cursor: pointer; font-weight: 500; color: var(--text-muted); border-bottom: 2px solid transparent; transition: 0.2s; }
         .tab-link:hover { color: var(--brand-deep-blue); }
-        .tab-link.active { color: var(--brand-magenta); border-bottom-color: var(--brand-magenta); font-weight: 700; }
+        .tab-link.active { color: var(--brand-emerald); border-bottom-color: var(--brand-emerald); font-weight: 700; }
         .tab-content { font-size: 14px; line-height: 1.7; color: #475569; }
         .tab-content.active { display: block !important; }
 
@@ -167,7 +167,7 @@
 
         .thumb-swiper { height: 90px; box-sizing: border-box; width: 100%; margin-top: 10px; }
         .thumb-swiper .swiper-slide { width: 80px !important; height: 80px !important; opacity: 0.5; cursor: pointer; transition: 0.3s; border: 1px solid var(--border); border-radius: var(--radius); padding: 5px; background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .thumb-swiper .swiper-slide-thumb-active { opacity: 1; border-color: var(--brand-magenta); box-shadow: 0 0 0 2px rgba(192, 77, 238, 0.1); }
+        .thumb-swiper .swiper-slide-thumb-active { opacity: 1; border-color: var(--brand-emerald); box-shadow: 0 0 0 2px rgba(45, 174, 154, 0.1); }
         .thumb-swiper img { max-width: 100%; max-height: 100%; object-fit: contain; }
     </style>
     <!-- Assets -->
@@ -224,8 +224,8 @@
                         </template>
                     </div>
                     <!-- Navigation Buttons -->
-                    <div class="swiper-button-next" style="color: var(--brand-magenta);"></div>
-                    <div class="swiper-button-prev" style="color: var(--brand-magenta);"></div>
+                    <div class="swiper-button-next" style="color: var(--brand-emerald);"></div>
+                    <div class="swiper-button-prev" style="color: var(--brand-emerald);"></div>
                 </div>
 
                 <!-- Thumbs Swiper -->

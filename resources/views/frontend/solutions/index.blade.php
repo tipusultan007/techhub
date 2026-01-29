@@ -14,7 +14,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @foreach($solutions as $solution)
             <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group">
-                <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mb-6 transition-colors duration-300" style="background: rgba(3, 166, 150, 0.1); color: var(--brand-emerald);">
+                <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl mb-6 transition-colors duration-300" style="background: rgba(45, 174, 154, 0.1); color: var(--brand-emerald);">
                     <i class="{{ $solution->icon_class }}"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-4" style="color: var(--text-main);">{{ $solution->title }}</h3>
@@ -36,14 +36,14 @@
             <a href="tel:+97140000000" class="btn btn-brand !px-10 !py-4 text-lg">Contact Us Now</a>
         </div>
         <!-- Abstract BG Elements -->
-        <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl" style="background: rgba(3, 166, 150, 0.2);"></div>
-        <div class="absolute -bottom-24 -left-24 w-64 h-64 rounded-full blur-3xl" style="background: rgba(3, 166, 166, 0.1);"></div>
+        <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl" style="background: rgba(45, 174, 154, 0.2);"></div>
+        <div class="absolute -bottom-24 -left-24 w-64 h-64 rounded-full blur-3xl" style="background: rgba(45, 174, 154, 0.1);"></div>
     </div>
 </div>
 @endsection
 
 @push('styles')
 <style>
-    .text-brand { color: var(--brand-magenta); }
+    .text-brand { color: var(--brand-emerald); }
 </style>
 @endpush

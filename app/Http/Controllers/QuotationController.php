@@ -142,39 +142,45 @@ class QuotationController extends Controller
         try {
             DB::beginTransaction();
 
-            $grossTotal = 0;
+            $subtotal = 0;
+            $totalTax = 0;
             foreach ($request->items as $item) {
-                $grossTotal += ($item['price'] * $item['qty']);
+                $itemSubtotal = ($item['price'] * $item['qty']);
+                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
+                $subtotal += $itemSubtotal;
+                $totalTax += $itemTax;
             }
 
             $discount = $request->discount ?? 0;
-            $finalPayable = $grossTotal - $discount;
-
-            $taxRate = 0.05;
-            $netAmount = $finalPayable / (1 + $taxRate);
-            $vatAmount = $finalPayable - $netAmount;
+            $finalPayable = ($subtotal + $totalTax) - $discount;
 
             $quotation = Quotation::create([
                 'customer_id' => $request->customer_id,
                 'customer_name' => $request->customer_id ? Customer::find($request->customer_id, ['name'])->name : 'Walk-in Customer',
-                'subtotal' => $netAmount,
-                'vat_amount' => $vatAmount,
+                'date' => $request->date ?? now(),
+                'subtotal' => $subtotal,
+                'vat_amount' => $totalTax,
                 'discount' => $discount,
                 'total' => $finalPayable,
                 'status' => 'pending',
                 'user_id' => Auth::id(),
-                'expiry_date' => now()->addDays(15) // Default expiry
+                'expiry_date' => $request->expiry_date ?? now()->addDays(15) // Use manual date or default
             ]);
 
             foreach ($request->items as $item) {
+                $itemSubtotal = ($item['price'] * $item['qty']);
+                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
                 QuotationItem::create([
                     'quotation_id' => $quotation->id,
-                    'product_id' => $item['id'],
+                    'product_id' => $item['id'] ?? null,
                     'product_variant_id' => $item['variant_id'] ?? null,
                     'product_name' => $item['name'],
                     'quantity' => $item['qty'],
                     'unit_price' => $item['price'],
-                    'subtotal' => $item['price'] * $item['qty'],
+                    'tax_rate' => $item['tax_rate'] ?? 0,
+                    'tax_amount' => $itemTax,
+                    'subtotal' => $itemSubtotal,
+                    'is_service' => filter_var($item['is_service'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 ]);
             }
 
@@ -224,39 +230,46 @@ class QuotationController extends Controller
         try {
             DB::beginTransaction();
 
-            $grossTotal = 0;
+            $subtotal = 0;
+            $totalTax = 0;
             foreach ($request->items as $item) {
-                $grossTotal += ($item['price'] * $item['qty']);
+                $itemSubtotal = ($item['price'] * $item['qty']);
+                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
+                $subtotal += $itemSubtotal;
+                $totalTax += $itemTax;
             }
 
             $discount = $request->discount ?? 0;
-            $finalPayable = $grossTotal - $discount;
-
-            $taxRate = 0.05;
-            $netAmount = $finalPayable / (1 + $taxRate);
-            $vatAmount = $finalPayable - $netAmount;
+            $finalPayable = ($subtotal + $totalTax) - $discount;
 
             $quotation->update([
                 'customer_id' => $request->customer_id,
                 'customer_name' => $request->customer_id ? Customer::find($request->customer_id, ['name'])->name : 'Walk-in Customer',
-                'subtotal' => $netAmount,
-                'vat_amount' => $vatAmount,
+                'date' => $request->date ?? $quotation->date,
+                'subtotal' => $subtotal,
+                'vat_amount' => $totalTax,
                 'discount' => $discount,
                 'total' => $finalPayable,
+                'expiry_date' => $request->expiry_date ?? $quotation->expiry_date,
             ]);
 
             // Delete old items and create new ones
             $quotation->items()->delete();
 
             foreach ($request->items as $item) {
+                $itemSubtotal = ($item['price'] * $item['qty']);
+                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
                 QuotationItem::create([
                     'quotation_id' => $quotation->id,
-                    'product_id' => $item['id'],
+                    'product_id' => $item['id'] ?? null,
                     'product_variant_id' => $item['variant_id'] ?? null,
                     'product_name' => $item['name'],
                     'quantity' => $item['qty'],
                     'unit_price' => $item['price'],
-                    'subtotal' => $item['price'] * $item['qty'],
+                    'tax_rate' => $item['tax_rate'] ?? 0,
+                    'tax_amount' => $itemTax,
+                    'subtotal' => $itemSubtotal,
+                    'is_service' => filter_var($item['is_service'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 ]);
             }
 
@@ -327,20 +340,22 @@ class QuotationController extends Controller
             ]);
 
             foreach ($quotation->items as $item) {
-                // Stock Deduction Logic
-                if ($item->product_variant_id) {
-                    $variant = ProductVariant::lockForUpdate()->find($item->product_variant_id);
-                    if (!$variant || $variant->stock_quantity < $item->quantity) {
-                        throw new \Exception("Insufficient stock for variant: " . ($variant->sku ?? 'Unknown'));
-                    }
-                    $variant->decrement('stock_quantity', $item->quantity);
-                } else {
-                    $product = Product::lockForUpdate()->find($item->product_id);
-                    if ($product->type !== 'service') {
-                        if (!$product || $product->stock_quantity < $item->quantity) {
-                            throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'Unknown'));
+                // Stock Deduction Logic (Skip for services)
+                if (!$item->is_service) {
+                    if ($item->product_variant_id) {
+                        $variant = ProductVariant::lockForUpdate()->find($item->product_variant_id);
+                        if (!$variant || $variant->stock_quantity < $item->quantity) {
+                            throw new \Exception("Insufficient stock for variant: " . ($variant->sku ?? 'Unknown'));
                         }
-                        $product->decrement('stock_quantity', $item->quantity);
+                        $variant->decrement('stock_quantity', $item->quantity);
+                    } else {
+                        $product = Product::lockForUpdate()->find($item->product_id);
+                        if ($product->type !== 'service') {
+                            if (!$product || $product->stock_quantity < $item->quantity) {
+                                throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'Unknown'));
+                            }
+                            $product->decrement('stock_quantity', $item->quantity);
+                        }
                     }
                 }
 
@@ -351,7 +366,10 @@ class QuotationController extends Controller
                     'product_name' => $item->product_name,
                     'quantity' => $item->quantity,
                     'unit_price' => $item->unit_price,
+                    'tax_rate' => $item->tax_rate,
+                    'tax_amount' => $item->tax_amount,
                     'subtotal' => $item->subtotal,
+                    'is_service' => filter_var($item->is_service, FILTER_VALIDATE_BOOLEAN),
                 ]);
             }
 

@@ -19,14 +19,16 @@ class Setting extends Model implements HasMedia
     {
         // Define collections for known image keys
         $this->addMediaCollection('site_logo')->singleFile();
+        $this->addMediaCollection('site_logo_scrolled')->singleFile();
+        $this->addMediaCollection('site_logo_footer')->singleFile();
         $this->addMediaCollection('site_favicon')->singleFile();
     }
 
     public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
         $this->addMediaConversion('optimized')
-            ->width(300) // Resize width
             ->format('webp') // Convert to WebP
+            ->quality(100)  // Maximum quality
             ->nonQueued(); // Perform immediately
     }
 }

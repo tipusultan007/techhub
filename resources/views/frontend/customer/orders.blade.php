@@ -121,7 +121,7 @@
 
         .order-card:hover {
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border-color: var(--brand-magenta);
+            border-color: var(--brand-emerald);
         }
 
         /* Card Header */
@@ -282,8 +282,8 @@
         }
 
         .btn-solid:hover {
-            background: var(--brand-magenta);
-            border-color: var(--brand-magenta);
+            background: var(--brand-emerald);
+            border-color: var(--brand-emerald);
         }
 
         @media (max-width: 900px) {

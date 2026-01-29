@@ -13,6 +13,7 @@ class Quotation extends Model
         'vat_amount' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
+        'date' => 'date',
         'expiry_date' => 'date',
         'created_at' => 'datetime',
     ];

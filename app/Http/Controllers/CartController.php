@@ -39,7 +39,7 @@ class CartController extends Controller
         $vat = $taxableAmount * 0.05;
         $total = $taxableAmount + $vat;
 
-        $crossSellProducts = \App\Models\Product::inRandomOrder(now()->timestamp)->take(4)->with('media')->get();
+        $crossSellProducts = \App\Models\Product::physical()->inRandomOrder(now()->timestamp)->take(4)->with('media')->get();
 
         return view('frontend.cart', compact('cart', 'subtotal', 'vat', 'total', 'crossSellProducts', 'discount', 'coupon'));
     }
@@ -52,7 +52,14 @@ class CartController extends Controller
             'variant_id' => 'nullable|exists:product_variants,id'
         ]);
 
-        $product = Product::find($request->product_id, ['*']);
+        $product = Product::physical()->find($request->product_id, ['*']);
+
+        if (!$product) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Product not available.'
+            ], 404);
+        }
 
         // Validation: Variable product must have variant selected
         if ($product->type === 'variable' && !$request->variant_id) {

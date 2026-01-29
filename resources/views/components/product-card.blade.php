@@ -43,18 +43,23 @@
     } else {
         // --- SIMPLE PRODUCT LOGIC ---
         $stock = $product->stock_quantity;
-        $activePrice = $product->active_price;
-        $regularPrice = $product->selling_price;
+        
+        // Direct Column Usage
+        $regularPrice = $product->selling_price; // 100
+        $salePrice    = $product->sale_price;    // 80
+
+        // Determine if on sale
+        if ($salePrice && $salePrice < $regularPrice) {
+            $activePrice = $salePrice;
+            $isOnSale = true;
+            $oldPriceDisplay = number_format($regularPrice);
+            $discountPercent = round((($regularPrice - $activePrice) / $regularPrice) * 100);
+        } else {
+            $activePrice = $regularPrice;
+            $isOnSale = false;
+        }
 
         $priceDisplay = number_format($activePrice);
-        $isOnSale = $product->is_on_sale;
-
-        if ($isOnSale) {
-            $oldPriceDisplay = number_format($regularPrice);
-            if ($regularPrice > 0) {
-                $discountPercent = round((($regularPrice - $activePrice) / $regularPrice) * 100);
-            }
-        }
     }
 
     $isOutOfStock = $stock <= 0;

@@ -40,13 +40,18 @@
             <table>
                 <tr>
                     <td class="company-info">
-                        <h1>TECH HUB</h1>
-                        <p>COMPUTER TRADING LLC</p>
-                        <p>Dubai Silicon Oasis, Dubai, UAE</p>
-                        <p>TRN: 100200300400500</p>
+                        @if(settings('site_logo'))
+                            <img src="{{ public_path(parse_url(settings('site_logo'), PHP_URL_PATH)) }}" alt="{{ settings('site_name') }}" style="max-height: 50px; margin-bottom: 5px;">
+                        @else
+                            <h1>{{ settings('shop_name', 'TECH HUB') }}</h1>
+                        @endif
+                        <p>{{ settings('shop_address', 'Dubai, UAE') }}</p>
+                        <span>Phone: {{ settings('shop_phone', settings('contact_phone', '+971 00 000 0000')) }}</span><br>
+                        <span>Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}</span><br>
+                        <p>TRN: {{ settings('shop_trn', '100200300400500') }}</p>
                     </td>
                     <td style="text-align: right;">
-                        <h2 style="margin: 0; color: #0f172a;">TAX INVOICE</h2>
+                        <h2 style="margin: 0; color: #0f172a;">INVOICE</h2>
                         <p style="margin: 5px 0;">#{{ $order->invoice_no }}</p>
                         <p style="margin: 2px 0; font-size: 12px; color: #64748b;">Date: {{ $order->created_at->format('d M Y') }}</p>
                     </td>
@@ -127,7 +132,7 @@
         <div class="clear"></div>
 
         <div class="footer">
-            <p>Thank you for choosing Tech Hub. For any inquiries, contact us at sales@techhub.ae</p>
+            <p>{{ settings('invoice_notes', 'Thank you for choosing Tech Hub. For any inquiries, contact us at sales@techhub.ae') }}</p>
             <p>This is a system generated invoice and does not require a signature.</p>
         </div>
     </div>

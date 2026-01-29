@@ -19,8 +19,11 @@ class SearchController extends Controller
         }
 
         // Search products with basic security
-        $products = Product::where([['name', 'LIKE', "%{$query}%"]])
-            ->orWhere([['description', 'LIKE', "%{$query}%"]])
+        $products = Product::physical()
+            ->where(function($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                  ->orWhere('description', 'LIKE', "%{$query}%");
+            })
             ->where('stock_quantity', '>', 0)
             ->with(['media', 'variants'])
             ->select(['id', 'name', 'slug', 'selling_price', 'sale_price', 'type'])
@@ -53,8 +56,11 @@ class SearchController extends Controller
             return redirect()->route('home');
         }
 
-        $products = Product::where([['name', 'LIKE', "%{$query}%"]])
-            ->orWhere([['description', 'LIKE', "%{$query}%"]])
+        $products = Product::physical()
+            ->where(function($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                  ->orWhere('description', 'LIKE', "%{$query}%");
+            })
             ->with(['category', 'media', 'variants'])
             ->paginate(12)
             ->withQueryString();

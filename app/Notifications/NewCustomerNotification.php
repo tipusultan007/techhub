@@ -28,7 +28,7 @@ class NewCustomerNotification extends Notification implements ShouldQueue
         return (new MailMessage)
                     ->subject('New Customer Registered: ' . $this->customer->name)
                     ->greeting('Hello Admin,')
-                    ->line('A new customer has joined the ElectroMart platform.')
+                    ->line('A new customer has joined the Tech Hub Information Technology platform.')
                     ->line('**Name:** ' . $this->customer->name)
                     ->line('**Email:** ' . ($this->customer->email ?? 'Not provided'))
                     ->action('View Profile', route('customers.show', $this->customer->id))

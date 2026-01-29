@@ -25,7 +25,7 @@
 @endsection
 
 @section('content')
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- === LEFT COLUMN: ORDER DETAILS === -->
         <div class="lg:col-span-2 space-y-6">
@@ -73,39 +73,53 @@
                 <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
                     <h3 class="font-bold text-gray-700">Order Items</h3>
                 </div>
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Cost</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    </tr>
+                <table class="min-w-full border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800 text-white">
+                            <th class="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest w-16">#</th>
+                            <th class="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest">Product Description</th>
+                            <th class="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest w-24">Qty</th>
+                            <th class="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest w-32">Unit Price</th>
+                            <th class="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest w-32">Total</th>
+                        </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($order->items as $item)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded border flex items-center justify-center text-gray-400">
-                                        <i class="fas fa-box"></i>
+                    <tbody class="divide-y divide-slate-100">
+                    @foreach($order->items as $index => $item)
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-5 text-sm font-bold text-slate-400 font-mono">
+                                {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
+                            </td>
+                            <td class="px-6 py-5">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 overflow-hidden shrink-0 shadow-sm">
+                                        @if($item->product && $item->product->image)
+                                            <img src="{{ asset('storage/' . $item->product->image) }}" class="w-full h-full object-cover">
+                                        @else
+                                            <i class="fas fa-box text-lg opacity-20"></i>
+                                        @endif
                                     </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $item->product_name }}</div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-medium text-slate-900 line-clamp-2 leading-snug">{{ $item->product_name }}</div>
                                         @if($item->product && $item->product->sku)
-                                            <div class="text-xs text-gray-500">SKU: {{ $item->product->sku }}</div>
+                                            <div class="mt-1 flex items-center gap-2">
+                                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">SKU</span>
+                                                <span class="text-[10px] font-bold text-slate-600 font-mono bg-slate-100 px-1.5 py-0.5 rounded">{{ $item->product->sku }}</span>
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                {{ $item->quantity }}
+                            <td class="px-6 py-5 text-center">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 border border-slate-100 text-sm font-black text-slate-700 shadow-inner">
+                                    {{ $item->quantity }}
+                                </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
+                            <td class="px-6 py-5 text-right text-sm font-bold text-slate-500">
                                 {{ number_format($item->unit_price, 2) }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-800">
-                                {{ number_format($item->subtotal, 2) }}
+                            <td class="px-6 py-5 text-right">
+                                <div class="text-sm font-black text-slate-900">{{ number_format($item->subtotal, 2) }}</div>
+                                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{{ settings('currency_symbol', 'AED') }}</div>
                             </td>
                         </tr>
                     @endforeach
@@ -113,20 +127,29 @@
                 </table>
 
                 <!-- Financial Summary -->
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div class="bg-slate-50 px-8 py-8 border-t border-slate-200">
                     <div class="flex justify-end">
-                        <div class="w-full md:w-1/2 space-y-2">
-                            <div class="flex justify-between text-sm text-gray-600">
-                                <span>Subtotal</span>
-                                <span>{{ number_format($order->subtotal, 2) }} AED</span>
+                        <div class="w-full md:w-80 space-y-4">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="font-bold text-slate-400 uppercase tracking-widest text-[10px]">Subtotal</span>
+                                <span class="font-bold text-slate-700">{{ number_format($order->subtotal, 2) }} <span class="text-[10px] text-slate-400 ml-1">AED</span></span>
                             </div>
-                            <div class="flex justify-between text-sm text-gray-600">
-                                <span>VAT (5%)</span>
-                                <span>{{ number_format($order->vat_amount, 2) }} AED</span>
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-400 uppercase tracking-widest text-[10px]">VAT</span>
+                                    <span class="bg-slate-200 text-slate-600 text-[9px] font-black px-1.5 py-0.5 rounded tracking-tighter">5%</span>
+                                </div>
+                                <span class="font-bold text-slate-700">{{ number_format($order->vat_amount, 2) }} <span class="text-[10px] text-slate-400 ml-1">AED</span></span>
                             </div>
-                            <div class="flex justify-between text-base font-bold text-gray-900 border-t border-gray-300 pt-2 mt-2">
-                                <span>Total Amount</span>
-                                <span>{{ number_format($order->total, 2) }} AED</span>
+                            <div class="pt-4 mt-2 border-t-2 border-slate-200 flex justify-between items-end">
+                                <div>
+                                    <span class="block font-black text-slate-900 uppercase tracking-[0.2em] text-[11px]">Total Amount</span>
+                                    <span class="text-[9px] text-emerald-600 font-bold uppercase mt-1 tracking-widest">Payment {{ $order->status == 'completed' ? 'Received' : 'Pending' }}</span>
+                                </div>
+                                <div class="text-right leading-none">
+                                    <span class="block text-2xl font-black text-slate-900">{{ number_format($order->total, 2) }}</span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">AED</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -148,7 +171,7 @@
                     <div class="mb-4">
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Order Status</label>
                         <div class="relative">
-                            <select name="status" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <select name="status" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                 <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                 <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>Processing</option>
                                 <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
@@ -161,7 +184,7 @@
 
                     <div class="mb-4">
                         <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Comment / Note</label>
-                        <textarea name="comment" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Add a note about this change..."></textarea>
+                        <textarea name="comment" rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md" placeholder="Add a note about this change..."></textarea>
                     </div>
 
                     <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">

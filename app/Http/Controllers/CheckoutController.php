@@ -96,7 +96,7 @@ class CheckoutController extends Controller
                 ]);
 
                 // Notify Admin about new customer registration
-                User::role('Admin')->get()->each->notify(new NewCustomerNotification($customer));
+                User::role(['Admin', 'Super Admin'])->get()->each->notify(new NewCustomerNotification($customer));
             } else {
                 $customer->update([
                     'address' => $request->address . ', ' . $request->city
@@ -125,7 +125,7 @@ class CheckoutController extends Controller
             ]);
 
             // Notify Admin about new order
-            User::role('Admin')->get()->each->notify(new NewOrderNotification($order));
+            User::role(['Admin', 'Super Admin'])->get()->each->notify(new NewOrderNotification($order));
 
             // Notify Customer about new order
             if ($request->email) {
@@ -156,14 +156,14 @@ class CheckoutController extends Controller
                     $variant->decrement('stock_quantity', $item['quantity']);
                     
                     if ($variant->stock_quantity <= $variant->alert_quantity) {
-                        User::role('Admin')->get()->each->notify(new LowStockNotification($variant->product, $variant->stock_quantity));
+                        User::role(['Admin', 'Super Admin'])->get()->each->notify(new LowStockNotification($variant->product, $variant->stock_quantity));
                     }
                 } else {
                     $product = Product::find($item['product_id']);
                     $product->decrement('stock_quantity', $item['quantity']);
 
                     if ($product->stock_quantity <= $product->alert_quantity) {
-                        User::role('Admin')->get()->each->notify(new LowStockNotification($product, $product->stock_quantity));
+                        User::role(['Admin', 'Super Admin'])->get()->each->notify(new LowStockNotification($product, $product->stock_quantity));
                     }
                 }
             }

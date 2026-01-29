@@ -37,7 +37,7 @@
             border: 1px solid var(--border); border-radius: var(--radius);
             font-size: 0.95rem; outline: none; transition: 0.2s; background: #fdfdfd;
         }
-        .form-input:focus { border-color: var(--brand-magenta); background: white; box-shadow: 0 0 0 3px rgba(192, 77, 238, 0.1); }
+        .form-input:focus { border-color: var(--brand-emerald); background: white; box-shadow: 0 0 0 3px rgba(45, 174, 154, 0.1); }
 
         /* Password Section */
         .password-section { margin-top: 10px; padding-top: 25px; border-top: 1px solid #f1f5f9; }
@@ -49,7 +49,7 @@
             background: var(--brand-deep-blue); color: white; border: none; padding: 12px 30px;
             border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: 0.2s;
         }
-        .btn-save:hover { background: var(--brand-magenta); }
+        .btn-save:hover { background: var(--brand-emerald); }
         .btn-cancel {
             background: white; color: var(--text-muted); border: 1px solid var(--border); padding: 12px 20px;
             border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: 0.2s;

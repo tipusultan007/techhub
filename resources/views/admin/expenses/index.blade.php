@@ -11,7 +11,7 @@
             <!-- 1. Create Form -->
             <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
                 <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">Record New Expense</h3>
-                <form action="{{ route('expenses.store') }}" method="POST">
+                <form action="{{ route('expenses.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="space-y-4">
                         <div>
@@ -36,6 +36,10 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700">Reference / Note</label>
                             <input type="text" name="note" class="w-full border p-2 rounded mt-1" placeholder="e.g. DEWA Bill, Rent, etc.">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Attachment (Optional)</label>
+                            <input type="file" name="attachment" class="w-full border p-1 rounded mt-1 bg-white">
                         </div>
                         <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Save Expense</button>
                     </div>
@@ -77,6 +81,7 @@
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Category</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Amount</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Added By</th>
+                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Attach.</th>
                         <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase"></th>
                     </tr>
                     </thead>
@@ -86,7 +91,16 @@
                             <td class="px-6 py-4 text-sm">{{ $expense->date->format('d M Y') }}</td>
                             <td class="px-6 py-4 text-sm">{{ $expense->category->name }}</td>
                             <td class="px-6 py-4 text-sm font-bold text-red-600">{{ number_format($expense->amount, 2) }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $expense->user->name }}</td>
+                             <td class="px-6 py-4 text-sm text-gray-500">{{ $expense->user->name }}</td>
+                            <td class="px-6 py-4 text-center text-sm">
+                                @if($expense->hasMedia('attachment'))
+                                    <a href="{{ $expense->getFirstMediaUrl('attachment') }}" target="_blank" class="text-green-600 hover:text-green-800">
+                                        <i class="fas fa-paperclip"></i>
+                                    </a>
+                                @else
+                                    <span class="text-gray-300">-</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 text-right text-sm">
                                 <button @click="showModal = true; editData = {{ $expense }}" class="text-blue-600 hover:text-blue-900 mr-3" title="Edit"><i class="fas fa-edit"></i></button>
                                 <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="inline" onsubmit="return confirm('Delete expense?')">
@@ -113,7 +127,7 @@
             <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg" @click.away="showModal = false">
                 <h3 class="font-bold text-xl mb-4">Edit Expense</h3>
 
-                <form :action="'/backend/expenses/' + editData.id" method="POST">
+                <form :action="'/backend/expenses/' + editData.id" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -137,6 +151,10 @@
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-700">Reference / Note</label>
                             <input type="text" name="note" x-model="editData.note" class="w-full border p-2 rounded mt-1">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-bold text-gray-700">Update Attachment (Optional)</label>
+                            <input type="file" name="attachment" class="w-full border p-1 rounded mt-1 bg-white">
                         </div>
                     </div>
 

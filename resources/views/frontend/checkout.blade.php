@@ -14,7 +14,7 @@
         .checkout-section { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; margin-bottom: 25px; box-shadow: var(--shadow); }
         .section-head { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
 
-        .edit-link { font-size: 0.85rem; color: var(--brand-magenta); cursor: pointer; text-decoration: underline; }
+        .edit-link { font-size: 0.85rem; color: var(--brand-emerald); cursor: pointer; text-decoration: underline; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .form-group { margin-bottom: 15px; }
@@ -22,7 +22,7 @@
 
         .form-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
         .form-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.95rem; outline: none; transition: 0.2s; background: #fff; }
-        .form-input:focus { border-color: var(--brand-magenta); box-shadow: 0 0 0 3px rgba(192, 77, 238, 0.1); }
+        .form-input:focus { border-color: var(--brand-emerald); box-shadow: 0 0 0 3px rgba(45, 174, 154, 0.1); }
 
         /* Payment Radio Cards */
         .payment-options { display: flex; flex-direction: column; gap: 15px; }

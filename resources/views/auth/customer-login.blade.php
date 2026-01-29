@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Tech Hub</title>
+    <title>Login | {{ settings('site_name', 'Tech Hub') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <style>
         :root {
             --brand-navy: #024959;
-            --brand-emerald: #03A696;
+            --brand-emerald: #2dae9a;
             --brand-gradient: linear-gradient(135deg, #024959 0%, #037F8C 100%);
             --text-main: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0;
             --radius-md: 12px; --radius-sm: 6px;
@@ -41,7 +41,7 @@
         .form-group { margin-bottom: 20px; }
         .label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
         .input-field { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.95rem; outline: none; transition: 0.2s; }
-        .input-field:focus { border-color: var(--brand-emerald); box-shadow: 0 0 0 3px rgba(3, 166, 150, 0.1); }
+        .input-field:focus { border-color: var(--brand-emerald); box-shadow: 0 0 0 3px rgba(45, 174, 154, 0.1); }
 
         .btn-submit { width: 100%; padding: 14px; background: var(--brand-navy); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; }
         .btn-submit:hover { background: var(--brand-emerald); }
@@ -55,7 +55,13 @@
 
 <header>
     <div class="container">
-        <a href="{{ route('home') }}" class="logo">TECH HUB</a>
+        <a href="{{ route('home') }}" class="logo">
+            @if(settings('site_logo'))
+                <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" style="max-height: 60px;">
+            @else
+                {{ settings('site_name', 'Tech Hub') }}
+            @endif
+        </a>
         <a href="{{ route('home') }}" class="back-link"><i class="ri-arrow-left-line"></i> Back to Shop</a>
     </div>
 </header>

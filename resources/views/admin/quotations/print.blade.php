@@ -8,7 +8,7 @@
     
     <style>
         body {
-            font-family: 'Helvetica', Arial, sans-serif;
+            font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
             margin: 0;
             padding: 0;
             font-size: 11px;
@@ -218,7 +218,7 @@
             font-size: 8px;
             color: #64748b;
             font-weight: 700;
-            font-style: italic;
+            font-style: normal;
             line-height: 1.6;
         }
 
@@ -254,69 +254,68 @@
         <!-- Header -->
         <table class="header-table">
             <tr>
-                <td style="width: 50%;">
-                    <div class="shop-name">{{ settings('shop_name', 'ELECTROMART') }}</div>
-                    <div class="shop-site">{{ settings('site_name', 'Premium Tech Solutions') }} UAE</div>
-                    <div style="margin-top: 15px; color: #475569; line-height: 1.4;">
-                        <span style="display: block; font-weight: 700;">{{ settings('shop_address', 'Dubai, UAE') }}</span>
-                        <span>Phone: {{ settings('shop_phone', settings('contact_phone', '+971 00 000 0000')) }}</span><br>
-                        <span>Email: {{ settings('contact_email', 'sales@electromart.ae') }}</span><br>
-                        <span style="font-weight: 800; text-transform: uppercase; margin-top: 5px; display: inline-block;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</span>
+                <td style="width: 50%; vertical-align: top;">
+                    @if(settings('site_logo'))
+                        <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" style="max-height: 50px; margin-bottom: 8px;">
+                    @endif
+                    <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 5px;">{{ settings('shop_name', 'Tech Hub Information Technology') }}</div>
+                    <div style="color: #64748b; line-height: 1.4; font-size: 11px;">
+                        {{ settings('shop_address', 'Dubai, UAE') }}<br>
+                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <div style="font-weight: 800; color: #1e293b; margin-top: 8px; text-transform: uppercase; font-size: 12px;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</div>
                     </div>
                 </td>
-                <td class="header-right" style="width: 50%; vertical-align: top;">
-                    <div class="doc-type">Quotation</div>
-                    <div style="margin-top: 10px;">
-                        <span class="info-label">Quotation Number</span><br>
-                        <span class="info-value">{{ $quotation->quotation_no }}</span>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <table style="width: 100%;">
-                            <tr>
-                                <td align="right">
-                                    <span class="info-label">Date</span><br>
-                                    <span class="info-value">{{ $quotation->created_at->format('d M, Y') }}</span>
-                                </td>
-                            </tr>
-                            @if($quotation->expiry_date)
-                            <tr>
-                                <td align="right" style="padding-top: 10px;">
-                                    <span class="info-label">Valid Until</span><br>
-                                    <span class="info-value" style="color: #e11d48;">{{ $quotation->expiry_date->format('d M, Y') }}</span>
-                                </td>
-                            </tr>
-                            @endif
-                        </table>
+                <td style="width: 50%; text-align: right; vertical-align: top;">
+                    <h1 style="font-size: 28px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase;">
+                        Quotation
+                    </h1>
+                    <div style="margin-top: 10px; font-size: 11px; line-height: 1.6;">
+                        <div style="margin-bottom: 2px;">
+                            <span class="info-label">Quotation #:</span> 
+                            <span class="info-value">{{ $quotation->quotation_no }}</span>
+                        </div>
+                        <div style="margin-bottom: 2px;">
+                            <span class="info-label">Date:</span> 
+                            <span class="info-value">{{ ($quotation->date ?? $quotation->created_at)->format('d M Y') }}</span>
+                        </div>
+                        @if($quotation->expiry_date)
+                        <div style="margin-bottom: 2px;">
+                            <span class="info-label">Valid Until:</span> 
+                            <span class="info-value" style="color: #e11d48;">{{ $quotation->expiry_date->format('d M Y') }}</span>
+                        </div>
+                        @endif
+                        <div style="margin-top: 8px;">
+                            <span class="info-label">Status:</span> 
+                            <span class="badge badge-{{ $quotation->status }}">{{ $quotation->status }}</span>
+                        </div>
                     </div>
                 </td>
             </tr>
         </table>
 
-        <!-- Customer Info -->
+        <!-- Info Sections -->
         <table class="customer-section">
             <tr>
-                <td style="width: 50%; vertical-align: top;">
-                    <div class="customer-box">
-                        <div class="info-label" style="margin-bottom: 5px;">Customer Details</div>
-                        <div style="font-size: 14px; font-weight: 800; color: #0f172a;">{{ $quotation->customer_name }}</div>
-                        @if($quotation->customer)
-                            <div style="margin-top: 5px; font-weight: 700; color: #475569;">
-                                <span>Ph: {{ $quotation->customer->phone }}</span><br>
-                                @if($quotation->customer->email)
-                                    <span>Em: {{ $quotation->customer->email }}</span><br>
-                                @endif
-                                @if($quotation->customer->trn_number)
-                                    <span style="text-transform: uppercase; font-weight: 800; color: #1e293b; margin-top: 5px; display: inline-block;">TRN: {{ $quotation->customer->trn_number }}</span>
-                                @endif
-                            </div>
-                        @endif
-                    </div>
+                <td style="width: 60%; vertical-align: top;">
+                    <div class="info-label" style="margin-bottom: 8px; color: #94a3b8;">Customer Details:</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">{{ $quotation->customer_name }}</div>
+                    @if($quotation->customer)
+                        <div style="color: #475569; line-height: 1.5; font-size: 11px;">
+                            <span>{{ $quotation->customer->phone }}</span><br>
+                            @if($quotation->customer->email)
+                                <span>{{ $quotation->customer->email }}</span><br>
+                            @endif
+                            @if($quotation->customer->trn_number)
+                                <span style="font-weight: 800; color: #2563eb; margin-top: 6px; display: inline-block;">TRN: {{ $quotation->customer->trn_number }}</span>
+                            @endif
+                        </div>
+                    @endif
                 </td>
-                <td style="width: 50%; vertical-align: middle; text-align: right;">
-                    <span class="badge badge-{{ $quotation->status }}">{{ $quotation->status }}</span>
-                    <div style="margin-top: 8px;">
-                        <span class="info-label">Generated by:</span>
-                        <span style="font-weight: 800; color: #1e293b;">{{ $quotation->user->name ?? 'Admin' }}</span>
+                <td style="width: 40%; vertical-align: top; text-align: right;">
+                    <div class="info-label" style="margin-bottom: 8px; color: #94a3b8;">Generated By:</div>
+                    <div style="color: #475569; line-height: 1.6; font-size: 11px;">
+                         <span style="font-weight: 700; color: #1e293b;">{{ $quotation->user->name ?? 'Admin' }}</span>
                     </div>
                 </td>
             </tr>
@@ -326,19 +325,23 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 60%;">Item Description</th>
+                    <th style="width: 45%;">Item Description</th>
                     <th style="width: 10%; text-align: center;">Qty</th>
-                    <th style="width: 15%; text-align: right;">Unit Price</th>
-                    <th style="width: 15%; text-align: right;">Total (Incl. VAT)</th>
+                    <th style="width: 15%; text-align: right;">Rate</th>
+                    <th style="width: 10%; text-align: center;">Tax %</th>
+                    <th style="width: 10%; text-align: right;">Tax</th>
+                    <th style="width: 10%; text-align: right;">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($quotation->items as $item)
                 <tr>
-                    <td><span style="font-weight: 700; color: #0f172a; font-size: 12px;">{{ $item->product_name }}</span></td>
-                    <td align="center" style="font-weight: 700;">{{ $item->quantity }}</td>
-                    <td align="right" style="color: #475569;">AED {{ number_format($item->unit_price, 2) }}</td>
-                    <td align="right" style="font-weight: 700; color: #0f172a;">AED {{ number_format($item->subtotal, 2) }}</td>
+                    <td><span style="font-weight: 400; color: #0f172a; font-size: 12px;">{{ $item->product_name }}</span></td>
+                    <td align="center" style="font-weight: 400;">{{ number_format($item->quantity, 3) }}</td>
+                    <td align="right" style="color: #475569;">{{ number_format($item->unit_price, 2) }}</td>
+                    <td align="center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
+                    <td align="right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
+                    <td align="right" style="font-weight: 400; color: #0f172a;">{{ number_format($item->subtotal, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -350,10 +353,6 @@
                 <table style="width: 100%;">
                     <tr>
                         <td class="total-label">Subtotal</td>
-                        <td class="total-value">AED {{ number_format($quotation->subtotal + $quotation->discount + $quotation->vat_amount, 2) }}</td>
-                    </tr>
-                    <tr class="total-row">
-                        <td class="total-label">Excl. VAT</td>
                         <td class="total-value">AED {{ number_format($quotation->subtotal, 2) }}</td>
                     </tr>
                     @if($quotation->discount > 0)
@@ -362,10 +361,20 @@
                         <td class="total-value" style="color: #e11d48;">- AED {{ number_format($quotation->discount, 2) }}</td>
                     </tr>
                     @endif
-                    <tr>
-                        <td class="total-label">VAT (5%)</td>
-                        <td class="total-value">AED {{ number_format($quotation->vat_amount, 2) }}</td>
-                    </tr>
+                    @php
+                        $groupedTaxes = $quotation->items->groupBy('tax_rate');
+                    @endphp
+                    @foreach($groupedTaxes as $rate => $items)
+                        @php
+                            $taxAmount = $items->sum('tax_amount');
+                            if($taxAmount <= 0) continue;
+                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
+                        @endphp
+                        <tr>
+                            <td class="total-label">{{ $label }}</td>
+                            <td class="total-value">AED {{ number_format($taxAmount, 2) }}</td>
+                        </tr>
+                    @endforeach
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
                         <td class="grand-total-value">AED {{ number_format($quotation->total, 2) }}</td>
@@ -379,20 +388,24 @@
             <table style="width: 100%;">
                 <tr>
                     <td style="width: 60%; vertical-align: top;">
-                        <div class="terms-title">Terms & Conditions</div>
+                        <div class="terms-title">Notes</div>
                         <ul class="terms-list">
-                            <li>1. Prices are valid for 15 days from the date of quotation.</li>
-                            <li>2. Items are subject to availability at the time of order confirmation.</li>
-                            <li>3. Standard warranty applies to all electronic items unless otherwise specified.</li>
-                            <li>4. This is a computer-generated document and does not require a physical signature.</li>
+                            @if(settings('quotation_notes'))
+                                {!! nl2br(e(settings('quotation_notes'))) !!}
+                            @else
+                                <li>1. Prices are valid for 15 days from the date of quotation.</li>
+                                <li>2. Items are subject to availability at the time of order confirmation.</li>
+                                <li>3. Standard warranty applies to all electronic items unless otherwise specified.</li>
+                                <li>4. This is a computer-generated document and does not require a physical signature.</li>
+                            @endif
                         </ul>
                     </td>
                     <td style="width: 40%; vertical-align: bottom; text-align: right;">
                         <div style="font-size: 8px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">
-                            Official Quotation • {{ settings('site_name', 'ElectroMart') }}
+                            Official Quotation • {{ settings('site_name', 'Tech Hub') }}
                         </div>
                         <div style="font-size: 8px; color: #e2e8f0; margin-top: 5px;">
-                            Generated by {{ settings('site_name', 'ElectroMart') }} ERP
+                            Generated by {{ settings('site_name', 'Tech Hub') }} ERP
                         </div>
                     </td>
                 </tr>

@@ -152,6 +152,11 @@
                         <input type="number" step="0.01" name="price"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 simple-input focus:border-blue-500" required>
                     </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-500">Sale Price (AED)</label>
+                        <input type="number" step="0.01" name="sale_price"
+                            class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" placeholder="Optional">
+                    </div>
                     <div id="cost_field_container">
                         <label class="block text-xs uppercase font-bold text-gray-500">Cost Price (AED) <span class="text-red-500">*</span></label>
                         <input type="number" step="0.01" name="cost" id="cost_input"
@@ -166,6 +171,11 @@
                         <label class="block text-xs uppercase font-bold text-gray-500">Current Stock</label>
                         <input type="number" name="stock" id="stock_input"
                             class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" value="0">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-500">Low Stock Alert</label>
+                        <input type="number" name="alert_quantity" id="alert_quantity_input"
+                            class="w-full mt-1 border border-gray-300 rounded-md p-2 focus:border-blue-500" value="5">
                     </div>
                     <div class="md:col-span-4" id="barcode_field_container">
                         <label class="block text-xs uppercase font-bold text-gray-500">Barcode (Scanner Input)</label>
@@ -350,7 +360,9 @@
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">SKU</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Cost (AED)</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Price (AED)</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Sale (AED)</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Stock</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Alert</th>
                     <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Barcode</th>
                     <th></th>`;
                 
@@ -386,7 +398,9 @@
                     <td class="p-2"><input type="text" name="variants[${rowIdx}][sku]" class="w-full border rounded p-1.5 text-sm" placeholder="SKU" required></td>
                     <td class="p-2"><input type="number" step="0.01" name="variants[${rowIdx}][cost]" class="w-full border rounded p-1.5 text-sm" placeholder="0.00" required></td>
                     <td class="p-2"><input type="number" step="0.01" name="variants[${rowIdx}][price]" class="w-full border rounded p-1.5 text-sm" placeholder="0.00" required></td>
+                    <td class="p-2"><input type="text" step="0.01" name="variants[${rowIdx}][sale_price]" class="w-full border rounded p-1.5 text-sm" placeholder="Optional"></td>
                     <td class="p-2"><input type="number" name="variants[${rowIdx}][stock]" class="w-full border rounded p-1.5 text-sm" value="0"></td>
+                    <td class="p-2"><input type="number" name="variants[${rowIdx}][alert_quantity]" class="w-full border rounded p-1.5 text-sm" value="5"></td>
                     <td class="p-2"><input type="text" name="variants[${rowIdx}][barcode]" class="w-full border rounded p-1.5 text-sm" placeholder="Scan"></td>
                     <td class="p-2 text-center">
                         <input type="hidden" name="variants[${rowIdx}][name]" value="Auto-Generated"> 

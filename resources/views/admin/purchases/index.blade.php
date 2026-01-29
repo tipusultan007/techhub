@@ -40,14 +40,20 @@
                         AED {{ number_format($order->total_cost, 2) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            {{ $order->status === 'received' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                            {{ ucfirst($order->status) }}
-                        </span>
+                        @if($order->status === 'completed')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                        @elseif($order->status === 'partial_received')
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Partial Received</span>
+                        @else
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <a href="{{ route('purchases.show', $order->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View Details">
                             <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ route('purchases.edit', $order->id) }}" class="text-blue-600 hover:text-blue-800 mr-3" title="Edit Order">
+                            <i class="fas fa-edit"></i>
                         </a>
                         <a href="{{ route('purchases.print', $order->id) }}" target="_blank" class="text-gray-500 hover:text-gray-900" title="Print Invoice">
                             <i class="fas fa-print"></i>

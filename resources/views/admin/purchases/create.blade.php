@@ -25,13 +25,13 @@
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700">Reference / Invoice #</label>
-                <input type="text" name="reference_no" placeholder="e.g. INV-998877" class="w-full border rounded p-2 mt-1" required>
+                <input type="text" name="reference_no" value="{{ $nextPoNumber }}" class="w-full border rounded p-2 mt-1 bg-gray-100 font-mono font-bold" readonly required>
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700">Status</label>
                 <select name="status" class="w-full border rounded p-2 mt-1">
-                    <option value="received">Received (Update Stock)</option>
                     <option value="pending">Pending (No Stock Update)</option>
+                    <option value="completed">Completed (Update Full Stock)</option>
                 </select>
             </div>
         </div>
@@ -52,8 +52,10 @@
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="p-3 text-left font-bold text-gray-600">Product / SKU</th>
-                        <th class="p-3 w-32 font-bold text-gray-600">Unit Cost (Excl. VAT)</th>
+                        <th class="p-3 w-32 font-bold text-gray-600">Unit Cost</th>
                         <th class="p-3 w-24 font-bold text-gray-600">Qty</th>
+                        <th class="p-3 w-24 font-bold text-gray-600">Tax %</th>
+                        <th class="p-3 w-24 font-bold text-gray-600 text-right">Tax</th>
                         <th class="p-3 w-32 font-bold text-gray-600 text-right">Row Total</th>
                         <th class="p-3 w-10"></th>
                     </tr>
@@ -63,17 +65,15 @@
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td colspan="3" class="text-right p-2 font-bold text-gray-600">Subtotal (Net):</td>
+                        <td colspan="5" class="text-right p-2 font-bold text-gray-600">Subtotal (Net):</td>
                         <td class="p-2 text-right font-bold text-gray-800" id="display_subtotal">0.00</td>
                         <td></td>
                     </tr>
-                    <tr>
-                        <td colspan="3" class="text-right p-2 font-bold text-gray-600">Input VAT (5%):</td>
-                        <td class="p-2 text-right font-bold text-red-600" id="display_vat">0.00</td>
-                        <td></td>
-                    </tr>
+                    <tbody id="tax_summary_body" class="bg-gray-50">
+                        <!-- Dynamic Tax Lines -->
+                    </tbody>
                     <tr class="bg-blue-50 border-t border-blue-200">
-                        <td colspan="3" class="text-right p-3 font-bold text-lg text-blue-900">GRAND TOTAL:</td>
+                        <td colspan="5" class="text-right p-3 font-bold text-lg text-blue-900">GRAND TOTAL:</td>
                         <td class="p-3 text-right font-bold text-lg text-blue-900">AED <span id="display_grand_total">0.00</span></td>
                         <td></td>
                     </tr>
@@ -155,6 +155,14 @@
                 <td class="p-2 align-middle">
                     <input type="number" name="items[${rowIdx}][qty]" value="1" min="1" class="w-full border rounded p-1 qty-input text-center" oninput="calculateTotal()" required>
                 </td>
+                <td class="p-2 align-middle">
+                    <select name="items[${rowIdx}][tax_rate]" class="w-full border rounded p-1 item-tax-rate" onchange="calculateTotal()">
+                        <option value="0" ${item.tax_rate == 0 ? 'selected' : ''}>0%</option>
+                        <option value="5" ${item.tax_rate == 5 ? 'selected' : ''}>5%</option>
+                        <option value="10" ${item.tax_rate == 10 ? 'selected' : ''}>10%</option>
+                    </select>
+                </td>
+                <td class="p-2 align-middle text-right font-mono text-xs text-gray-500 row-tax-display">0.00</td>
                 <td class="p-2 align-middle text-right font-mono bg-gray-50 subtotal-display">
                     ${item.cost}
                 </td>
@@ -171,24 +179,45 @@
         // 3. Calculate Totals (Subtotal, VAT, Grand Total)
         window.calculateTotal = function() {
             let netTotal = 0;
+            let totalVat = 0;
+            let taxes = {};
             
             $('#po_items_body tr').each(function() {
                 let cost = parseFloat($(this).find('.cost-input').val()) || 0;
                 let qty = parseFloat($(this).find('.qty-input').val()) || 0;
-                let rowTotal = cost * qty;
+                let taxRate = parseFloat($(this).find('.item-tax-rate').val()) || 0;
                 
+                let rowTotal = cost * qty;
+                let rowVat = rowTotal * (taxRate / 100);
+
+                $(this).find('.row-tax-display').text(rowVat.toFixed(2));
                 $(this).find('.subtotal-display').text(rowTotal.toFixed(2));
+                
                 netTotal += rowTotal;
+                totalVat += rowVat;
+
+                if (taxRate > 0) {
+                    if (!taxes[taxRate]) taxes[taxRate] = 0;
+                    taxes[taxRate] += rowVat;
+                }
             });
 
-            // VAT Calculation (Input VAT is usually Exclusive on B2B purchases)
-            // Example: Buy item for 100 + 5% VAT = 105 Total Payable
-            let vatRate = 0.05; 
-            let vatAmount = netTotal * vatRate;
-            let grandTotal = netTotal + vatAmount;
-
+            // Update Summary
             $('#display_subtotal').text(netTotal.toFixed(2));
-            $('#display_vat').text(vatAmount.toFixed(2));
+            
+            let taxHtml = '';
+            for (let rate in taxes) {
+                let label = rate == 5 ? 'VAT (5%)' : `Tax (${rate}%)`;
+                taxHtml += `
+                    <tr>
+                        <td colspan="5" class="text-right p-2 font-bold text-gray-600 italic">${label}:</td>
+                        <td class="p-2 text-right font-bold text-red-600 italic">AED ${taxes[rate].toFixed(2)}</td>
+                        <td></td>
+                    </tr>`;
+            }
+            $('#tax_summary_body').html(taxHtml);
+
+            let grandTotal = netTotal + totalVat;
             $('#display_grand_total').text(grandTotal.toFixed(2));
         };
 

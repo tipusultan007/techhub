@@ -39,6 +39,11 @@ class OrderController extends Controller
             $query->where('payment_method', $request->payment_method);
         }
 
+        // Filter by Channel (Online/POS)
+        if ($request->filled('channel')) {
+            $query->where('channel', $request->channel);
+        }
+
         // Filter by Date Range
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);

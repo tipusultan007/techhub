@@ -26,14 +26,14 @@ class CustomerWelcomeNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Welcome to ElectroMart!')
+            ->subject('Welcome to Tech Hub Information Technology!')
             ->view('mail.customer.welcome', ['customer' => $this->customer]);
     }
 
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Welcome to ElectroMart!',
+            'message' => 'Welcome to Tech Hub Information Technology!',
             'type' => 'welcome'
         ];
     }

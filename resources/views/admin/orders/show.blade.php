@@ -34,10 +34,11 @@
                 </div>
             </div>
             <div class="text-right">
-                <h3 class="font-bold text-lg text-gray-700">ElectroMart UAE</h3>
-                <p class="text-sm text-gray-500">Dubai Silicon Oasis</p>
-                <p class="text-sm text-gray-500">Dubai, United Arab Emirates</p>
-                <p class="text-sm font-bold text-gray-600 mt-1">TRN: 100200300400500</p>
+                <h3 class="font-bold text-lg text-gray-700">{{ settings('shop_name', 'Tech Hub UAE') }}</h3>
+                <p class="text-sm text-gray-500">{{ settings('shop_address', 'Dubai, UAE') }}</p>
+                <p class="text-sm text-gray-500">Phone: {{ settings('shop_phone') }}</p>
+                <p class="text-sm text-gray-500">Email: {{ settings('contact_email') }}</p>
+                <p class="text-sm font-bold text-gray-600 mt-1">TRN: {{ settings('shop_trn', '100200300400500') }}</p>
             </div>
         </div>
 
@@ -70,6 +71,8 @@
                     <th class="px-8 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Item Description</th>
                     <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Unit Price</th>
                     <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</th>
+                    <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Tax (%)</th>
+                    <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Tax Amount</th>
                     <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
                 </tr>
             </thead>
@@ -77,7 +80,7 @@
                 @foreach($order->items as $item)
                 <tr>
                     <td class="px-8 py-4">
-                        <div class="text-sm font-bold text-gray-800">{{ $item->product_name }}</div>
+                        <div class="text-sm font-regular text-gray-800">{{ $item->product_name }}</div>
                         
                         <!-- Serial & Warranty Info -->
                         @if($item->serial_numbers)
@@ -96,7 +99,13 @@
                         {{ number_format($item->unit_price, 2) }}
                     </td>
                     <td class="px-8 py-4 text-sm text-right text-gray-600">
-                        {{ $item->quantity }}
+                        {{ $item->quantity + 0 }}
+                    </td>
+                    <td class="px-8 py-4 text-sm text-right text-gray-600">
+                        {{ number_format($item->tax_rate, 2) }}%
+                    </td>
+                    <td class="px-8 py-4 text-sm text-right text-gray-600">
+                        {{ number_format($item->tax_amount, 2) }}
                     </td>
                     <td class="px-8 py-4 text-sm text-right font-bold text-gray-800">
                         {{ number_format($item->subtotal, 2) }}
@@ -128,13 +137,23 @@
 
                 <!-- Tax Breakdown -->
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Net Amount (Excl. VAT)</span>
+                    <span>Net Amount</span>
                     <span>AED {{ number_format($order->subtotal, 2) }}</span>
                 </div>
-                <div class="flex justify-between text-sm text-gray-600">
-                    <span>VAT (5%)</span>
-                    <span>AED {{ number_format($order->vat_amount, 2) }}</span>
-                </div>
+                @php
+                    $groupedTaxes = $order->items->groupBy('tax_rate');
+                @endphp
+                @foreach($groupedTaxes as $rate => $items)
+                    @php
+                        $taxAmount = $items->sum('tax_amount');
+                        if($taxAmount <= 0) continue;
+                        $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
+                    @endphp
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>{{ $label }}</span>
+                        <span>AED {{ number_format($taxAmount, 2) }}</span>
+                    </div>
+                @endforeach
 
                 <!-- Grand Total -->
                 <div class="flex justify-between text-xl font-bold text-gray-900 border-t border-gray-400 pt-3">

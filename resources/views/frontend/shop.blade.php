@@ -33,8 +33,8 @@
 
         /* Checkboxes */
         .checkbox-group { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); cursor: pointer; margin-bottom: 6px; }
-        .checkbox-group:hover { color: var(--brand-magenta); }
-        .checkbox-group input { accent-color: var(--brand-magenta); width: 16px; height: 16px; border-radius: 4px; border: 1px solid #cbd5e1; }
+        .checkbox-group:hover { color: var(--brand-emerald); }
+        .checkbox-group input { accent-color: var(--brand-emerald); width: 16px; height: 16px; border-radius: 4px; border: 1px solid #cbd5e1; }
 
         /* Price Inputs */
         .price-inputs { display: flex; gap: 5px; margin-bottom: 10px; }
@@ -45,7 +45,7 @@
             width: 100%; background: var(--brand-deep-blue); color: white; padding: 12px;
             border: none; border-radius: var(--radius); font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px;
         }
-        .btn-filter-apply:hover { background: var(--brand-magenta); }
+        .btn-filter-apply:hover { background: var(--brand-emerald); }
 
         /* Toolbar */
         .toolbar { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: var(--shadow); }
@@ -284,7 +284,7 @@
                         <i class="ri-search-line" style="font-size:3rem; color:#cbd5e1; margin-bottom:15px; display:block;"></i>
                         <h3 style="font-weight:700; color:#64748b;">No products found</h3>
                         <p style="color:#94a3b8; font-size:0.9rem;">Try adjusting your filters.</p>
-                        <a href="{{ route('shop.index') }}" style="margin-top:15px; display:inline-block; color:var(--brand-magenta); font-weight:600; font-size:0.9rem;">Clear Filters</a>
+                        <a href="{{ route('shop.index') }}" style="margin-top:15px; display:inline-block; color:var(--brand-emerald); font-weight:600; font-size:0.9rem;">Clear Filters</a>
                     </div>
                 @endif
 

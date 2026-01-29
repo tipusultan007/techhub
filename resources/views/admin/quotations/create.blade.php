@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Quotation | ElectroMart UAE</title>
+    <title>Create Quotation | Tech Hub UAE</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,6 +19,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
@@ -27,6 +31,20 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .product-card:active { transform: scale(0.98); }
+        
+        /* Select2 Custom Styling to match Tailwind */
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            padding-top: 4px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
     </style>
 </head>
 
@@ -35,10 +53,17 @@
     <!-- === HEADER === -->
     <header class="bg-slate-900 text-white h-16 flex items-center justify-between px-6 shadow-md z-20">
         <div class="flex items-center gap-4">
-            <div class="font-bold text-xl tracking-wide">
-                <i class="fas fa-file-invoice text-blue-400 mr-2"></i>ELECTROMART <span
-                    class="text-gray-400 text-sm font-normal">Quotation Generator</span>
-            </div>
+             @if(settings('site_logo_scrolled'))
+                <img src="{{ settings('site_logo_scrolled') }}" alt="Logo" class="h-16 object-contain rounded p-1">
+                <div class="font-bold text-xl tracking-wide">
+                    <span class="text-gray-400 text-sm font-normal">Quotation Generator</span>
+                </div>
+            @else
+                <div class="font-bold text-xl tracking-wide">
+                    <i class="fas fa-bolt text-yellow-400 mr-2"></i>{{ settings('site_name', 'Tech Hub') }} <span
+                        class="text-gray-400 text-sm font-normal">Quotation Generator</span>
+                </div>
+            @endif
         </div>
 
         <div class="flex items-center gap-6">
@@ -75,9 +100,14 @@
             <!-- Categories -->
             <div class="px-4 py-2 bg-white border-b flex gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
                 <button class="bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow">All Items</button>
-                @foreach ($categories ?? [] as $cat)
-                    <button class="bg-gray-200 text-gray-700 hover:bg-slate-200 px-4 py-2 rounded-full text-sm font-bold transition">{{ $cat->name }}</button>
-                @endforeach
+                <button onclick="openServiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow transition">
+                    <i class="fas fa-plus-circle mr-1"></i> Add Service
+                </button>
+                @isset($categories)
+                    @foreach ($categories as $cat)
+                        <button class="bg-gray-200 text-gray-700 hover:bg-slate-200 px-4 py-2 rounded-full text-sm font-bold transition">{{ $cat->name }}</button>
+                    @endforeach
+                @endisset
             </div>
 
             <!-- Product Grid -->
@@ -121,21 +151,33 @@
         <div class="w-full md:w-1/3 bg-white flex flex-col shadow-2xl z-10">
 
             <!-- Customer Select -->
-            <div class="p-4 border-b bg-gray-50">
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Select Customer</label>
-                <select id="customer_id" class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
-                    <option value="">Walk-in Customer</option>
-                    @foreach ($customers as $c)
-                        <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->phone }})</option>
-                    @endforeach
-                </select>
+            <div class="p-4 border-b bg-gray-50 flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Select Customer</label>
+                    <select id="customer_id" class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
+                        <option value="">Walk-in Customer</option>
+                        @foreach ($customers as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->phone }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="w-32">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Quote Date</label>
+                    <input type="date" id="quotation_date" value="{{ date('Y-m-d') }}" class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
+                </div>
+                <div class="w-32">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expiry Date</label>
+                    <input type="date" id="expiry_date" value="{{ date('Y-m-d', strtotime('+15 days')) }}" class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
+                </div>
             </div>
 
             <!-- Cart Header -->
             <div class="grid grid-cols-12 bg-slate-100 text-gray-600 text-xs font-bold uppercase p-2 border-b">
-                <div class="col-span-6 pl-2">Item</div>
-                <div class="col-span-3 text-center">Qty</div>
-                <div class="col-span-3 text-right pr-2">Total</div>
+                <div class="col-span-4 pl-2">Item</div>
+                <div class="col-span-2 text-center">Qty</div>
+                <div class="col-span-2 text-center">Tax %</div>
+                <div class="col-span-2 text-right">Tax</div>
+                <div class="col-span-2 text-right pr-2">Total</div>
             </div>
 
             <!-- Cart Items (Scrollable) -->
@@ -168,9 +210,8 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-between text-gray-600">
-                        <span>VAT (5% Included)</span>
-                        <span class="font-mono" id="lbl-vat">0.00</span>
+                    <div id="tax-details-container" class="space-y-1">
+                        <!-- Grouped taxes will be injected here -->
                     </div>
 
                     <div class="flex justify-between text-2xl font-bold text-slate-900 border-t border-gray-300 pt-2 mt-2">
@@ -186,6 +227,46 @@
         </div>
     </div>
 
+    <!-- Custom Service Modal -->
+    <div id="serviceModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
+            <div class="text-center mb-6">
+                <div class="bg-indigo-100 text-indigo-600 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Add Instant Service</h3>
+                <p class="text-sm text-gray-500 mt-1">Add a non-inventory item to the quotation</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Service Name</label>
+                    <input type="text" id="service_name" class="w-full border-2 border-indigo-100 rounded-lg p-3 focus:outline-none focus:border-indigo-500" placeholder="e.g. Consulting Fee" autocomplete="off">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Price (AED)</label>
+                        <input type="number" id="service_price" class="w-full border-2 border-indigo-100 rounded-lg p-3 focus:outline-none focus:border-indigo-500" placeholder="0.00" step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Tax Rate (%)</label>
+                        <select id="service_tax" class="w-full border-2 border-indigo-100 rounded-lg p-3 focus:outline-none focus:border-indigo-500">
+                            <option value="0">0% (Tax Free)</option>
+                            <option value="5" selected>5% (VAT)</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-8">
+                <button onclick="closeServiceModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300">Cancel</button>
+                <button onclick="addInstantService()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 shadow-lg active:scale-95 transition">Add to Quotation</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Processing Overlay -->
     <div id="processingOverlay" class="fixed inset-0 bg-white bg-opacity-80 hidden items-center justify-center z-50">
         <div class="text-center">
@@ -194,7 +275,26 @@
         </div>
     </div>
 
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#customer_id').select2({
+                    placeholder: "Select a customer",
+                    allowClear: true
+                });
+            });
+        </script>
+    @endpush
+
     <script>
+        $(document).ready(function() {
+            $('#customer_id').select2({
+                placeholder: "Select a customer",
+                allowClear: true
+            });
+        });
+
         let cart = [];
         const beep = new Audio('https://www.soundjay.com/button/sounds/beep-07.mp3');
 
@@ -247,7 +347,7 @@
             if (existing) {
                 existing.qty++;
             } else {
-                cart.push({ ...product, qty: 1 });
+                cart.push({ ...product, qty: 1, tax_rate: 0, tax_amount: 0 });
             }
             renderCart();
         }
@@ -261,43 +361,85 @@
                 $('#empty-cart-msg').hide();
                 cart.forEach((item, index) => {
                     let sub = item.price * item.qty;
+                    let taxRate = parseFloat(item.tax_rate) || 0;
+                    let taxAmount = sub * (taxRate / 100);
+                    item.tax_amount = taxAmount;
                     total += sub;
+
                     html += `
                     <tr class="border-b">
-                        <td class="p-2 text-xs font-bold">
+                        <td class="p-2 text-xs font-medium w-[35%]">
                             ${item.type === 'service' ? 
                                 `<input type="text" value="${item.name}" class="w-full border rounded px-1 py-0.5 text-xs font-bold border-blue-300 focus:border-blue-500 outline-none" onchange="updateItemName(${index}, this.value)">` : 
                                 item.name
                             }
                             <div class="text-[10px] text-gray-400 mt-1 font-mono">${item.sku}</div>
                         </td>
-                        <td class="p-2 text-center">
+                        <td class="p-2 text-center w-[15%]">
                             <div class="flex items-center justify-center border rounded">
-                                <button onclick="updateQty(${index}, -1)" class="px-2 border-r">-</button>
-                                <span class="px-2">${item.qty}</span>
-                                <button onclick="updateQty(${index}, 1)" class="px-2 border-l">+</button>
+                                <button onclick="updateQty(${index}, -1)" class="px-1 border-r text-xs">-</button>
+                                <span class="px-2 text-xs">${item.qty}</span>
+                                <button onclick="updateQty(${index}, 1)" class="px-1 border-l text-xs">+</button>
                             </div>
                         </td>
-                        <td class="p-2 text-right">
+                        <td class="p-2 text-center w-[15%]">
+                            <select class="w-full border rounded p-1 text-xs" onchange="updateTax(${index}, this.value)">
+                                <option value="0" ${item.tax_rate == 0 ? 'selected' : ''}>0%</option>
+                                <option value="5" ${item.tax_rate == 5 ? 'selected' : ''}>5%</option>
+                                <option value="10" ${item.tax_rate == 10 ? 'selected' : ''}>10%</option>
+                            </select>
+                        </td>
+                        <td class="p-2 text-right w-[15%]">
+                            <div class="text-xs font-mono text-gray-500">${taxAmount.toFixed(2)}</div>
+                        </td>
+                        <td class="p-2 text-right w-[20%]">
                             <div class="mb-1">
                                 <input type="number" step="0.01" value="${item.price}" 
-                                    class="w-20 border rounded p-1 text-right text-xs font-bold text-blue-600 focus:outline-none focus:border-blue-500"
+                                    class="w-full border rounded p-1 text-right text-xs font-bold text-blue-600 focus:outline-none focus:border-blue-500"
                                     onchange="updatePrice(${index}, this.value)">
                             </div>
-                            <div class="font-bold text-gray-700">${sub.toFixed(2)}</div>
-                            <button onclick="removeItem(${index})" class="text-red-500 block ml-auto mt-1"><i class="fas fa-trash"></i></button>
+                            <div class="font-bold text-gray-700 text-xs">${sub.toFixed(2)}</div>
+                            <button onclick="removeItem(${index})" class="text-red-500 block ml-auto mt-1"><i class="fas fa-trash text-xs"></i></button>
                         </td>
                     </tr>`;
                 });
             }
             $('#cart-body').html(html);
+            
             let discount = parseFloat($('#discount_input').val()) || 0;
-            let payable = total - discount;
-            let tax = payable - (payable / 1.05);
+            
+            // Group taxes
+            let groupedTaxes = {};
+            let totalTax = 0;
+            cart.forEach(item => {
+                let rate = parseFloat(item.tax_rate) || 0;
+                let amt = parseFloat(item.tax_amount) || 0;
+                let label = rate == 0 ? 'Zero Rate (0%)' : (rate == 5 ? 'VAT (5%)' : `Tax (${rate}%)`);
+                
+                if (!groupedTaxes[label]) groupedTaxes[label] = 0;
+                groupedTaxes[label] += amt;
+                totalTax += amt;
+            });
+
+            let taxHtml = '';
+            for (let label in groupedTaxes) {
+                taxHtml += `
+                <div class="flex justify-between text-gray-600 text-sm">
+                    <span>${label}</span>
+                    <span class="font-mono">${groupedTaxes[label].toFixed(2)}</span>
+                </div>`;
+            }
+            $('#tax-details-container').html(taxHtml);
+
+            let payable = (total + totalTax) - discount;
 
             $('#lbl-cart-total').text(total.toFixed(2));
             $('#lbl-payable').text(payable.toFixed(2));
-            $('#lbl-vat').text(tax.toFixed(2));
+        }
+
+        function updateTax(index, newRate) {
+            cart[index].tax_rate = parseFloat(newRate);
+            renderCart();
         }
 
         function updatePrice(index, newPrice) {
@@ -326,6 +468,47 @@
             renderCart();
         }
 
+        function openServiceModal() {
+            $('#service_name').val('');
+            $('#service_price').val('');
+            $('#service_tax').val('5');
+            $('#serviceModal').removeClass('hidden').addClass('flex');
+            setTimeout(() => $('#service_name').focus(), 100);
+        }
+
+        function closeServiceModal() {
+            $('#serviceModal').addClass('hidden').removeClass('flex');
+        }
+
+        function addInstantService() {
+            let name = $('#service_name').val().trim();
+            let price = parseFloat($('#service_price').val()) || 0;
+            let tax_rate = parseFloat($('#service_tax').val()) || 0;
+
+            if (!name) {
+                toastr.error('Please enter service name');
+                return;
+            }
+
+            beep.currentTime = 0;
+            beep.play();
+
+            cart.push({
+                id: null,
+                variant_id: null,
+                name: name,
+                price: price,
+                tax_rate: tax_rate,
+                is_service: true,
+                sku: 'SERVICE',
+                qty: 1
+            });
+
+            renderCart();
+            closeServiceModal();
+            toastr.success('Service added to quotation');
+        }
+
         function saveQuotation() {
             if (cart.length === 0) {
                 toastr.error('Cart is empty!');
@@ -338,6 +521,8 @@
                 data: {
                     items: cart,
                     customer_id: $('#customer_id').val(),
+                    date: $('#quotation_date').val(),
+                    expiry_date: $('#expiry_date').val(),
                     discount: $('#discount_input').val(),
                     amount_paid: $('#lbl-payable').text(),
                     _token: $('meta[name="csrf-token"]').attr('content')

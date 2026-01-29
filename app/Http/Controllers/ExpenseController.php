@@ -44,7 +44,11 @@ class ExpenseController extends Controller
             'expense_category_id' => 'required|exists:expense_categories,id',
         ]);
 
-        Expense::create($request->all() + ['user_id' => Auth::id()]);
+        $expense = Expense::create($request->except('attachment') + ['user_id' => Auth::id()]);
+
+        if ($request->hasFile('attachment')) {
+            $expense->addMediaFromRequest('attachment')->toMediaCollection('attachment');
+        }
 
         return back()->with('success', 'Expense recorded successfully.');
     }
@@ -57,7 +61,12 @@ class ExpenseController extends Controller
             'expense_category_id' => 'required|exists:expense_categories,id',
         ]);
 
-        $expense->update($request->all());
+        $expense->update($request->except('attachment'));
+
+        if ($request->hasFile('attachment')) {
+            $expense->clearMediaCollection('attachment');
+            $expense->addMediaFromRequest('attachment')->toMediaCollection('attachment');
+        }
 
         return back()->with('success', 'Expense updated successfully.');
     }

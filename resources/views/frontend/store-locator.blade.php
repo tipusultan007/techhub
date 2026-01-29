@@ -50,7 +50,7 @@
     }
     .info-item i {
         font-size: 1.5rem;
-        color: var(--brand-magenta);
+        color: var(--brand-emerald);
         margin-top: 3px;
     }
     .info-item h4 {
@@ -132,7 +132,7 @@
                 <i class="ri-map-pin-fill"></i>
                 <div>
                     <h4>Address</h4>
-                    <p>Building 42, Computer Street,<br>Al Mankhool, Bur Dubai, UAE</p>
+                    <p>{!! nl2br(e(settings('contact_address', 'Building 42, Computer Street, Al Mankhool, Bur Dubai, UAE'))) !!}</p>
                 </div>
             </div>
 
@@ -140,36 +140,42 @@
                 <i class="ri-phone-fill"></i>
                 <div>
                     <h4>Phone</h4>
-                    <p>+971 4 000 0000</p>
+                    <p>{{ settings('contact_phone', '+971 4 000 0000') }}</p>
                 </div>
             </div>
 
+            @if(settings('contact_whatsapp'))
             <div class="info-item">
                 <i class="ri-whatsapp-fill" style="color: #25D366;"></i>
                 <div>
                     <h4>WhatsApp</h4>
-                    <p>+971 50 000 0000</p>
+                    <p>{{ settings('contact_whatsapp') }}</p>
                 </div>
             </div>
+            @endif
 
             <div class="info-item">
                 <i class="ri-mail-fill"></i>
                 <div>
                     <h4>Email</h4>
-                    <p>sales@techhub.ae</p>
+                    <p>{{ settings('contact_email', 'sales@techhub.ae') }}</p>
                 </div>
             </div>
 
             <div class="business-hours">
                 <h4><i class="ri-time-fill"></i> Business Hours</h4>
+                @if(settings('hours_label_1'))
                 <div class="hours-row">
-                    <span>Monday - Saturday</span>
-                    <span>9:00 AM - 9:00 PM</span>
+                    <span>{{ settings('hours_label_1') }}</span>
+                    <span>{{ settings('hours_time_1') }}</span>
                 </div>
+                @endif
+                 @if(settings('hours_label_2'))
                 <div class="hours-row">
-                    <span>Sunday</span>
-                    <span>11:00 AM - 7:00 PM</span>
+                    <span>{{ settings('hours_label_2') }}</span>
+                    <span>{{ settings('hours_time_2') }}</span>
                 </div>
+                @endif
             </div>
 
             <a href="https://maps.google.com" target="_blank" class="btn-direction">
@@ -178,15 +184,35 @@
         </div>
 
         <!-- Google Map -->
-        <div class="map-container">
-            <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14436.438517220551!2d55.289133!3d25.260583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43393979bb95%3A0xe67f5bb14f5a34e8!2sBur%20Dubai%20-%20Dubai!5e0!3m2!1sen!2sae!4v1705660000000!5m2!1sen!2sae" 
-                width="100%" 
-                height="100%" 
-                style="border:0;" 
-                allowfullscreen="" 
-                loading="lazy">
-            </iframe>
+        <div class="map-container relative">
+            @php
+                // Extract src if full iframe is pasted
+                $mapHtml = settings('contact_map');
+                $mapSrc = '';
+                if (preg_match('/src="([^"]+)"/', $mapHtml, $match)) {
+                    $mapSrc = $match[1];
+                } else {
+                    $mapSrc = $mapHtml; // Assume it's just the URL if no iframe tag
+                }
+            @endphp
+            
+            @if($mapSrc)
+                <iframe 
+                    src="{{ $mapSrc }}" 
+                    width="100%" 
+                    height="100%" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy">
+                </iframe>
+            @else
+                 <div class="h-full w-full flex items-center justify-center bg-gray-100 text-gray-400">
+                    <div class="text-center">
+                        <i class="ri-map-2-line text-4xl mb-2"></i>
+                        <p>Map Location Not Set</p>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>

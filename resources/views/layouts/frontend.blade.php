@@ -10,6 +10,7 @@
     <meta name="description" content="@yield('meta_description', $settings['meta_description'] ?? 'Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions.')">
     <meta name="keywords" content="@yield('meta_keywords', $settings['meta_keywords'] ?? 'computer, gaming pc, laptop, dubai, tech hub')">
     <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="icon" href="{{ settings('site_favicon') ? asset(settings('site_favicon')) : asset('favicon.ico') }}">
 
     {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
@@ -145,6 +146,38 @@
             color: var(--text-main);
         }
     </style>
+    <!-- Dynamic Google Analytics -->
+    @if(settings('google_analytics_id'))
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ settings('google_analytics_id') }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ settings('google_analytics_id') }}');
+        </script>
+    @endif
+
+    <!-- Meta Pixel Code -->
+    @if(settings('facebook_pixel_id'))
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '{{ settings('facebook_pixel_id') }}');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ settings('facebook_pixel_id') }}&ev=PageView&noscript=1"/>
+    </noscript>
+    <!-- End Meta Pixel Code -->
+    @endif
+
     @stack('styles')
 </head>
 <body x-data="{ isCartOpen: false, isNavOpen: false, cartCount: {{ count(session('cart', [])) }} }"
@@ -169,11 +202,18 @@
 <header>
     <div class="container header-wrapper">
         <a href="{{ url('/') }}" class="logo">
-            <div class="logo-main">
-                <span class="logo-tech">TECH</span>
-                <span class="logo-hub">HUB</span>
-            </div>
-            <div class="logo-sub">COMPUTER TRADING</div>
+            @if(settings('site_logo'))
+                <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" class="logo-img logo-primary">
+                @if(settings('site_logo_scrolled'))
+                    <img src="{{ settings('site_logo_scrolled') }}" alt="{{ settings('site_name') }}" class="logo-img logo-scrolled">
+                @endif
+            @else
+                <div class="logo-main">
+                    <span class="logo-tech">TECH</span>
+                    <span class="logo-hub">HUB</span>
+                </div>
+                <div class="logo-sub">COMPUTER TRADING</div>
+            @endif
         </a>
 
         <button class="nav-toggle" @click="isNavOpen = true">
@@ -283,6 +323,9 @@
             <li class="{{ request()->is('/') ? 'active' : '' }}">
                 <a href="{{ url('/') }}">Home</a>
             </li>
+             <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
+                <a href="{{ route('solutions.index') }}">IT Solutions</a>
+            </li>
             @foreach($headerCategories as $category)
                 <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}">
                     <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
@@ -290,10 +333,6 @@
                     </a>
                 </li>
             @endforeach
-
-            <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
-                <a href="{{ route('solutions.index') }}">IT Solutions</a>
-            </li>
         </ul>
     </div>
 </div>
@@ -335,10 +374,16 @@
 <div class="nav-sidebar" :class="{ 'open': isNavOpen }">
     <div class="nav-sidebar-header">
         <div class="logo">
-            <div class="logo-main">
-                <span class="logo-tech">TECH</span>
-                <span class="logo-hub">HUB</span>
-            </div>
+            @if(settings('site_logo_scrolled'))
+                <img src="{{ settings('site_logo_scrolled') }}" alt="{{ settings('site_name') }}" class="logo-img" style="max-height: 35px;">
+            @elseif(settings('site_logo'))
+                <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" class="logo-img" style="max-height: 35px;">
+            @else
+                <div class="logo-main">
+                    <span class="logo-tech">TECH</span>
+                    <span class="logo-hub">HUB</span>
+                </div>
+            @endif
         </div>
         <span class="btn-close" @click="isNavOpen = false">&times;</span>
     </div>
@@ -377,26 +422,34 @@
         <div class="foot-grid">
             <div class="f-col">
                 <div class="logo" style="margin-bottom:15px; font-size:18px;">
-                    <div class="logo-main">
-                        <span class="logo-tech">TECH</span>
-                        <span class="logo-hub">HUB</span>
-                    </div>
+                    @if(settings('site_logo_footer'))
+                        <img src="{{ settings('site_logo_footer') }}" alt="{{ settings('site_name') }}" class="logo-img" style="max-height: 66px;">
+                    @elseif(settings('site_logo_scrolled'))
+                        <img src="{{ settings('site_logo_scrolled') }}" alt="{{ settings('site_name') }}" class="logo-img" style="max-height: 66px;">
+                    @elseif(settings('site_logo'))
+                        <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" class="logo-img" style="max-height: 66px;">
+                    @else
+                        <div class="logo-main">
+                            <span class="logo-tech">TECH</span>
+                            <span class="logo-hub">HUB</span>
+                        </div>
+                    @endif
                 </div>
                 <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin-bottom:20px;">
-                    Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions in the UAE.
+                    {!! nl2br(e(settings('footer_description', 'Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions in the UAE.'))) !!}
                 </p>
                 <div class="social-icons">
-                    @if($settings['social_instagram'] ?? false)
-                        <a href="{{ $settings['social_instagram'] }}" target="_blank"><i class="ri-instagram-fill"></i></a>
+                    @if(settings('social_instagram'))
+                        <a href="{{ settings('social_instagram') }}" target="_blank"><i class="ri-instagram-fill"></i></a>
                     @endif
-                    @if($settings['social_facebook'] ?? false)
-                        <a href="{{ $settings['social_facebook'] }}" target="_blank"><i class="ri-facebook-circle-fill"></i></a>
+                    @if(settings('social_facebook'))
+                        <a href="{{ settings('social_facebook') }}" target="_blank"><i class="ri-facebook-circle-fill"></i></a>
                     @endif
-                    @if($settings['social_linkedin'] ?? false)
-                        <a href="{{ $settings['social_linkedin'] }}" target="_blank"><i class="ri-linkedin-box-fill"></i></a>
+                    @if(settings('social_linkedin'))
+                        <a href="{{ settings('social_linkedin') }}" target="_blank"><i class="ri-linkedin-box-fill"></i></a>
                     @endif
-                    @if($settings['social_twitter'] ?? false)
-                        <a href="{{ $settings['social_twitter'] }}" target="_blank"><i class="ri-twitter-x-fill"></i></a>
+                    @if(settings('social_twitter'))
+                        <a href="{{ settings('social_twitter') }}" target="_blank"><i class="ri-twitter-x-fill"></i></a>
                     @endif
                 </div>
             </div>
@@ -404,11 +457,9 @@
             <div class="f-col">
                 <h4>Categories</h4>
                 <ul>
-                    <li><a href="#">Gaming PCs</a></li>
-                    <li><a href="#">Workstations</a></li>
-                    <li><a href="#">Laptops</a></li>
-                    <li><a href="#">PC Components</a></li>
-                    <li><a href="#">Networking</a></li>
+                    @foreach($footerCategories as $cat)
+                        <li><a href="{{ route('category.show', $cat->slug) }}">{{ $cat->name }}</a></li>
+                    @endforeach
                 </ul>
             </div>
 
@@ -417,10 +468,10 @@
                 <ul>
                     <li><a href="{{ url('/track-order') }}">Track Order</a></li>
                     <li><a href="{{ route('store.locator') }}">Store Locator</a></li>
-                    <li><a href="#">Return & Exchange</a></li>
-                    <li><a href="#">Warranty Policy</a></li>
-                    <li><a href="#">Business Inquiries</a></li>
-                    <li><a href="#">Contact Us</a></li>
+                    @foreach($footerPages as $page)
+                        <li><a href="{{ route('pages.show', $page->slug) }}">{{ $page->title }}</a></li>
+                    @endforeach
+                    <li><a href="{{ url('/contact') }}">Contact Us</a></li>
                 </ul>
             </div>
 
@@ -611,6 +662,16 @@
             }
         }
     }
+
+    // Header Scroll Effect
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('header');
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
 </script>
 <script src="//unpkg.com/alpinejs" defer></script>
 

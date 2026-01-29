@@ -35,7 +35,7 @@
         <!-- Main Content -->
         <div class="w-full lg:w-3/4">
             <div class="mb-10">
-                <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-8" style="background: rgba(3, 166, 150, 0.1); color: var(--brand-emerald);">
+                <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mb-8" style="background: rgba(45, 174, 154, 0.1); color: var(--brand-emerald);">
                     <i class="{{ $solution->icon_class }}"></i>
                 </div>
                 <h1 class="text-4xl font-extrabold text-slate-900 leading-tight">{{ $solution->title }}</h1>

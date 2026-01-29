@@ -70,6 +70,11 @@
                 <i class="fas fa-barcode mr-2"></i> Print Labels
             </button>
             
+            <!-- Import Button -->
+            <a href="{{ route('products.import.form') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow flex items-center text-sm">
+                <i class="fas fa-file-excel mr-2"></i> Import Excel
+            </a>
+
             <!-- Add Product Link -->
             <a href="{{ route('products.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow flex items-center text-sm">
                 <i class="fas fa-plus mr-2"></i> Add Product

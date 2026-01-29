@@ -38,12 +38,15 @@
         <!-- Header -->
         <div class="flex justify-between items-start mb-10 border-b pb-6">
             <div>
-                <h1 class="text-3xl font-black text-slate-800 mb-1 uppercase">{{ settings('shop_name', 'ELECTROMART') }}</h1>
-                <p class="text-xs text-gray-500 font-bold tracking-widest uppercase">{{ settings('site_name', 'Premium Tech Solutions') }} UAE</p>
-                <div class="mt-4 text-sm text-gray-600 space-y-0.5">
+                 @if(settings('site_logo'))
+                        <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" style="max-height: 60px; margin-bottom: 5px;">
+                    @else
+                        <div class="shop-name">{{ settings('shop_name', 'Tech Hub Rak') }}</div>
+                    @endif
+                    <div class="mt-4 text-sm text-gray-600 space-y-0.5">
                     <p class="whitespace-pre-line">{{ settings('shop_address', 'Computer Street, Bur Dubai, UAE') }}</p>
                     <p>Phone: {{ settings('shop_phone', settings('contact_phone', '+971 4 000 0000')) }}</p>
-                    <p>Email: {{ settings('contact_email', 'sales@electromart.ae') }}</p>
+                    <p>Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}</p>
                     <p>TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</p>
                 </div>
             </div>
@@ -51,7 +54,7 @@
                 <h2 class="text-4xl font-black text-blue-600 mb-2">QUOTATION</h2>
                 <div class="text-sm font-bold text-gray-700">
                     <p>Number: <span class="text-slate-900 font-mono">{{ $quotation->quotation_no }}</span></p>
-                    <p>Date: <span class="text-slate-900">{{ $quotation->created_at->format('d M, Y') }}</span></p>
+                    <p>Date: <span class="text-slate-900">{{ ($quotation->date ?? $quotation->created_at)->format('d M, Y') }}</span></p>
                     <p>Valid Until: <span class="text-slate-900">{{ $quotation->expiry_date?->format('d M, Y') }}</span></p>
                 </div>
             </div>
@@ -90,19 +93,23 @@
                 <tr>
                     <th class="px-4 py-3">Description</th>
                     <th class="px-4 py-3 text-center">Qty</th>
-                    <th class="px-4 py-3 text-right">Unit Price</th>
-                    <th class="px-4 py-3 text-right">Total (Incl. VAT)</th>
+                    <th class="px-4 py-3 text-right">Rate</th>
+                    <th class="px-4 py-3 text-right">Tax %</th>
+                    <th class="px-4 py-3 text-right">Tax</th>
+                    <th class="px-4 py-3 text-right">Amount</th>
                 </tr>
             </thead>
             <tbody class="text-sm text-gray-700">
                 @foreach($quotation->items as $item)
                 <tr class="border-b last:border-0 hover:bg-gray-50">
                     <td class="px-4 py-4">
-                        <div class="font-bold text-gray-900">{{ $item->product_name }}</div>
+                        <div class="font-medium text-xs text-gray-900">{{ $item->product_name }}</div>
                     </td>
-                    <td class="px-4 py-4 text-center font-bold">{{ $item->quantity }}</td>
-                    <td class="px-4 py-4 text-right font-mono">AED {{ number_format($item->unit_price, 2) }}</td>
-                    <td class="px-4 py-4 text-right font-mono font-bold">AED {{ number_format($item->subtotal, 2) }}</td>
+                    <td class="px-4 py-4 text-center font-bold">{{ number_format($item->quantity, 3) }}</td>
+                    <td class="px-4 py-4 text-right font-mono">{{ number_format($item->unit_price, 2) }}</td>
+                    <td class="px-4 py-4 text-right font-mono">{{ number_format($item->tax_rate, 2) }}</td>
+                    <td class="px-4 py-4 text-right font-mono">{{ number_format($item->tax_amount, 2) }}</td>
+                    <td class="px-4 py-4 text-right font-mono font-bold">{{ number_format($item->subtotal, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -121,10 +128,20 @@
                     <span>- AED {{ number_format($quotation->discount, 2) }}</span>
                 </div>
                 @endif
-                <div class="flex justify-between text-sm text-gray-600">
-                    <span>VAT (5%)</span>
-                    <span class="font-bold">AED {{ number_format($quotation->vat_amount, 2) }}</span>
-                </div>
+                @php
+                    $groupedTaxes = $quotation->items->groupBy('tax_rate');
+                @endphp
+                @foreach($groupedTaxes as $rate => $items)
+                    @php
+                        $taxAmount = $items->sum('tax_amount');
+                        if($taxAmount <= 0) continue;
+                        $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
+                    @endphp
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>{{ $label }}</span>
+                        <span class="font-bold">AED {{ number_format($taxAmount, 2) }}</span>
+                    </div>
+                @endforeach
                 <div class="flex justify-between text-xl font-black text-slate-900 border-t pt-2 mt-2">
                     <span>Total</span>
                     <span class="text-blue-600">AED {{ number_format($quotation->total, 2) }}</span>
@@ -134,13 +151,19 @@
 
         <!-- Footer Notes -->
         <div class="mt-20 border-t pt-8">
-            <h5 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Terms & Conditions</h5>
-            <ul class="text-[10px] text-gray-500 space-y-1 font-bold italic leading-relaxed">
-                <li>1. Prices are valid for 15 days from the date of quotation.</li>
-                <li>2. Items are subject to availability at the time of order confirmation.</li>
-                <li>3. Standard warranty applies to all electronic items unless otherwise specified.</li>
-                <li>4. This is a computer-generated document and does not require a physical signature.</li>
-            </ul>
+            <h5 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Notes</h5>
+            <div class="text-[10px] text-gray-500 space-y-1 font-bold leading-relaxed">
+                @if(settings('quotation_notes'))
+                    {!! nl2br(e(settings('quotation_notes'))) !!}
+                @else
+                    <ul class="space-y-1">
+                        <li>1. Prices are valid for 15 days from the date of quotation.</li>
+                        <li>2. Items are subject to availability at the time of order confirmation.</li>
+                        <li>3. Standard warranty applies to all electronic items unless otherwise specified.</li>
+                        <li>4. This is a computer-generated document and does not require a physical signature.</li>
+                    </ul>
+                @endif
+            </div>
         </div>
     </div>
 </div>

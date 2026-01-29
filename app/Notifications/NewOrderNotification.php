@@ -28,7 +28,7 @@ class NewOrderNotification extends Notification implements ShouldQueue
         return (new MailMessage)
                     ->subject('New Order Received: ' . $this->order->invoice_no)
                     ->greeting('Hello Admin,')
-                    ->line('A new order has been placed on ElectroMart.')
+                    ->line('A new order has been placed on Tech Hub Information Technology.')
                     ->line('**Invoice No:** ' . $this->order->invoice_no)
                     ->line('**Customer:** ' . ($this->order->customer_name ?? 'Guest'))
                     ->line('**Total Amount:** ' . number_format($this->order->total, 2) . ' AED')

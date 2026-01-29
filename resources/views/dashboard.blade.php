@@ -21,7 +21,7 @@
 
         <!-- Card 2: Monthly Sales -->
         <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center gap-5">
-            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-2xl shadow-inner">
+            <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#2dae9a] text-2xl shadow-inner">
                 <i class="fas fa-chart-line"></i>
             </div>
             <div>
@@ -32,7 +32,7 @@
 
         <!-- Card 3: Total Orders -->
         <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center gap-5">
-            <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 text-2xl shadow-inner">
+            <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#2dae9a] text-2xl shadow-inner">
                 <i class="fas fa-shopping-bag"></i>
             </div>
             <div>
@@ -86,7 +86,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-8 py-5 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
                 <h3 class="text-lg font-bold text-gray-900 tracking-tight">Recent Transactions</h3>
-                <a href="{{ route('orders.index') }}" class="text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest">View History</a>
+                <a href="{{ route('orders.index') }}" class="text-xs font-bold text-[#2dae9a] hover:text-emerald-700 uppercase tracking-widest">View History</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-100">
@@ -101,11 +101,11 @@
                     <tbody class="divide-y divide-gray-50">
                         @forelse($recentOrders as $order)
                         <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-8 py-4 text-sm font-black text-blue-600">{{ $order->invoice_no }}</td>
+                            <td class="px-8 py-4 text-sm font-black text-[#2dae9a]">{{ $order->invoice_no }}</td>
                             <td class="px-8 py-4 text-sm font-bold text-gray-900">{{ $order->customer_name }}</td>
                             <td class="px-8 py-4 text-sm text-right font-black text-gray-900">{{ number_format($order->total, 2) }}</td>
                             <td class="px-8 py-4 text-right">
-                                <a href="{{ route('orders.show', $order) }}" class="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                <a href="{{ route('orders.show', $order) }}" class="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-[#2dae9a] hover:text-white transition-all shadow-sm">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
                             </td>
@@ -179,7 +179,7 @@
     var revenueOptions = {
         series: [{ name: 'Revenue', data: revenueTotals }],
         chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'Outfit' },
-        colors: ['#3b82f6'],
+        colors: ['#2dae9a'],
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] } },
         dataLabels: { enabled: false },
         stroke: { curve: 'smooth', width: 3 },

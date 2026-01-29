@@ -7,13 +7,13 @@
 
 <div class="order-meta">
     <div style="text-align: center; margin-bottom: 20px;">
-        <span class="status-badge" style="padding: 10px 30px; font-size: 16px; background: #eff6ff; color: #2563eb;">
-            {{ ucfirst($order->status) }}
+        <span class="status-badge" style="padding: 12px 40px; font-size: 18px; background: #2dae9a15; color: #2dae9a; border: 1px solid #2dae9a20;">
+            {{ strtoupper($order->status) }}
         </span>
     </div>
     
     @if($comment)
-    <div style="background: #ffffff; border-left: 4px solid #3b82f6; padding: 15px; margin-top: 10px; font-style: italic; font-size: 14px; color: #475569;">
+    <div style="background: #ffffff; border-left: 4px solid #2dae9a; padding: 15px; margin-top: 10px; font-style: italic; font-size: 14px; color: #475569;">
         "{{ $comment }}"
     </div>
     @endif
@@ -29,5 +29,5 @@
 
 <p>If you have any questions regarding this update, please don't hesitate to contact our support team.</p>
 
-<p>Warm Regards,<br><strong>The ElectroMart Team</strong></p>
+<p>Warm Regards,<br><strong>The Tech Hub Team</strong></p>
 @endsection

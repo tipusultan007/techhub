@@ -72,6 +72,16 @@
                 </select>
             </div>
 
+            <!-- Channel Filter -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Channel</label>
+                <select name="channel" class="w-full border border-gray-300 rounded-md p-2 text-sm">
+                    <option value="">All Channels</option>
+                    <option value="pos" {{ request('channel') == 'pos' ? 'selected' : '' }}>POS</option>
+                    <option value="online" {{ request('channel') == 'online' ? 'selected' : '' }}>Online</option>
+                </select>
+            </div>
+
             <!-- Date From -->
             <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">From Date</label>
@@ -101,6 +111,7 @@
         <thead class="bg-gray-100">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Invoice</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Channel</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Customer</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Date</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Payment</th>
@@ -113,6 +124,17 @@
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
                     {{ $order->invoice_no }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    @if($order->channel == 'pos')
+                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase bg-gray-100 text-gray-800 border border-gray-200">
+                            <i class="fas fa-desktop mr-1"></i> POS
+                        </span>
+                    @else
+                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase bg-blue-50 text-blue-700 border border-blue-100">
+                            <i class="fas fa-globe mr-1"></i> Online
+                        </span>
+                    @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ $order->customer_name ?? 'Guest/Walk-in' }}
@@ -156,7 +178,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                <td colspan="7" class="px-6 py-10 text-center text-gray-500">
                     No sales records found.
                 </td>
             </tr>

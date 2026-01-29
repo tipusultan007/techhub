@@ -53,7 +53,7 @@
             width: 30px; height: 30px; background: white; border: 2px solid #e2e8f0;
             border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
         }
-        .track-step.active .step-dot { background: var(--brand-magenta); border-color: var(--brand-magenta); color: white; }
+        .track-step.active .step-dot { background: var(--brand-emerald); border-color: var(--brand-emerald); color: white; }
         .track-step.active .step-text { color: var(--text-main); font-weight: 700; }
         .step-text { font-size: 0.85rem; color: var(--text-muted); }
 
@@ -74,7 +74,7 @@
         .btn-primary { background: var(--brand-gradient); color: white; border: none; }
         .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-outline { background: white; color: var(--text-main); border: 1px solid var(--border); }
-        .btn-outline:hover { border-color: var(--brand-magenta); color: var(--brand-magenta); }
+        .btn-outline:hover { border-color: var(--brand-emerald); color: var(--brand-emerald); }
 
         @media (max-width: 768px) {
             .order-info-grid { grid-template-columns: 1fr 1fr; gap: 20px; }

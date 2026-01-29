@@ -163,6 +163,8 @@ class PosController extends Controller
                 'stock' => $p->stock_quantity,
                 'sku' => $p->sku,
                 'has_serial_number' => $p->has_serial_number,
+                'tax_method' => $p->tax_method,
+                'tax_rate' => $p->tax_rate,
                 'type' => $p->type
             ];
         }
@@ -178,6 +180,8 @@ class PosController extends Controller
                 'stock' => $v->stock_quantity,
                 'sku' => $v->sku,
                 'has_serial_number' => $v->product->has_serial_number,
+                'tax_method' => $v->product->tax_method,
+                'tax_rate' => $v->product->tax_rate,
                 'type' => 'variable'
             ];
         }
@@ -200,28 +204,37 @@ class PosController extends Controller
     try {
         DB::beginTransaction();
 
-        // 2. Calculate Gross Total (Server Side Security)
-        $grossTotal = 0;
+        // 4. Granular Tax Calculation (Server-Side)
+        $totalVat = 0;
+        $calculatedPayable = 0;
+
         foreach ($request->items as $item) {
-            $grossTotal += ($item['price'] * $item['qty']);
+            $itemTaxRate = ($item['tax_rate'] ?? 0) / 100;
+            $itemPrice = (float) $item['price'];
+            $itemQty = (int) $item['qty'];
+            $rowSubtotal = $itemPrice * $itemQty;
+            $rowTax = 0;
+            $rowPayable = 0;
+
+            if (($item['tax_method'] ?? 'inclusive') === 'exclusive') {
+                $rowTax = $rowSubtotal * $itemTaxRate;
+                $rowPayable = $rowSubtotal + $rowTax;
+            } else { // inclusive
+                $rowTax = $rowSubtotal - ($rowSubtotal / (1 + $itemTaxRate));
+                $rowPayable = $rowSubtotal;
+            }
+
+            $totalVat += $rowTax;
+            $calculatedPayable += $rowPayable;
         }
 
-        // 3. Apply Discount
+        // Apply Discount
         $discount = $request->discount ?? 0;
-        
-        // Final amount the customer actually pays
-        $finalPayable = $grossTotal - $discount;
+        $finalPayable = $calculatedPayable - $discount;
 
-        // Security Check: Optional - Ensure frontend total matches backend total (within small margin)
-        // if (abs($finalPayable - $request->amount_paid) > 0.1) {
-        //    throw new \Exception("Price mismatch error. Please refresh.");
-        // }
-
-        // 4. UAE VAT Logic (Inclusive 5% on Final Payable)
-        // Formula: Tax = Total - (Total / 1.05)
-        $taxRate = 0.05;
-        $netAmount = $finalPayable / (1 + $taxRate); // Excl. VAT
-        $vatAmount = $finalPayable - $netAmount;      // The VAT component
+        // Proportional VAT Adjustment (if discount applied)
+        $vatAmount = $calculatedPayable > 0 ? ($totalVat * ($finalPayable / $calculatedPayable)) : 0;
+        $netAmount = $finalPayable - $vatAmount;
 
         // 5. Generate Invoice Number
         $lastOrder = Order::latest()->first();
@@ -242,6 +255,7 @@ class PosController extends Controller
             
             'payment_method' => $request->payment_method,
             'status' => 'completed',
+            'channel' => 'pos',
             'user_id' => Auth::id()
         ]);
 
@@ -272,11 +286,11 @@ class PosController extends Controller
                 if ($variant->stock_quantity <= $variant->alert_quantity) {
                     User::role('Admin')->get()->each->notify(new LowStockNotification($variant->product, $variant->stock_quantity));
                 }
-            } else {
+            } elseif (!empty($item['id'])) {
                 // Simple or Service Product
                 $product = Product::lockForUpdate()->find($item['id']);
                 
-                if ($product->type !== 'service') {
+                if ($product->type !== 'service' && !($item['is_service'] ?? false)) {
                     if (!$product || $product->stock_quantity < $item['qty']) {
                         throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'Unknown'));
                     }
@@ -289,6 +303,9 @@ class PosController extends Controller
                 }
                 
                 $productNameSnapshot = $item['name'] ?? $product->name;
+            } else {
+                // Instant Service (No ID)
+                $productNameSnapshot = $item['name'] ?? 'Generic Service';
             }
 
             // --- B. Serial Number & Warranty Logic ---
@@ -328,14 +345,17 @@ class PosController extends Controller
             // --- C. Create Order Item ---
             OrderItem::create([
                 'order_id' => $order->id,
-                'product_id' => $item['id'],
+                'product_id' => $item['id'] ?? null,
                 'product_variant_id' => $item['variant_id'] ?? null,
                 'product_name' => $productNameSnapshot, // Save snapshot of name
                 'quantity' => $item['qty'],
                 'unit_price' => $item['price'],
                 'subtotal' => $item['price'] * $item['qty'],
                 'serial_numbers' => $serialNumbers,
-                'warranty_end_date' => $warrantyEnd
+                'warranty_end_date' => $warrantyEnd,
+                'tax_rate' => $item['tax_rate'] ?? 0,
+                'tax_amount' => ($item['price'] * $item['qty']) * (($item['tax_rate'] ?? 0) / 100),
+                'is_service' => filter_var($item['is_service'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ]);
         }
 

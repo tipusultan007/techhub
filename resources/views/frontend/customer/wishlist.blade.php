@@ -15,7 +15,7 @@
             background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
             position: relative; transition: 0.2s; display: flex; flex-direction: column;
         }
-        .wish-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: var(--brand-magenta); }
+        .wish-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: var(--brand-emerald); }
 
         .wish-remove {
             position: absolute; top: 10px; right: 10px; z-index: 2;

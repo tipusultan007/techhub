@@ -169,6 +169,106 @@
             </div>
         </div>
     </div>
+
+    <!-- Transaction History Tabs -->
+    <div class="mt-8 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200" x-data="{ tab: 'sales' }">
+        <div class="flex border-b bg-gray-50">
+            <button @click="tab = 'sales'" 
+                    :class="tab === 'sales' ? 'border-b-4 border-[#2dae9a] bg-white text-[#2dae9a] shadow-[inset_0_-2px_0_0_#2dae9a]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
+                    class="px-8 py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none flex items-center gap-2">
+                <i class="fas fa-shopping-cart" :class="tab === 'sales' ? 'text-[#2dae9a]' : 'text-gray-400'"></i> Sales History
+            </button>
+            <button @click="tab = 'stock'" 
+                    :class="tab === 'stock' ? 'border-b-4 border-[#2dae9a] bg-white text-[#2dae9a] shadow-[inset_0_-2px_0_0_#2dae9a]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'"
+                    class="px-8 py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none flex items-center gap-2">
+                <i class="fas fa-file-invoice" :class="tab === 'stock' ? 'text-[#2dae9a]' : 'text-gray-400'"></i> Stock-In History
+            </button>
+        </div>
+
+        <div class="p-6 min-h-[300px]">
+            <!-- Sales History Tab -->
+            <div x-show="tab === 'sales'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-cloak>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Date</th>
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Invoice</th>
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Variant</th>
+                                <th class="px-6 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">Qty</th>
+                                <th class="px-6 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">Price</th>
+                                <th class="px-6 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @forelse($salesHistory as $sale)
+                            <tr class="hover:bg-gray-50/50">
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $sale->created_at->format('d M, Y') }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-indigo-600">
+                                    <a href="{{ route('orders.show', $sale->order_id) }}" class="hover:underline">#{{ $sale->order->invoice_no }}</a>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $sale->variant->variant_name ?? 'N/A' }}</td>
+                                <td class="px-6 py-4 text-sm text-center font-bold text-gray-800">{{ $sale->quantity }}</td>
+                                <td class="px-6 py-4 text-sm text-right text-gray-600">AED {{ number_format($sale->unit_price, 2) }}</td>
+                                <td class="px-6 py-4 text-sm text-right font-black text-gray-900">AED {{ number_format($sale->subtotal, 2) }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-10 text-center text-gray-400">
+                                    <i class="fas fa-search fa-2x mb-2 block"></i>
+                                    No sales history found for this product.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stock-In History Tab -->
+            <div x-show="tab === 'stock'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-cloak>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Date</th>
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">PO/Recv #</th>
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Supplier</th>
+                                <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Variant</th>
+                                <th class="px-6 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">Received Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @forelse($stockHistory as $stock)
+                            <tr class="hover:bg-gray-50/50">
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $stock->created_at->format('d M, Y') }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-blue-600">
+                                    PO: {{ $stock->reception->purchaseOrder->po_number }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700 font-medium">
+                                    {{ $stock->reception->purchaseOrder->supplier->name }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $stock->poItem->variant->variant_name ?? 'N/A' }}</td>
+                                <td class="px-6 py-4 text-sm text-center">
+                                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold">
+                                        +{{ $stock->received_quantity }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-10 text-center text-gray-400">
+                                    <i class="fas fa-truck fa-2x mb-2 block"></i>
+                                    No stock intake history found.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -179,5 +279,6 @@
     .summernote-output th, .summernote-output td { border: 1px solid #e5e7eb; padding: 0.5rem; text-align: left; }
     .summernote-output th { background-color: #f9fafb; font-weight: bold; }
     .summernote-output h1, .summernote-output h2, .summernote-output h3 { font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; color: #1f2937; }
+    [x-cloak] { display: none !important; }
 </style>
 @endsection

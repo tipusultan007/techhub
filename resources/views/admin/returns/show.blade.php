@@ -22,7 +22,7 @@
                 <p class="text-sm text-gray-500">Date: {{ $return->created_at->format('d M Y, h:i A') }}</p>
             </div>
             <div class="text-right">
-                <h3 class="font-bold text-gray-700">{{ $settings['shop_name'] ?? 'ElectroMart' }}</h3>
+                <h3 class="font-bold text-gray-700">{{ $settings['shop_name'] ?? 'Tech Hub' }}</h3>
                 <p class="text-xs text-gray-500">{{ $settings['shop_trn'] ?? 'TRN not set' }}</p>
             </div>
         </div>

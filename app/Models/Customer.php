@@ -26,9 +26,7 @@ class Customer extends Authenticatable
      */
     public function sendPasswordResetNotification($token)
     {
-        $url = route('customer.password.reset', ['token' => $token, 'email' => $this->email]);
-
-        $this->notify(new ResetPassword($url));
+        $this->notify(new ResetPassword($token));
     }
 
     public function orders()

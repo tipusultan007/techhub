@@ -31,7 +31,39 @@ class ReportController extends Controller
         $totalVAT = $orders->sum('vat_amount');
         $netSales = $orders->sum('subtotal'); // Excl VAT
 
-        return view('admin.reports.sales', compact('orders', 'totalSales', 'totalDiscount', 'totalVAT', 'netSales', 'startDate', 'endDate'));
+        // Chart Data: Group by Date
+        $chartData = $orders->groupBy(function($date) {
+            return Carbon::parse($date->created_at)->format('d M');
+        })->map(function($day) {
+            return $day->sum('total');
+        });
+
+        return view('admin.reports.sales', compact('orders', 'totalSales', 'totalDiscount', 'totalVAT', 'netSales', 'startDate', 'endDate', 'chartData'));
+    }
+
+    /**
+     * Generate Sales Report PDF
+     */
+    public function salesPdf(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        $orders = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->with('user')
+            ->latest()
+            ->get();
+
+        $totalSales = $orders->sum('total');
+        $totalDiscount = $orders->sum('discount');
+        $totalVAT = $orders->sum('vat_amount');
+        $netSales = $orders->sum('subtotal');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.sales_pdf', compact(
+            'orders', 'totalSales', 'totalDiscount', 'totalVAT', 'netSales', 'startDate', 'endDate'
+        ));
+
+        return $pdf->download('Sales-Report-' . $startDate->format('d-M-Y') . '-to-' . $endDate->format('d-M-Y') . '.pdf');
     }
 
     /**
@@ -106,5 +138,236 @@ class ReportController extends Controller
             'purchases', 'purchasesTotal', 'purchasesNet', 'inputVat',
             'netVatPayable','sales','purchases'
         ));
+    }
+
+    /**
+     * Purchase Report
+     */
+    public function purchases(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        $purchases = \App\Models\PurchaseOrder::whereBetween('date', [$startDate, $endDate])
+            ->with(['supplier'])
+            ->latest()
+            ->get();
+
+        $totalPurchases = $purchases->sum('total_cost');
+        $totalTax = $purchases->sum('tax_amount');
+        $receivedCount = $purchases->where('status', 'received')->count();
+        $pendingCount = $purchases->where('status', 'pending')->count();
+
+        return view('admin.reports.purchases', compact('purchases', 'totalPurchases', 'totalTax', 'receivedCount', 'pendingCount', 'startDate', 'endDate'));
+    }
+
+    /**
+     * Profit & Loss Report
+     */
+    public function profitLoss(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        // 1. Revenue (Sales)
+        $sales = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->with('items')
+            ->get();
+        $totalRevenue = $sales->sum('total');
+
+        // 2. Returns (Credit Notes)
+        $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])->get();
+        $totalReturns = $returns->sum('total_refund');
+
+        // 3. COGS (Cost of Goods Sold)
+        // Calculated based on sales items' original costs at time of sale if possible, 
+        // or current product cost as fallback
+        $cogs = 0;
+        foreach($sales as $order) {
+            foreach($order->items as $item) {
+                // In a robust system, we'd store purchase_price at time of sale.
+                // Assuming it's available or fetching from product
+                $product = $item->product;
+                $cost = $item->purchase_price ?? ($product ? $product->cost_price : 0);
+                $cogs += ($cost * $item->quantity);
+            }
+        }
+
+        // 4. Gross Profit
+        $grossProfit = ($totalRevenue - $totalReturns) - $cogs;
+
+        // 5. Operating Expenses
+        $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])->get();
+        $totalExpenses = $expenses->sum('amount');
+
+        // 6. Net Profit
+        $netProfit = $grossProfit - $totalExpenses;
+
+        return view('admin.reports.profit_loss', compact(
+            'totalRevenue', 'totalReturns', 'cogs', 'grossProfit', 
+            'totalExpenses', 'netProfit', 'startDate', 'endDate'
+        ));
+    }
+
+    /**
+     * Low Stock Alert Report
+     */
+    public function lowStock()
+    {
+        // 1. Simple Products: Stock <= Alert Quantity (and ignore Service types unless you want to track them?)
+        // Usually Services have no stock, but let's stick to 'simple' for now.
+        $lowStockSimple = Product::where('type', 'simple')
+            ->whereColumn('stock_quantity', '<=', 'alert_quantity')
+            ->get();
+
+        // 2. Variable Products: Variants Stock <= Variant's Alert Quantity (or 5 default)
+        $lowStockVariants = ProductVariant::whereColumn('stock_quantity', '<=', 'alert_quantity')
+            ->with(['product'])
+            ->get();
+
+        $totalAlerts = $lowStockSimple->count() + $lowStockVariants->count();
+
+        return view('admin.reports.low_stock', compact('lowStockSimple', 'lowStockVariants', 'totalAlerts'));
+    }
+
+    /**
+     * Expense Report
+     */
+    public function expenses(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        $query = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])
+            ->with(['category', 'user'])
+            ->latest('date');
+
+        if ($request->filled('category_id')) {
+            $query->where('expense_category_id', $request->category_id);
+        }
+
+        $expenses = $query->get();
+
+        // Calculations
+        $totalExpenses = $expenses->sum('amount');
+        $expenseCount = $expenses->count();
+        $averageExpense = $expenseCount > 0 ? $totalExpenses / $expenseCount : 0;
+
+        // Group by category for summary
+        $categorySummary = $expenses->groupBy('expense_category_id')->map(function ($group) {
+            return [
+                'name' => $group->first()->category->name ?? 'Unknown',
+                'total' => $group->sum('amount'),
+                'count' => $group->count()
+            ];
+        })->sortByDesc('total');
+
+        // Chart Data: Group by Date
+        $chartData = $expenses->groupBy(function ($date) {
+            return Carbon::parse($date->date)->format('d M');
+        })->map(function ($day) {
+            return $day->sum('amount');
+        });
+
+        $categories = \App\Models\ExpenseCategory::all();
+
+        return view('admin.reports.expenses', compact(
+            'expenses', 'totalExpenses', 'expenseCount', 'averageExpense',
+            'categorySummary', 'startDate', 'endDate', 'chartData', 'categories'
+        ));
+    }
+
+    /**
+     * Generate Expense Report PDF
+     */
+    public function expensesPdf(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        $query = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])
+            ->with(['category', 'user']);
+
+        if ($request->filled('category_id')) {
+            $query->where('expense_category_id', $request->category_id);
+        }
+
+        $expenses = $query->orderBy('date', 'desc')->get();
+        $totalExpenses = $expenses->sum('amount');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.expenses_pdf', compact(
+            'expenses', 'totalExpenses', 'startDate', 'endDate'
+        ));
+
+        return $pdf->download('Expense-Report-' . $startDate->format('d-M-Y') . '-to-' . $endDate->format('d-M-Y') . '.pdf');
+    }
+
+    /**
+     * Sales by Sales Person Report (POS Only)
+     */
+    public function salesByPerson(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        $query = Order::where('channel', 'pos')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with('user');
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        $orders = $query->latest()->get();
+
+        // Summary Calculations
+        $totalSales = $orders->sum('total');
+        $totalOrders = $orders->count();
+        
+        // Group by Salesperson
+        $salesByPerson = $orders->groupBy('user_id')->map(function ($group) {
+            return [
+                'name' => $group->first()->user->name ?? 'Unknown',
+                'total' => $group->sum('total'),
+                'count' => $group->count(),
+                'avg' => $group->count() > 0 ? $group->sum('total') / $group->count() : 0
+            ];
+        })->sortByDesc('total');
+
+        // Users who have made POS sales for the dropdown
+        $salesPeople = \App\Models\User::whereHas('orders', function($q) {
+            $q->where('channel', 'pos');
+        })->get();
+
+        return view('admin.reports.sales_by_person', compact(
+            'orders', 'totalSales', 'totalOrders', 'salesByPerson', 
+            'startDate', 'endDate', 'salesPeople'
+        ));
+    }
+
+    /**
+     * Sales by Sales Person PDF
+     */
+    public function salesByPersonPdf(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        $query = Order::where('channel', 'pos')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->with('user');
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        $orders = $query->get();
+        $totalSales = $orders->sum('total');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.sales_by_person_pdf', compact(
+            'orders', 'totalSales', 'startDate', 'endDate'
+        ));
+
+        return $pdf->download('Sales-by-Person-' . $startDate->format('d-M-Y') . '.pdf');
     }
 }

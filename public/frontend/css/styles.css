@@ -5,11 +5,10 @@
     --brand-navy-dark: #0b1215;
     --brand-teal-deep: #037F8C;
     --brand-teal-bright: #03A6A6;
-    --brand-emerald: #03A696;
+    --brand-emerald: #2dae9a;
     --brand-bg: #F2F2F2;
 
     --brand-deep-blue: var(--brand-navy);
-    --brand-magenta: var(--brand-emerald);
     --brand-gradient: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal-deep) 100%);
 
     /* UI Accents */
@@ -91,22 +90,36 @@ img {
 
 /* --- HEADER --- */
 header {
-    background: var(--brand-gradient);
-    color: white;
+    background: var(--white);
+    color: var(--text-main);
     padding: 20px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease-in-out;
+}
+
+header.scrolled {
+    background: var(--brand-navy);
+    padding: 12px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+header.scrolled .logo-tech,
+header.scrolled .nav-toggle,
+header.scrolled .action-item {
+    color: white;
 }
 
 .nav-toggle {
     display: none;
     background: transparent;
     border: none;
-    color: white;
+    color: var(--text-main);
     font-size: 1.8rem;
     cursor: pointer;
+    transition: color 0.3s ease;
 }
 
 .header-wrapper {
@@ -121,6 +134,7 @@ header {
     letter-spacing: -0.5px;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     line-height: 1;
     text-transform: uppercase;
 }
@@ -132,7 +146,32 @@ header {
 }
 
 .logo-tech {
-    color: #fff;
+    color: var(--brand-navy);
+    transition: color 0.3s ease;
+}
+
+.logo-img {
+    max-height: 66px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    transition: all 0.3s ease-in-out;
+}
+
+.logo-scrolled {
+    display: none;
+}
+
+header.scrolled .logo-primary {
+    display: none;
+}
+
+header.scrolled .logo-scrolled {
+    display: block;
+}
+
+header.scrolled .logo-img {
+    max-height: 66px;
 }
 
 .logo-hub {
@@ -152,6 +191,37 @@ header {
 .search-box {
     flex: 1;
     position: relative;
+    padding: 2px;
+    border-radius: var(--radius);
+    background: linear-gradient(90deg, var(--brand-emerald), var(--brand-teal-bright), var(--brand-navy), var(--brand-emerald));
+    background-size: 300% 100%;
+    animation: gradientMove 4s linear infinite;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    box-shadow: 0 4px 15px rgba(3, 166, 150, 0.2);
+    transform: translateY(-1px);
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 300% 50%;
+    }
+}
+
+.search-box form {
+    position: relative;
+    z-index: 1;
+    background: white;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
 }
 
 .search-box input {
@@ -162,7 +232,7 @@ header {
     border: none;
     outline: none;
     font-size: 0.95rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: transparent;
 }
 
 .search-btn {
@@ -201,7 +271,7 @@ header {
     cursor: pointer;
     position: relative;
     opacity: 0.9;
-    transition: 0.2s;
+    transition: all 0.3s ease;
 }
 
 .action-item:hover {
@@ -228,13 +298,13 @@ header {
     justify-content: center;
     font-weight: bold;
     font-size: 0.7rem;
-    border: 2px solid var(--brand-deep-blue);
+    border: 2px solid var(--white);
 }
 
 /* --- NAVIGATION BAR --- */
 .nav-bar {
-    background: white;
-    border-bottom: 1px solid var(--border);
+    background: var(--brand-gradient);
+    border-bottom: 1px solid var(--brand-teal-deep);
 }
 
 .nav-list {
@@ -249,7 +319,7 @@ header {
 .nav-list li a {
     display: block;
     padding: 15px 0;
-    color: var(--text-main);
+    color: rgba(255, 255, 255, 0.9);
     position: relative;
 }
 
@@ -260,12 +330,12 @@ header {
     left: 0;
     width: 0;
     height: 3px;
-    background: var(--brand-gradient);
+    background: white;
     transition: 0.3s;
 }
 
 .nav-list li a:hover {
-    color: var(--brand-magenta);
+    color: white;
 }
 
 .nav-list li a:hover::after {
@@ -273,7 +343,7 @@ header {
 }
 
 .nav-list li.active a {
-    color: var(--brand-deep-blue);
+    color: white;
 }
 
 .nav-list li.active a::after {
@@ -786,8 +856,8 @@ header {
     width: 100%;
     padding: 10px;
     background: white;
-    border: 1px solid var(--brand-magenta);
-    color: var(--brand-magenta);
+    border: 1px solid var(--brand-emerald);
+    color: var(--brand-emerald);
     font-weight: 600;
     border-radius: 6px;
     cursor: pointer;
@@ -795,7 +865,7 @@ header {
 }
 
 .product-card:hover .add-cart-hover {
-    background: var(--brand-gradient);
+    background: var(--brand-emerald);
     color: white;
     border-color: transparent;
 }
@@ -1171,7 +1241,100 @@ footer {
 }
 
 /* --- RESPONSIVE --- */
-@media(max-width: 992px) {
+
+/* Large Laptops & Small Desktops */
+@media(max-width: 1280px) {
+    .container {
+        max-width: 1100px;
+    }
+}
+
+/* Tablets Landscape & Small Laptops */
+@media(max-width: 1024px) {
+    .container {
+        max-width: 950px;
+    }
+
+    .hero {
+        grid-template-columns: 1fr 280px;
+    }
+
+    .nav-list {
+        gap: 20px;
+    }
+}
+
+/* Tablets Portrait & Large Phones */
+@media(max-width: 768px) {
+    header {
+        background: var(--brand-gradient);
+        padding: 15px 0;
+    }
+
+    .header-wrapper {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .logo {
+        font-size: 1.4rem;
+    }
+
+    .logo-tech {
+        color: white;
+    }
+
+    .logo-hub {
+        text-shadow: none;
+        /* Cleaner on brand background */
+    }
+
+    .nav-toggle {
+        display: block;
+        color: white;
+    }
+
+    .nav-bar {
+        display: none;
+    }
+
+    .search-box {
+        order: 3;
+        min-width: 100%;
+        margin-top: 5px;
+    }
+
+    .user-actions {
+        gap: 15px;
+        margin-left: auto;
+    }
+
+    .action-item {
+        color: white;
+    }
+
+    .logo-img {
+        max-height: 45px;
+        filter: brightness(0) invert(1);
+        /* Ensure logos are visible on brand bg */
+    }
+
+    .logo-primary {
+        display: none;
+    }
+
+    .logo-scrolled {
+        display: block;
+    }
+
+    header.scrolled .logo-img {
+        max-height: 47px;
+    }
+
+    .action-item span {
+        display: none;
+    }
+
     .hero {
         height: auto;
         grid-template-columns: 1fr;
@@ -1183,48 +1346,6 @@ footer {
 
     .hero-banner {
         min-height: 300px;
-    }
-
-    .services-row {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .solutions-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media(max-width: 768px) {
-    .header-wrapper {
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .logo {
-        font-size: 1.4rem;
-    }
-
-    .nav-toggle {
-        display: block;
-    }
-
-    .nav-bar {
-        display: none;
-    }
-
-    .search-box {
-        order: 3;
-        min-width: 100%;
-        margin-top: 10px;
-    }
-
-    .user-actions {
-        gap: 15px;
-        margin-left: auto;
-    }
-
-    .action-item span {
-        display: none;
     }
 
     .mid-banner {
@@ -1241,6 +1362,11 @@ footer {
 
     .grid-5 {
         grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+    }
+
+    .services-row {
+        grid-template-columns: 1fr 1fr;
     }
 
     .section-header {
@@ -1255,7 +1381,7 @@ footer {
     }
 
     .solutions-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
     }
 
     .sol-card {
@@ -1263,16 +1389,41 @@ footer {
     }
 }
 
-@media(max-width: 576px) {
+/* Mobile Phones */
+@media(max-width: 480px) {
+    .container {
+        padding: 0 15px;
+    }
+
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    .logo-img {
+        max-height: 40px;
+    }
+
+    header.scrolled .logo-img {
+        max-height: 40px;
+    }
+
     .services-row {
         grid-template-columns: 1fr;
     }
 
+    .grid-5 {
+        grid-template-columns: 1fr;
+    }
+
     .category-grid {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     }
 
     .cat-item {
-        padding: 15px 5px;
+        padding: 10px 5px;
+    }
+
+    .solutions-grid {
+        grid-template-columns: 1fr;
     }
 }

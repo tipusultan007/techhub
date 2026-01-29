@@ -7,8 +7,11 @@
     <title>Tax Invoice #{{ $order->invoice_no }}</title>
     
     <style>
+        * {
+            font-family: "DejaVu Sans", sans-serif !important;
+        }
+
         body {
-            font-family: 'Helvetica', Arial, sans-serif;
             margin: 0;
             padding: 0;
             font-size: 11px;
@@ -31,7 +34,7 @@
 
         .shop-name {
             font-size: 24px;
-            font-weight: 800;
+            font-weight: bold;
             color: #0f172a;
             margin-bottom: 5px;
             text-transform: uppercase;
@@ -39,8 +42,8 @@
 
         .shop-site {
             font-size: 10px;
-            font-weight: 700;
-            color: #2563eb;
+            font-weight: bold;
+            color: #2DAE9A;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
@@ -51,7 +54,7 @@
 
         .doc-type {
             font-size: 32px;
-            font-weight: 800;
+            font-weight: bold;
             color: #e2e8f0;
             text-transform: uppercase;
             margin-bottom: 10px;
@@ -60,13 +63,13 @@
         .info-label {
             color: #94a3b8;
             font-size: 9px;
-            font-weight: 700;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
         .info-value {
             font-size: 12px;
-            font-weight: 700;
+            font-weight: bold;
             color: #1e293b;
         }
 
@@ -88,7 +91,7 @@
             padding: 4px 12px;
             border-radius: 999px;
             font-size: 9px;
-            font-weight: 800;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
@@ -108,7 +111,7 @@
             padding: 10px;
             text-align: left;
             font-size: 9px;
-            font-weight: 800;
+            font-weight: bold;
             color: #64748b;
             text-transform: uppercase;
         }
@@ -128,7 +131,7 @@
         }
 
         .total-label {
-            font-weight: 700;
+            font-weight: bold;
             color: #64748b;
             text-transform: uppercase;
             font-size: 9px;
@@ -136,7 +139,7 @@
 
         .total-value {
             text-align: right;
-            font-weight: 700;
+            font-weight: bold;
             color: #334155;
         }
 
@@ -148,14 +151,14 @@
 
         .grand-total-label {
             font-size: 11px;
-            font-weight: 800;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
         .grand-total-value {
             font-size: 18px;
-            font-weight: 800;
-            color: #2563eb;
+            font-weight: bold;
+            color: #2DAE9A;
             text-align: right;
         }
 
@@ -167,7 +170,7 @@
 
         .terms-title {
             font-size: 9px;
-            font-weight: 800;
+            font-weight: bold;
             color: #94a3b8;
             text-transform: uppercase;
             margin-bottom: 10px;
@@ -179,8 +182,8 @@
             margin: 0;
             font-size: 8px;
             color: #64748b;
-            font-weight: 700;
-            font-style: italic;
+            font-weight: bold;
+            font-style: normal;
             line-height: 1.6;
         }
 
@@ -197,65 +200,80 @@
         <!-- Header -->
         <table class="header-table">
             <tr>
-                <td style="width: 50%;">
-                    <div class="shop-name">{{ settings('shop_name', 'ELECTROMART') }}</div>
-                    <div class="shop-site">{{ settings('site_name', 'Premium Tech Solutions') }} UAE</div>
-                    <div style="margin-top: 15px; color: #475569; line-height: 1.4;">
-                        <span style="display: block; font-weight: 700;">{{ settings('shop_address', 'Dubai, UAE') }}</span>
-                        <span>Phone: {{ settings('shop_phone', settings('contact_phone', '+971 00 000 0000')) }}</span><br>
-                        <span>Email: {{ settings('contact_email', 'sales@electromart.ae') }}</span><br>
-                        <span style="font-weight: 800; text-transform: uppercase; margin-top: 5px; display: inline-block;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</span>
+                <td style="width: 50%; vertical-align: top;">
+                    @if(settings('site_logo'))
+                        @php
+                            $logoPath = settings('site_logo');
+                            try {
+                                $path = parse_url($logoPath, PHP_URL_PATH);
+                                $fullPath = public_path($path);
+                                if (file_exists($fullPath)) {
+                                    $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                                    $data = file_get_contents($fullPath);
+                                    $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                                } else {
+                                    $logoBase64 = $logoPath;
+                                }
+                            } catch (\Exception $e) {
+                                $logoBase64 = $logoPath;
+                            }
+                        @endphp
+                        <img src="{{ $logoBase64 }}" alt="{{ settings('site_name') }}" style="max-height: 45px; margin-bottom: 8px;">
+                    @endif
+                    <div style="color: #64748b; line-height: 1.4; font-size: 11px;">
+                        {{ settings('shop_address', 'Dubai, UAE') }}<br>
+                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <div style="font-weight: bold; color: #1e293b; margin-top: 8px; text-transform: uppercase; font-size: 12px;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</div>
                     </div>
                 </td>
-                <td class="header-right" style="width: 50%; vertical-align: top;">
-                    <div class="doc-type">Invoice</div>
-                    <div style="margin-top: 10px;">
-                        <span class="info-label">Invoice Number</span><br>
-                        <span class="info-value">{{ $order->invoice_no }}</span>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <table style="width: 100%;">
-                            <tr>
-                                <td align="right">
-                                    <span class="info-label">Invoice Date</span><br>
-                                    <span class="info-value">{{ $order->created_at->format('d M, Y') }}</span>
-                                </td>
-                            </tr>
-                        </table>
+                <td style="width: 50%; text-align: right; vertical-align: top;">
+                    <h1 style="font-size: 28px; font-weight: bold; color: #2DAE9A; margin: 0; text-transform: uppercase;">
+                        {{ $order->vat_amount > 0 ? 'Invoice' : 'Sales Receipt' }}
+                    </h1>
+                    <div style="margin-top: 10px; font-size: 11px; line-height: 1.6;">
+                        <div style="margin-bottom: 2px;">
+                            <span class="info-label">Invoice #:</span> 
+                            <span class="info-value">{{ $order->invoice_no }}</span>
+                        </div>
+                        <div style="margin-bottom: 2px;">
+                            <span class="info-label">Date:</span> 
+                            <span class="info-value">{{ $order->created_at->format('d M Y, h:i A') }}</span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <span class="info-label">Status:</span> 
+                            <span class="badge badge-{{ $order->status }}">{{ $order->status }}</span>
+                        </div>
                     </div>
                 </td>
             </tr>
         </table>
 
-        <!-- Billing Info -->
+        <!-- Info Sections -->
         <table class="customer-section">
             <tr>
-                <td style="width: 50%; vertical-align: top;">
-                    <div class="customer-box">
-                        <div class="info-label" style="margin-bottom: 5px;">Bill To</div>
-                        <div style="font-size: 14px; font-weight: 800; color: #0f172a;">{{ $order->customer_name ?? 'Walk-in Customer' }}</div>
-                        @if($order->customer)
-                            <div style="margin-top: 5px; font-weight: 700; color: #475569;">
-                                <span>Ph: {{ $order->customer->phone }}</span><br>
-                                @if($order->customer->email)
-                                    <span>Em: {{ $order->customer->email }}</span><br>
-                                @endif
-                                @if($order->customer->trn_number)
-                                    <span style="text-transform: uppercase; font-weight: 800; color: #1e293b; margin-top: 5px; display: inline-block;">TRN: {{ $order->customer->trn_number }}</span>
-                                @endif
-                            </div>
-                        @endif
-                    </div>
+                <td style="width: 60%; vertical-align: top;">
+                    <div class="info-label" style="margin-bottom: 8px; color: #94a3b8;">Bill To:</div>
+                    <div style="font-size: 16px; font-weight: bold; color: #0f172a; margin-bottom: 4px;">{{ $order->customer_name ?? 'Walk-in Customer' }}</div>
+                    @if($order->customer)
+                        <div style="color: #475569; line-height: 1.5; font-size: 11px;">
+                            <span>{{ $order->customer->phone }}</span><br>
+                            @if($order->customer->email)
+                                <span>{{ $order->customer->email }}</span><br>
+                            @endif
+                            @if($order->customer->trn_number)
+                                <span style="font-weight: bold; color: #2DAE9A; margin-top: 6px; display: inline-block;">TRN: {{ $order->customer->trn_number }}</span>
+                            @endif
+                        </div>
+                    @else
+                         <div style="color: #94a3b8; font-style: italic; font-size: 11px;">Guest Customer</div>
+                    @endif
                 </td>
-                <td style="width: 50%; vertical-align: middle; text-align: right;">
-                    <span class="badge badge-{{ $order->status }}">{{ $order->status }}</span>
-                    <div style="margin-top: 15px;">
-                        <span class="info-label">Payment Method</span><br>
-                        <span style="font-weight: 800; color: #1e293b; text-transform: uppercase;">{{ $order->payment_method }}</span>
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <span class="info-label">Cashier:</span>
-                        <span style="font-weight: 800; color: #1e293b;">{{ $order->user->name ?? 'Admin' }}</span>
+                <td style="width: 40%; vertical-align: top; text-align: right;">
+                    <div class="info-label" style="margin-bottom: 8px; color: #94a3b8;">Payment Details:</div>
+                    <div style="color: #475569; line-height: 1.6; font-size: 11px;">
+                        <div>Method: <span style="font-weight: bold; color: #1e293b; text-transform: uppercase;">{{ $order->payment_method }}</span></div>
+                        <div style="margin-top: 4px;">Cashier: <span style="font-weight: 700; color: #1e293b;">{{ $order->user->name ?? 'Admin' }}</span></div>
                     </div>
                 </td>
             </tr>
@@ -268,6 +286,8 @@
                     <th style="width: 60%;">Item Description</th>
                     <th style="width: 10%; text-align: center;">Qty</th>
                     <th style="width: 15%; text-align: right;">Price</th>
+                    <th style="width: 10%; text-align: center;">Tax %</th>
+                    <th style="width: 10%; text-align: right;">Tax</th>
                     <th style="width: 15%; text-align: right;">Total</th>
                 </tr>
             </thead>
@@ -275,12 +295,12 @@
                 @foreach($order->items as $item)
                 <tr>
                     <td>
-                        <span style="font-weight: 700; color: #0f172a; font-size: 12px;">{{ $item->product_name }}</span>
+                        <span style="font-weight: 400; color: #0f172a; font-size: 12px;">{{ $item->product_name }}</span>
                         @if($item->variant)
-                            <div style="font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-top: 2px;">{{ $item->variant->variant_name }}</div>
+                            <div style="font-size: 9px; font-weight: 400; color: #94a3b8; text-transform: uppercase; margin-top: 2px;">{{ $item->variant->variant_name }}</div>
                         @endif
                         @if($item->serial_numbers)
-                            <div style="margin-top: 5px; font-size: 9px; font-family: monospace; font-weight: 700; color: #2563eb;">
+                            <div style="margin-top: 5px; font-size: 9px; color: #2DAE9A;">
                                 SN: {{ $item->serial_numbers }}
                                 @if($item->warranty_end_date)
                                     <div style="color: #64748b; text-transform: uppercase; font-size: 8px; margin-top: 2px;">
@@ -290,9 +310,11 @@
                             </div>
                         @endif
                     </td>
-                    <td align="center" style="font-weight: 700;">{{ $item->quantity }}</td>
+                    <td align="center" style="font-weight: bold;">{{ $item->quantity + 0 }}</td>
                     <td align="right" style="color: #475569;">AED {{ number_format($item->unit_price, 2) }}</td>
-                    <td align="right" style="font-weight: 700; color: #0f172a;">AED {{ number_format($item->subtotal, 2) }}</td>
+                    <td align="center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
+                    <td align="right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
+                    <td align="right" style="font-weight: bold; color: #0f172a;">AED {{ number_format($item->subtotal, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -313,13 +335,23 @@
                     </tr>
                     @endif
                     <tr class="total-row">
-                        <td class="total-label">Excl. VAT</td>
+                        <td class="total-label">Net Amount</td>
                         <td class="total-value">AED {{ number_format($order->subtotal, 2) }}</td>
                     </tr>
-                    <tr>
-                        <td class="total-label">VAT (5%)</td>
-                        <td class="total-value">AED {{ number_format($order->vat_amount, 2) }}</td>
-                    </tr>
+                    @php
+                        $groupedTaxes = $order->items->groupBy('tax_rate');
+                    @endphp
+                    @foreach($groupedTaxes as $rate => $items)
+                        @php
+                            $taxAmount = $items->sum('tax_amount');
+                            if($taxAmount <= 0) continue;
+                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
+                        @endphp
+                        <tr>
+                            <td class="total-label">{{ $label }}</td>
+                            <td class="total-value">AED {{ number_format($taxAmount, 2) }}</td>
+                        </tr>
+                    @endforeach
                     <tr class="grand-total">
                         <td class="grand-total-label">Total</td>
                         <td class="grand-total-value">AED {{ number_format($order->total, 2) }}</td>
@@ -335,19 +367,16 @@
                     <td style="width: 60%; vertical-align: top;">
                         <div class="terms-title">Notes</div>
                         <ul class="terms-list">
-                            <li>1. Commercial goods are subject to standard UAE VAT laws.</li>
-                            <li>2. Items can be exchanged within 7 days with original receipt. No cash refunds.</li>
-                            <li>3. Warranty claims require this original invoice.</li>
+                            @if(settings('invoice_notes'))
+                                {!! nl2br(e(settings('invoice_notes'))) !!}
+                            @else
+                                <li>1. Commercial goods are subject to standard UAE VAT laws.</li>
+                                <li>2. Items can be exchanged within 7 days with original receipt. No cash refunds.</li>
+                                <li>3. Warranty claims require this original invoice.</li>
+                            @endif
                         </ul>
                     </td>
-                    <td style="width: 40%; vertical-align: bottom; text-align: right;">
-                        <div style="font-size: 8px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">
-                            Digital Tax Invoice • {{ settings('site_name', 'ElectroMart') }}
-                        </div>
-                        <div style="font-size: 8px; color: #e2e8f0; margin-top: 5px;">
-                            Generated by {{ settings('site_name', 'ElectroMart') }} POS
-                        </div>
-                    </td>
+                    
                 </tr>
             </table>
         </div>

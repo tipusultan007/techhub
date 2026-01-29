@@ -38,7 +38,7 @@
                     </p>
                 </div>
                 <div class="text-right">
-                    <h3 class="font-bold text-lg">{{ $settings['shop_name'] ?? 'ElectroMart UAE' }}</h3>
+                    <h3 class="font-bold text-lg">{{ $settings['shop_name'] ?? 'Tech Hub UAE' }}</h3>
                     <p class="text-sm text-gray-600">TRN: {{ $settings['shop_trn'] ?? 'Not Set' }}</p>
                 </div>
             </div>

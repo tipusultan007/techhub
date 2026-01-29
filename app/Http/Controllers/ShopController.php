@@ -13,7 +13,7 @@ class ShopController extends Controller
     public function index(Request $request, $categorySlug = null)
     {
         // 1. Base Query
-        $query = Product::with(['category', 'media', 'variants']);
+        $query = Product::physical()->with(['category', 'media', 'variants']);
 
         // 2. Handle Category Filter (Slug or Checkboxes)
         // If accessed via /category/{slug}

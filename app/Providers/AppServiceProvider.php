@@ -26,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Custom Microsoft Graph Mail Transport
+        \Illuminate\Support\Facades\Mail::extend('microsoft_graph', function (array $config = []) {
+            return new \App\Mail\Transport\MicrosoftGraphTransport(
+                settings('microsoft_tenant_id'),
+                settings('microsoft_client_id'),
+                settings('microsoft_client_secret'),
+                settings('mail_from_address')
+            );
+        });
+
         if (Schema::hasTable('settings')) {
             $settings = Setting::all()->pluck('value', 'key')->toArray();
             View::share('settings', $settings);
@@ -38,7 +48,18 @@ class AppServiceProvider extends ServiceProvider
                 ->orderBy('id', 'asc')
                 ->get();
 
-            $view->with('headerCategories', $categories);
+            // Footer Data
+            $footerCategories = Category::whereNull('parent_id')
+                ->orderBy('id', 'asc')
+                ->take(5)
+                ->get();
+            
+            $footerPages = \App\Models\Page::where('is_active', true)
+                ->get();
+
+            $view->with('headerCategories', $categories)
+                 ->with('footerCategories', $footerCategories)
+                 ->with('footerPages', $footerPages);
         });
         View::composer('layouts.frontend', function ($view) {
             $wishlistCount = 0;
@@ -51,6 +72,14 @@ class AppServiceProvider extends ServiceProvider
         // Share Active Popup with Frontend Layout
         View::composer('layouts.frontend', function ($view) {
             $view->with('activePopup', \App\Models\OfferPopup::active()->first());
+        });
+
+        // Fix Forgot Password Link Bug
+        \Illuminate\Auth\Notifications\ResetPassword::createUrlUsing(function ($user, string $token) {
+            if ($user instanceof \App\Models\Customer) {
+                return route('customer.password.reset', ['token' => $token, 'email' => $user->email]);
+            }
+            return url(config('app.url') . route('password.reset', ['token' => $token, 'email' => $user->email], false));
         });
     }
 }

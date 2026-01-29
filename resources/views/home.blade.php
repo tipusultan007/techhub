@@ -400,15 +400,9 @@
         <div class="section-wrapper">
             <div class="section-header">
                 <div class="sec-title">
-                    <i class="ri-flashlight-fill" style="color: #ef4444;"></i> Flash Sale
-                    <div class="deal-header">
-                        Ends in:
-                        <div class="timer-box">
-                            <span class="time-block">02</span> : <span class="time-block">45</span> : <span class="time-block">10</span>
-                        </div>
-                    </div>
+                    <i class="ri-flashlight-fill" style="color: #ef4444;"></i> Featured Products
                 </div>
-                <a href="#" class="view-all">See All Offers <i class="ri-arrow-right-s-line"></i></a>
+                <a href="{{ route('shop.index') }}" class="view-all">More Products <i class="ri-arrow-right-s-line"></i></a>
             </div>
 
             <div class="grid-5">

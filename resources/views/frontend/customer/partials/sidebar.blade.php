@@ -30,9 +30,9 @@
             color: var(--text-muted); font-weight: 500; font-size: 0.95rem;
             border-left: 3px solid transparent; transition: 0.2s;
         }
-        .menu-link:hover { background: #f8fafc; color: var(--brand-magenta); }
+        .menu-link:hover { background: #f8fafc; color: var(--brand-emerald); }
         .menu-link.active {
-            background: #fdf4ff; color: var(--brand-magenta); border-left-color: var(--brand-magenta); font-weight: 700;
+            background: #f0fdfa; color: var(--brand-emerald); border-left-color: var(--brand-emerald); font-weight: 700;
         }
         .menu-link i { font-size: 1.2rem; }
 
@@ -71,7 +71,7 @@
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f1f5f9;
         }
         .card-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-        .link-btn { font-size: 0.9rem; color: var(--brand-magenta); font-weight: 600; text-decoration: none; }
+        .link-btn { font-size: 0.9rem; color: var(--brand-emerald); font-weight: 600; text-decoration: none; }
         .link-btn:hover { text-decoration: underline; }
 
         /* Table */
