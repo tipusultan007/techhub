@@ -162,7 +162,7 @@ class QuotationController extends Controller
                 'vat_amount' => $totalTax,
                 'discount' => $discount,
                 'total' => $finalPayable,
-                'status' => 'pending',
+                'status' => 'submitted',
                 'user_id' => Auth::id(),
                 'expiry_date' => $request->expiry_date ?? now()->addDays(15) // Use manual date or default
             ]);
@@ -203,8 +203,8 @@ class QuotationController extends Controller
 
     public function edit(Quotation $quotation)
     {
-        if ($quotation->status != 'pending') {
-            return redirect()->route('quotations.show', $quotation->id)->with('error', 'Only pending quotations can be edited.');
+        if ($quotation->status != 'submitted') {
+            return redirect()->route('quotations.show', $quotation->id)->with('error', 'Only submitted quotations can be edited.');
         }
 
         $quotation->load('items');
@@ -217,8 +217,8 @@ class QuotationController extends Controller
 
     public function update(Request $request, Quotation $quotation)
     {
-        if ($quotation->status != 'pending') {
-            return response()->json(['status' => 'error', 'message' => 'Only pending quotations can be edited.'], 403);
+        if ($quotation->status != 'submitted') {
+            return response()->json(['status' => 'error', 'message' => 'Only submitted quotations can be edited.'], 403);
         }
 
         $request->validate([
@@ -309,6 +309,12 @@ class QuotationController extends Controller
     {
         $quotation->load('items.product');
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.quotations.pdf', compact('quotation'));
+        
+        $pdf->setOption('footer-right', 'Page [page] of [toPage]');
+        $pdf->setOption('footer-left', 'Ref: ' . $quotation->quotation_no);
+        $pdf->setOption('footer-font-size', 9);
+        $pdf->setOption('footer-spacing', 5);
+        
         return $pdf->download('Quotation-' . $quotation->quotation_no . '.pdf');
     }
 
@@ -390,6 +396,10 @@ class QuotationController extends Controller
 
     public function destroy(Quotation $quotation)
     {
+        if ($quotation->status === 'converted') {
+            return back()->with('error', 'Cannot delete a quotation that has already been converted to a sale.');
+        }
+        
         $quotation->delete();
         return back()->with('success', 'Quotation deleted successfully');
     }

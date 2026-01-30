@@ -55,9 +55,25 @@
                         <a href="{{ route('purchases.edit', $order->id) }}" class="text-blue-600 hover:text-blue-800 mr-3" title="Edit Order">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="{{ route('purchases.print', $order->id) }}" target="_blank" class="text-gray-500 hover:text-gray-900" title="Print Invoice">
+                        <a href="{{ route('purchases.print', $order->id) }}" target="_blank" class="text-gray-500 hover:text-gray-900 mr-3" title="Print Invoice">
                             <i class="fas fa-print"></i>
                         </a>
+                        <form action="{{ route('purchases.destroy', $order->id) }}" method="POST" class="inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" 
+                                class="text-red-600 hover:text-red-900 btn-delete-confirm" 
+                                title="Delete Purchase Order"
+                                data-type="Purchase"
+                                data-title="Delete Purchase Order?"
+                                data-summary='{
+                                    "Reference": "{{ $order->reference_no }}",
+                                    "Supplier": "{{ $order->supplier->name }}",
+                                    "Total": "AED {{ number_format($order->total_cost, 2) }}"
+                                }'>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @empty

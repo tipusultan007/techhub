@@ -122,6 +122,7 @@
         }
 
         .badge-pending { background: #fef9c3; color: #854d0e; }
+        .badge-submitted { background: #fef9c3; color: #854d0e; }
         .badge-converted { background: #dcfce7; color: #166534; }
         .badge-cancelled { background: #fee2e2; color: #991b1b; }
 
@@ -258,16 +259,16 @@
                     @if(settings('site_logo'))
                         <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" style="max-height: 50px; margin-bottom: 8px;">
                     @endif
-                    <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 5px;">{{ settings('shop_name', 'Tech Hub Information Technology') }}</div>
                     <div style="color: #64748b; line-height: 1.4; font-size: 11px;">
-                        {{ settings('shop_address', 'Dubai, UAE') }}<br>
-                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
-                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <strong>{{ settings('shop_address', 'Dubai, UAE') }}</strong><br>
+                        <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <strong>Website:</strong> www.techhubrak.ae<br>
                         <div style="font-weight: 800; color: #1e293b; margin-top: 8px; text-transform: uppercase; font-size: 12px;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</div>
                     </div>
                 </td>
                 <td style="width: 50%; text-align: right; vertical-align: top;">
-                    <h1 style="font-size: 28px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase;">
+                    <h1 style="font-size: 28px; font-weight: 800; color: #2DAE9A; margin: 0; text-transform: uppercase;">
                         Quotation
                     </h1>
                     <div style="margin-top: 10px; font-size: 11px; line-height: 1.6;">
@@ -325,7 +326,8 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 45%;">Item Description</th>
+                    <th style="width: 5%; text-align: center;">#</th>
+                    <th style="width: 40%;">Item Description</th>
                     <th style="width: 10%; text-align: center;">Qty</th>
                     <th style="width: 15%; text-align: right;">Rate</th>
                     <th style="width: 10%; text-align: center;">Tax %</th>
@@ -336,6 +338,7 @@
             <tbody>
                 @foreach($quotation->items as $item)
                 <tr>
+                    <td style="text-align: center; color: #64748b;">{{ $loop->iteration }}</td>
                     <td><span style="font-weight: 400; color: #0f172a; font-size: 12px;">{{ $item->product_name }}</span></td>
                     <td align="center" style="font-weight: 400;">{{ number_format($item->quantity, 3) }}</td>
                     <td align="right" style="color: #475569;">{{ number_format($item->unit_price, 2) }}</td>
@@ -377,7 +380,7 @@
                     @endforeach
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
-                        <td class="grand-total-value">AED {{ number_format($quotation->total, 2) }}</td>
+                        <td class="grand-total-value" style="color: #2DAE9A;">AED {{ number_format($quotation->total, 2) }}</td>
                     </tr>
                 </table>
             </div>
@@ -393,16 +396,13 @@
                             @if(settings('quotation_notes'))
                                 {!! nl2br(e(settings('quotation_notes'))) !!}
                             @else
-                                <li>1. Prices are valid for 15 days from the date of quotation.</li>
-                                <li>2. Items are subject to availability at the time of order confirmation.</li>
-                                <li>3. Standard warranty applies to all electronic items unless otherwise specified.</li>
-                                <li>4. This is a computer-generated document and does not require a physical signature.</li>
+                               
                             @endif
                         </ul>
                     </td>
                     <td style="width: 40%; vertical-align: bottom; text-align: right;">
                         <div style="font-size: 8px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">
-                            Official Quotation • {{ settings('site_name', 'Tech Hub') }}
+                            Official Quotation
                         </div>
                         <div style="font-size: 8px; color: #e2e8f0; margin-top: 5px;">
                             Generated by {{ settings('site_name', 'Tech Hub') }} ERP

@@ -51,4 +51,9 @@ class Quotation extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    public function deliveryChallans()
+    {
+        return $this->hasMany(DeliveryChallan::class);
+    }
 }

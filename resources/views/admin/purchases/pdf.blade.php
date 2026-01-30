@@ -5,136 +5,303 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase Order #{{ $purchase->reference_no }}</title>
     <style>
-        @page { margin: 20px; }
-        * {
-            font-family: "DejaVu Sans", sans-serif !important;
+        /* Professional Premium Theme */
+        :root {
+            --brand-primary: #2DAE9A; /* Teal */
+            --brand-dark: #0F172A;    /* Navy/Slate */
+            --gray-light: #F8FAFC;
+            --gray-border: #E2E8F0;
+            --text-main: #333333;
+            --text-secondary: #64748B;
         }
 
-        body { 
-            margin: 0;
-            padding: 20px;
-            font-size: 11px; 
-            line-height: 1.4;
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
             color: #333;
+            margin: 0;
+            padding: 0;
             background-color: #fff;
         }
-        .w-full { width: 100%; }
-        .header-table { margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; }
-        .header-table td { vertical-align: top; }
-        
-        .title { font-size: 26px; font-weight: bold; color: #1e293b; text-transform: uppercase; margin-bottom: 5px; }
-        .po-number { font-size: 14px; font-weight: bold; color: #4f46e5; }
-        
-        .info-table { margin-bottom: 30px; }
-        .info-table td { width: 50%; vertical-align: top; padding: 10px; }
-        .info-box { background: #f8fafc; border: 1px solid #f1f5f9; padding: 15px; border-radius: 10px; }
-        .info-title { font-size: 9px; font-weight: bold; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 3px; letter-spacing: 1px; }
-        
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .items-table th { background: #1e293b; color: #fff; padding: 10px; text-align: left; font-size: 9px; text-transform: uppercase; font-weight: bold; }
-        .items-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        
-        .product-name { font-weight: 400; font-size: 12px; color: #0f172a; }
-        .variant-name { font-size: 9px; color: #64748b; text-transform: uppercase; margin-top: 2px; }
-        
+
+        .invoice-box {
+            width: 100%;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        /* Helpers */
         .text-right { text-align: right; }
         .text-center { text-align: center; }
-        
-        .footer-area { margin-top: 20px; }
-        .footer-left { width: 60%; float: left; }
-        .footer-right { width: 35%; float: right; }
-        .clearfix { clear: both; }
-        
-        .totals-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; }
-        .total-row { border-bottom: 1px solid #fff; padding: 4px 0; }
-        .grand-total { border-top: 1px solid #cbd5e1; margin-top: 10px; padding-top: 10px; }
-        .grand-total td { font-size: 13px; font-weight: bold; }
+        .text-uppercase { text-transform: uppercase; }
+        .font-bold { font-weight: bold; }
+        .clearfix::after { content: ""; clear: both; display: table; }
 
-        .policy-box { background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 9px; color: #92400e; line-height: 1.5; font-style: normal; }
-        .signature-line { border-bottom: 1px solid #334155; margin-top: 60px; width: 220px; }
+        /* Header */
+        .header-table {
+            width: 100%;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #E2E8F0;
+            padding-bottom: 25px;
+        }
+
+        .shop-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 5px;
+        }
+
+        .doc-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2DAE9A;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .doc-details {
+            margin-top: 15px;
+            font-size: 11px;
+            color: #64748B;
+        }
+
+        .detail-row {
+            margin-bottom: 4px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #64748B;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            margin-right: 5px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #0F172A;
+            font-size: 11px;
+        }
+
+        /* Customer & Meta */
+        .section-table {
+            width: 100%;
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px;
+            width: 80%;
+        }
+
+        .customer-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 4px;
+        }
+
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .items-table th {
+            background-color: #F8FAFC;
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: 700;
+            color: #0F172A;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-top: 1px solid #E2E8F0;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .items-table td {
+            padding: 14px 10px;
+            border-bottom: 1px solid #F8FAFC;
+            vertical-align: top;
+        }
+
+        .item-name {
+            font-size: 12px;
+            font-weight: 400;
+            color: #0F172A;
+            margin-bottom: 2px;
+        }
+
+        .item-desc {
+            font-size: 10px;
+            color: #64748B;
+            line-height: 1.3;
+        }
+
+        /* Totals */
+        .totals-container {
+            width: 100%;
+        }
+        
+        .totals-table {
+            width: 280px;
+            float: right;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #F8FAFC;
+        }
+
+        .total-row td {
+            padding: 4px 0;
+        }
+
+        .total-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748B;
+        }
+
+        .total-value {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0F172A;
+            text-align: right;
+        }
+
+        .grand-total {
+            border-top: 1px solid #CBD5E1;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        .grand-total-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0F172A;
+            text-transform: uppercase;
+        }
+
+        .grand-total-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2DAE9A;
+            text-align: right;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 20px;
+        }
+
+        .notes-section {
+            font-size: 10px;
+            color: #64748B;
+            line-height: 1.5;
+        }
+
+        .notes-title {
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            font-size: 9px;
+            color: #64748B;
+        }
     </style>
 </head>
-<body>
 
-    <div class="w-full">
+<body>
+    @php
+        $GLOBALS['purchase_no'] = $purchase->reference_no;
+    @endphp
+    <div class="invoice-box">
         <!-- Header -->
-        <table class="w-full header-table">
+        <table class="header-table">
             <tr>
                 <td style="width: 50%; vertical-align: top;">
                     @if(settings('site_logo'))
                         @php
-                            $logoPath = settings('site_logo');
+                            $logoSettings = settings('site_logo');
+                            $logoBase64 = '';
                             try {
-                                $path = parse_url($logoPath, PHP_URL_PATH);
-                                $fullPath = public_path($path);
-                                if (file_exists($fullPath)) {
-                                    $type = pathinfo($fullPath, PATHINFO_EXTENSION);
-                                    $data = file_get_contents($fullPath);
-                                    $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                                } else {
-                                    $logoBase64 = $logoPath;
+                                if ($logoSettings) {
+                                    $relativePath = parse_url($logoSettings, PHP_URL_PATH);
+                                    $absolutePath = public_path($relativePath);
+                                    if (file_exists($absolutePath)) {
+                                        $type = pathinfo($absolutePath, PATHINFO_EXTENSION);
+                                        $data = file_get_contents($absolutePath);
+                                        $mime = 'image/' . ($type == 'svg' ? 'svg+xml' : $type);
+                                        $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+                                    }
                                 }
-                            } catch (\Exception $e) {
-                                $logoBase64 = $logoPath;
-                            }
+                            } catch (\Exception $e) {}
                         @endphp
-                        <img src="{{ $logoBase64 }}" alt="{{ settings('site_name') }}" style="max-height: 45px; margin-bottom: 8px;">
+                        @if($logoBase64)
+                            <img src="{{ $logoBase64 }}" alt="Logo" style="max-height: 60px; margin-bottom: 10px; display: block;">
+                        @endif
                     @endif
-                    <div style="color: #64748b; line-height: 1.4; font-size: 11px;">
+                    
+                    <div style="font-size: 11px; color: #64748B; line-height: 1.4;">
                         {{ settings('shop_address', 'Dubai, UAE') }}<br>
-                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
-                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
-                        <div style="font-weight: bold; color: #1e293b; margin-top: 8px; text-transform: uppercase; font-size: 12px;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</div>
+                        <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <strong>TRN:</strong> {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
                     </div>
                 </td>
-                <td style="width: 50%; text-align: right; vertical-align: top;">
-                    <h1 style="font-size: 28px; font-weight: bold; color: #2DAE9A; margin: 0; text-transform: uppercase;">
-                        Purchase Order
-                    </h1>
-                    <div style="margin-top: 10px; font-size: 11px; line-height: 1.6;">
-                        <div style="margin-bottom: 2px;">
-                            <span class="info-label">REF #:</span> 
-                            <span class="info-value" style="font-weight: bold; color: #4f46e5;">{{ $purchase->reference_no }}</span>
+                <td style="width: 50%; vertical-align: top; text-align: right;">
+                    <div class="doc-title">Purchase Order</div>
+                    
+                    <div class="doc-details">
+                        <div class="detail-row">
+                            <span class="info-label">PO #:</span>
+                            <span class="info-value">{{ $purchase->reference_no }}</span>
                         </div>
-                        <div style="margin-bottom: 2px;">
-                            <span class="info-label">Date:</span> 
-                            <span class="info-value">{{ \Carbon\Carbon::parse($purchase->date)->format('d M Y') }}</span>
+                        <div class="detail-row">
+                            <span class="info-label">Date:</span>
+                            <span class="info-value">{{ date('d M, Y', strtotime($purchase->date)) }}</span>
                         </div>
-                        <div style="margin-top: 8px;">
-                            <span class="info-label">Status:</span> 
-                            <span style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 9px; font-weight: bold; text-transform: uppercase; background: #fef9c3; color: #854d0e;">{{ $purchase->status }}</span>
+                        <div class="detail-row" style="margin-top: 8px;">
+                            <span class="info-label">Status:</span>
+                            <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; padding: 2px 6px; background: #F1F5F9; border-radius: 4px; color: #475569;">
+                                {{ ucfirst($purchase->status) }}
+                            </span>
                         </div>
                     </div>
                 </td>
             </tr>
         </table>
 
-        <!-- Address Grid -->
-        <table class="w-full info-table">
+        <!-- Supplier Section -->
+        <table class="section-table">
             <tr>
-                <td style="width: 50%; padding-right: 20px;">
-                    <div class="info-title">VENDOR / SUPPLIER</div>
-                    <div class="info-box">
-                        <div style="font-size: 16px; font-weight: bold; color: #0f172a; margin-bottom: 2px;">{{ $purchase->supplier->name }}</div>
-                        <div style="font-weight: bold; color: #475569; font-style: italic; margin-bottom: 8px; font-size: 11px;">{{ $purchase->supplier->company_name }}</div>
-                        <div style="color: #64748b; font-size: 11px; line-height: 1.4;">
-                            {{ $purchase->supplier->address }}<br>
-                            Ph: {{ $purchase->supplier->phone }}
-                        </div>
-                        @if($purchase->supplier->trn_number)
-                            <div style="margin-top: 10px; font-size: 10px; font-weight: bold; color: #1e293b; border-top: 1px solid #e2e8f0; pt-2;">TRN: {{ $purchase->supplier->trn_number }}</div>
-                        @endif
+                <td style="width: 60%; vertical-align: top;">
+                    <div class="section-title">Supplier Details</div>
+                    <div class="customer-name">{{ $purchase->supplier->name ?? 'N/A' }}</div>
+                    <div style="font-size: 11px; color: #475569; line-height: 1.5;">
+                        {{ $purchase->supplier->phone ?? '' }}<br>
+                        {{ $purchase->supplier->email ?? '' }}<br>
+                        {{ $purchase->supplier->address ?? '' }}
                     </div>
                 </td>
-                <td style="width: 50%;">
-                    <div class="info-title">SHIP TO / WAREHOUSE</div>
-                    <div class="info-box">
-                        <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 4px;">{{ settings('shop_name', 'TECH HUB') }}</div>
-                        <div style="color: #64748b; font-size: 11px; line-height: 1.5;">
-                            {{ settings('shop_address', 'Dubai, United Arab Emirates') }}<br>
-                            Ph: {{ settings('contact_phone', settings('shop_phone')) }}<br>
-                            Email: {{ settings('contact_email', 'info@techhubrak.ae') }}
-                        </div>
+                <td style="width: 40%; vertical-align: top; text-align: right;">
+                    <div class="section-title" style="margin-left: auto;">Terms</div>
+                    <div style="font-size: 11px; color: #64748B; font-style: italic;">
+                        {{ $purchase->note ?? 'No specific notes.' }}
                     </div>
                 </td>
             </tr>
@@ -144,76 +311,103 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 30px;" class="text-center">#</th>
-                    <th>Product Description</th>
-                    <th style="width: 80px;" class="text-right">Unit Cost</th>
-                    <th style="width: 40px;" class="text-center">Qty</th>
-                    <th style="width: 40px;" class="text-center">Tax %</th>
-                    <th style="width: 60px;" class="text-right">Tax</th>
-                    <th style="width: 80px;" class="text-right">Total</th>
+                    <th style="width: 5%; text-align: center;">#</th>
+                    <th style="width: 45%;">Product Description</th>
+                    <th style="width: 15%; text-align: right;">Unit Cost</th>
+                    <th style="width: 10%; text-align: center;">Qty</th>
+                    <th style="width: 10%; text-align: right;">Tax</th>
+                    <th style="width: 15%; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($purchase->items as $index => $item)
                 <tr>
-                    <td class="text-center" style="color: #94a3b8; font-weight: bold;">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                    <td style="text-align: center; color: #64748B;">{{ $index + 1 }}</td>
                     <td>
-                        <div class="product-name">{{ $item->product->name ?? 'N/A' }}</div>
+                        <div class="item-name">{{ $item->product->name ?? 'Item' }}</div>
                         @if($item->variant)
-                            <div class="variant-name">{{ $item->variant->variant_name }}</div>
+                        <div class="item-desc">{{ $item->variant->name }}</div>
                         @endif
                     </td>
-                    <td class="text-right" style="color: #475569;">{{ number_format($item->unit_cost, 2) }}</td>
-                    <td class="text-center" style="font-weight: bold; color: #1e293b;">{{ $item->quantity }}</td>
-                    <td class="text-center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
-                    <td class="text-right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
-                    <td class="text-right" style="font-weight: bold; color: #0f172a;">{{ number_format($item->subtotal + $item->tax_amount, 2) }}</td>
+                    <td class="text-right" style="color: #475569;">{{ number_format($item->net_unit_cost, 2) }}</td>
+                    <td class="text-center" style="font-weight: 700; font-size: 12px;">{{ $item->quantity }}</td>
+                    <td class="text-right" style="color: #475569;">{{ number_format($item->tax, 2) }}</td>
+                    <td class="text-right" style="font-weight: 700; color: #0F172A;">{{ number_format($item->total, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <!-- Footer Area -->
-        <div class="footer-area">
-            <div class="footer-left">
-                <div class="policy-box">
-                    <strong>Purchasing Policy & Delivery Instructions:</strong><br>
-                    {!! nl2br(e(settings('purchase_policy', ""))) !!}
-                </div>
-                
-                <div style="margin-top: 40px;">
-                    <div class="signature-line"></div>
-                    <div style="font-weight: bold; margin-top: 8px; text-transform: uppercase; font-size: 10px;">Authorized Signature</div>
-                    <div style="font-size: 8px; color: #94a3b8; margin-top: 2px;">PROCUREMENT DEPARTMENT • TECH HUB GROUP</div>
-                </div>
+         <!-- Totals -->
+        <div class="clearfix">
+            <div class="totals-table">
+                <table style="width: 100%;">
+                    <tr class="total-row">
+                        <td class="total-label">Subtotal</td>
+                        <td class="total-value">{{ number_format($purchase->total_cost, 2) }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="total-label">Order Tax</td>
+                        <td class="total-value">{{ number_format($purchase->order_tax, 2) }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="total-label">Shipping</td>
+                        <td class="total-value">{{ number_format($purchase->shipping_cost, 2) }}</td>
+                    </tr>
+                    @if($purchase->discount > 0)
+                    <tr class="total-row">
+                        <td class="total-label" style="color: #E11D48;">Discount</td>
+                        <td class="total-value" style="color: #E11D48;">-{{ number_format($purchase->discount, 2) }}</td>
+                    </tr>
+                    @endif
+                    
+                    <tr class="grand-total">
+                        <td class="grand-total-label">Grand Total</td>
+                        <td class="grand-total-value">{{ number_format($purchase->grand_total, 2) }}</td>
+                    </tr>
+                </table>
             </div>
-            
-            <div class="footer-right">
-                <div class="totals-box">
-                    <table class="w-full">
-                        <tr class="total-row">
-                            <td style="color: #64748b; font-weight: bold; padding: 5px 0;">Subtotal (Net)</td>
-                            <td class="text-right" style="font-weight: bold;">{{ number_format($purchase->total_cost - $purchase->tax_amount, 2) }}</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td style="color: #64748b; font-weight: bold; padding: 5px 0;">Tax (VAT)</td>
-                            <td class="text-right" style="color: #ef4444; font-weight: bold;">{{ number_format($purchase->tax_amount, 2) }}</td>
-                        </tr>
-                        <tr class="grand-total">
-                            <td style="font-weight: bold; color: #2DAE9A; text-transform: uppercase;">Grand Total</td>
-                            <td class="text-right" style="color: #2DAE9A;">
-                                <span style="font-size: 9px; color: #94a3b8; margin-right: 3px;">AED</span>
-                                <span style="font-size: 18px; font-weight: bold;">{{ number_format($purchase->total_cost, 2) }}</span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            <div class="clearfix"></div>
         </div>
 
-       
+        <!-- Footer -->
+        <div class="footer">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 60%; vertical-align: top;">
+                        <div class="notes-section">
+                            <div class="notes-title">Authorized Signature</div>
+                            <div style="border-bottom: 1px solid #334155; width: 200px; margin-top: 40px;"></div>
+                        </div>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
     </div>
 
+    <script type="text/php">
+        if (isset($pdf)) {
+            $pdf->page_script('
+                $font = $fontMetrics->get_font("Helvetica", "normal");
+                $size = 9;
+                $color = array(0.39, 0.45, 0.55); // #64748B
+                $y = $pdf->get_height() - 35;
+
+                // Border Line
+                $pdf->line(40, $y - 10, $pdf->get_width() - 40, $y - 10, array(0.8, 0.8, 0.8), 0.75);
+
+                // Left: Quotation Number
+                $quotationNo = isset($GLOBALS["purchase_no"]) ? $GLOBALS["purchase_no"] : "";
+                $leftText = "Ref: " . $quotationNo;
+                $pdf->text(40, $y, $leftText, $font, $size, $color);
+
+                // Right: Page Number
+                $rightText = "Page " . $PAGE_NUM . " of " . $PAGE_COUNT;
+                $textWidth = $fontMetrics->getTextWidth($rightText, $font, $size);
+                $x = $pdf->get_width() - $textWidth - 40;
+                $pdf->text($x, $y, $rightText, $font, $size, $color);
+            ');
+        }
+    </script>
 </body>
 </html>

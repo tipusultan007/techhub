@@ -55,7 +55,7 @@
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
                 <select name="status" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
                     <option value="">All Statuses</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
                     <option value="converted" {{ request('status') == 'converted' ? 'selected' : '' }}>Converted</option>
                     <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                 </select>
@@ -110,8 +110,8 @@
                     </td>
                     <td class="px-6 py-4 font-bold text-blue-600">AED {{ number_format($quo->total, 2) }}</td>
                     <td class="px-6 py-4">
-                        @if($quo->status == 'pending')
-                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold uppercase">Pending</span>
+                        @if($quo->status == 'submitted')
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold uppercase">Submitted</span>
                         @elseif($quo->status == 'converted')
                             <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-bold uppercase">Converted</span>
                             <div class="text-[10px] text-gray-500 mt-1">Invoice: <a href="{{ route('orders.show', $quo->order_id) }}" class="text-blue-500 underline">{{ $quo->order?->invoice_no }}</a></div>
@@ -129,12 +129,12 @@
                             <a href="{{ route('quotations.download-pdf', $quo->id) }}" class="text-indigo-500 hover:text-indigo-700" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i>
                             </a>
-                            @if($quo->status == 'pending')
+                            @if($quo->status == 'submitted')
                             <a href="{{ route('quotations.edit', $quo->id) }}" class="text-orange-500 hover:text-orange-700" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
                             @endif
-                            @if($quo->status == 'pending')
+                            @if($quo->status == 'submitted')
                             <button type="button" 
                                 onclick="confirmConversion({{ $quo->id }}, '{{ $quo->quotation_no }}', '{{ $quo->customer_name }}', '{{ number_format($quo->total, 2) }}', {{ $quo->items->count() }})"
                                 class="text-green-600 hover:text-green-800" title="Convert to Sale">
@@ -144,10 +144,19 @@
                                 @csrf
                             </form>
                             @endif
-                            <form action="{{ route('quotations.destroy', $quo->id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                            <form action="{{ route('quotations.destroy', $quo->id) }}" method="POST" class="inline-block">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700" title="Delete">
+                                <button type="button" 
+                                    class="text-red-500 hover:text-red-700 btn-delete-confirm" 
+                                    title="Delete Quotation"
+                                    data-type="Quotation"
+                                    data-title="Delete Quotation?"
+                                    data-summary='{
+                                        "Quo #": "{{ $quo->quotation_no }}",
+                                        "Customer": "{{ $quo->customer_name }}",
+                                        "Total": "AED {{ number_format($quo->total, 2) }}"
+                                    }'>
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

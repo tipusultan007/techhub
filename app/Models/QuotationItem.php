@@ -22,4 +22,9 @@ class QuotationItem extends Model
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
+
+    public function getRemainingQtyAttribute()
+    {
+        return max(0, $this->quantity - $this->delivered_qty);
+    }
 }

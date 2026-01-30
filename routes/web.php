@@ -23,6 +23,7 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReturnController;
+use App\Http\Controllers\DeliveryChallanController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SupplierController;
@@ -170,6 +171,19 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::post('/quotations/{quotation}/convert', [QuotationController::class, 'convertToSale'])->name('quotations.convert');
         Route::get('/quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print');
         Route::get('/quotations/{quotation}/download-pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.download-pdf');
+        Route::get('/quotations/{quotation}/download-pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.download-pdf');
+        
+        // Delivery Challans
+        Route::get('/delivery-challans', [DeliveryChallanController::class, 'index'])->name('delivery-challans.index');
+        Route::get('/quotations/{quotation}/challan/create', [DeliveryChallanController::class, 'create'])->name('quotations.challan.create');
+        Route::post('/quotations/{quotation}/challan', [DeliveryChallanController::class, 'store'])->name('quotations.challan.store');
+        Route::get('/delivery-challans/{id}', [DeliveryChallanController::class, 'show'])->name('delivery-challans.show');
+        Route::get('/delivery-challans/{id}/edit', [DeliveryChallanController::class, 'edit'])->name('delivery-challans.edit');
+        Route::put('/delivery-challans/{id}', [DeliveryChallanController::class, 'update'])->name('delivery-challans.update');
+        Route::delete('/delivery-challans/{id}', [DeliveryChallanController::class, 'destroy'])->name('delivery-challans.destroy');
+        Route::get('/delivery-challans/{id}/print', [DeliveryChallanController::class, 'print'])->name('delivery-challans.print');
+        Route::get('/delivery-challans/{id}/pdf', [DeliveryChallanController::class, 'pdf'])->name('delivery-challans.pdf');
+
         Route::resource('quotations', QuotationController::class);
     });
 

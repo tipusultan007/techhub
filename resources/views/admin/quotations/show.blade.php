@@ -8,18 +8,25 @@
             <i class="fas fa-arrow-left"></i> Back to List
         </a>
         <div class="flex gap-2">
-            <a href="{{ route('quotations.print', $quotation->id) }}" target="_blank" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-slate-900 transition flex items-center gap-2">
-                <i class="fas fa-print"></i> Print (A4)
+            <a href="{{ route('quotations.print', $quotation->id) }}" target="_blank" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                <i class="fas fa-print mr-1"></i> Print
             </a>
-            <a href="{{ route('quotations.download-pdf', $quotation->id) }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
-                <i class="fas fa-file-pdf"></i> Download PDF
+            <a href="{{ route('quotations.download-pdf', $quotation->id) }}" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                <i class="fas fa-file-pdf mr-1"></i> PDF
             </a>
-            @if($quotation->status == 'pending')
+            
+            @if($quotation->items->sum('remaining_qty') > 0)
+            <a href="{{ route('quotations.challan.create', $quotation->id) }}" class="px-4 py-2 bg-[#d97706] text-white rounded hover:bg-[#b45309]">
+                <i class="fas fa-truck mr-1"></i> Prepare Challan
+            </a>
+            @endif
+
+            @if($quotation->status == 'submitted')
             <a href="{{ route('quotations.edit', $quotation->id) }}" class="bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600 transition flex items-center gap-2">
                 <i class="fas fa-edit"></i> Edit Quotation
             </a>
             @endif
-            @if($quotation->status == 'pending')
+            @if($quotation->status == 'submitted')
             <button type="button"
                 onclick="confirmConversion({{ $quotation->id }}, '{{ $quotation->quotation_no }}', '{{ $quotation->customer_name }}', '{{ number_format($quotation->total, 2) }}', {{ $quotation->items->count() }})"
                 class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2">
@@ -77,7 +84,7 @@
             </div>
             <div class="text-right">
                 <h4 class="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Quotation Status</h4>
-                <div class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase {{ $quotation->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : ($quotation->status == 'converted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
+                <div class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase {{ $quotation->status == 'submitted' ? 'bg-yellow-100 text-yellow-800' : ($quotation->status == 'converted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
                     {{ $quotation->status }}
                 </div>
                 @if($quotation->status == 'converted' && $quotation->order)
@@ -91,6 +98,7 @@
         <table class="w-full text-left mb-10 border-y">
             <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-500">
                 <tr>
+                    <th class="px-4 py-3 text-center w-12">#</th>
                     <th class="px-4 py-3">Description</th>
                     <th class="px-4 py-3 text-center">Qty</th>
                     <th class="px-4 py-3 text-right">Rate</th>
@@ -102,6 +110,7 @@
             <tbody class="text-sm text-gray-700">
                 @foreach($quotation->items as $item)
                 <tr class="border-b last:border-0 hover:bg-gray-50">
+                    <td class="px-4 py-4 text-center font-bold text-gray-400">{{ $loop->iteration }}</td>
                     <td class="px-4 py-4">
                         <div class="font-medium text-xs text-gray-900">{{ $item->product_name }}</div>
                     </td>

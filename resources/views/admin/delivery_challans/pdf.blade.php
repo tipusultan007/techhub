@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ $order->invoice_no }}</title>
+    <title>Delivery Challan - {{ $challan->challan_number }}</title>
     <style>
         /* Professional Premium Theme */
         :root {
@@ -151,83 +151,41 @@
             line-height: 1.3;
         }
 
-        /* Totals */
-        .totals-container {
-            width: 100%;
-        }
-        
-        .totals-table {
-            width: 280px;
-            float: right;
-            border: 1px solid #E2E8F0;
-            border-radius: 6px;
-            padding: 15px;
-            background-color: #F8FAFC;
-        }
-
-        .total-row td {
-            padding: 4px 0;
-        }
-
-        .total-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #64748B;
-        }
-
-        .total-value {
-            font-size: 11px;
-            font-weight: 700;
-            color: #0F172A;
-            text-align: right;
-        }
-
-        .grand-total {
-            border-top: 1px solid #CBD5E1;
-            margin-top: 10px;
-            padding-top: 10px;
-        }
-
-        .grand-total-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #0F172A;
-            text-transform: uppercase;
-        }
-
-        .grand-total-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #2DAE9A;
-            text-align: right;
-        }
-
         /* Footer */
         .footer {
-            margin-top: 60px;
-            border-top: 1px solid #E2E8F0;
-            padding-top: 20px;
+            margin-top: 80px;
         }
 
-        .notes-section {
+        .signature-box {
+            width: 45%;
+            float: left;
+            text-align: center;
+        }
+        
+        .signature-box-right {
+            width: 45%;
+            float: right;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-top: 1px solid #334155;
+            margin-bottom: 8px;
+        }
+        
+        .signature-label {
             font-size: 10px;
-            color: #64748B;
-            line-height: 1.5;
-        }
-
-        .notes-title {
             font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            font-size: 9px;
             color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 
 <body>
     @php
-        $GLOBALS['invoice_no'] = $order->invoice_no;
+        $GLOBALS['challan_number'] = $challan->challan_number;
     @endphp
     <div class="invoice-box">
         <!-- Header -->
@@ -264,152 +222,85 @@
                     </div>
                 </td>
                 <td style="width: 50%; vertical-align: top; text-align: right;">
-                    <div class="doc-title">Invoice</div>
+                    <div class="doc-title">Delivery Challan</div>
                     
                     <div class="doc-details">
                         <div class="detail-row">
-                            <span class="info-label">Invoice #:</span>
-                            <span class="info-value">{{ $order->invoice_no }}</span>
+                            <span class="info-label">DC #:</span>
+                            <span class="info-value">{{ $challan->challan_number }}</span>
                         </div>
                         <div class="detail-row">
                             <span class="info-label">Date:</span>
-                            <span class="info-value">{{ $order->created_at->format('d M Y') }}</span>
+                            <span class="info-value">{{ \Carbon\Carbon::parse($challan->date)->format('d M, Y') }}</span>
                         </div>
-                        <div class="detail-row" style="margin-top: 8px;">
-                            <span class="info-label">Status:</span>
-                            <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; padding: 2px 6px; background: #F1F5F9; border-radius: 4px; color: #475569;">
-                                {{ ucfirst($order->status) }}
-                            </span>
+                        <div class="detail-row">
+                            <span class="info-label">Ref Quote:</span>
+                            <span class="info-value">{{ $challan->quotation->quotation_no }}</span>
                         </div>
                     </div>
                 </td>
             </tr>
         </table>
 
-        <!-- Customer Section -->
+        <!-- Sent To Section -->
         <table class="section-table">
             <tr>
                 <td style="width: 60%; vertical-align: top;">
-                    <div class="section-title">Customer Details</div>
-                    <div class="customer-name">{{ $order->customer_name }}</div>
-                    @if($order->customer)
+                    <div class="section-title">Delivered To</div>
+                    <div class="customer-name">{{ $challan->customer->name ?? $challan->quotation->customer_name }}</div>
+                    @if($challan->customer)
                         <div style="font-size: 11px; color: #475569; line-height: 1.5;">
-                            {{ $order->customer->phone }}<br>
-                            {{ $order->customer->email }}<br>
-                            @if($order->customer->trn_number)
-                                <div style="margin-top: 4px; font-weight: 600; color: #2DAE9A;">TRN: {{ $order->customer->trn_number }}</div>
-                            @endif
+                            {{ $challan->customer->phone }}<br>
+                            {{ $challan->customer->email }}<br>
+                            {{ $challan->customer->address }}
                         </div>
+                    @else
+                         <div style="font-size: 11px; color: #475569;">
+                             {{ $challan->quotation->customer->phone ?? '' }}
+                         </div>
                     @endif
                 </td>
                 <td style="width: 40%; vertical-align: top; text-align: right;">
-                    <div class="section-title" style="margin-left: auto;">Generated By</div>
-                    <div style="font-size: 12px; font-weight: 600; color: #0F172A;">
-                        {{ $order->user->name ?? 'Admin' }}
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <span class="info-label">Payment:</span>
-                        <span class="info-value">{{ ucfirst($order->payment_method) }}</span>
+                    <div class="section-title" style="margin-left: auto;">Note</div>
+                    <div style="font-size: 11px; color: #64748B; font-style: italic;">
+                         {{ $challan->note ?? 'No specific notes.' }}
                     </div>
                 </td>
             </tr>
         </table>
 
-        <!-- Items -->
+        <!-- Items Table -->
         <table class="items-table">
             <thead>
                 <tr>
                     <th style="width: 5%; text-align: center;">#</th>
-                    <th style="width: 45%;">Item Description</th>
-                    <th style="width: 5%; text-align: center;">Qty</th>
-                    <th style="width: 15%; text-align: right;">Rate</th>
-                    <th style="width: 8%; text-align: center;">Tax %</th>
-                    <th style="width: 10%; text-align: right;">Tax</th>
-                    <th style="width: 12%; text-align: right;">Amount</th>
+                    <th style="width: 65%;">Product Description</th>
+                    <th style="width: 30%; text-align: center;">Quantity</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($order->items as $item)
+                @foreach($challan->items as $index => $item)
                 <tr>
-                    <td style="text-align: center; color: #64748B;">{{ $loop->iteration }}</td>
+                    <td style="text-align: center; color: #64748B;">{{ $index + 1 }}</td>
                     <td>
                         <div class="item-name">{{ $item->product_name }}</div>
                     </td>
-                    <td class="text-center" style="font-weight: 700; font-size: 12px;">{{ number_format($item->quantity, 0) }}</td>
-                    <td class="text-right" style="color: #475569;">{{ number_format($item->unit_price, 2) }}</td>
-                    <td class="text-center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
-                    <td class="text-right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
-                    <td class="text-right" style="font-weight: 700; color: #0F172A;">{{ number_format($item->subtotal, 2) }}</td>
+                    <td class="text-center" style="font-weight: 700; font-size: 12px; color: #0F172A;">{{ $item->quantity }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
-         <!-- Totals -->
-        <div class="clearfix">
-            <div class="totals-table">
-                <table style="width: 100%;">
-                    <tr class="total-row">
-                        <td class="total-label">Subtotal</td>
-                        <td class="total-value">AED {{ number_format($order->sub_total, 2) }}</td>
-                    </tr>
-                    @if($order->discount > 0)
-                    <tr class="total-row">
-                        <td class="total-label" style="color: #E11D48;">Discount</td>
-                        <td class="total-value" style="color: #E11D48;">- AED {{ number_format($order->discount, 2) }}</td>
-                    </tr>
-                    @endif
-                    
-                    @php
-                        $groupedTaxes = $order->items->groupBy('tax_rate');
-                    @endphp
-                    @foreach($groupedTaxes as $rate => $items)
-                        @php
-                            $taxAmount = $items->sum('tax_amount');
-                            if($taxAmount <= 0) continue;
-                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
-                        @endphp
-                        <tr class="total-row">
-                            <td class="total-label">{{ $label }}</td>
-                            <td class="total-value">AED {{ number_format($taxAmount, 2) }}</td>
-                        </tr>
-                    @endforeach
-                    
-                    <tr class="grand-total">
-                        <td class="grand-total-label">Total Amount</td>
-                        <td class="grand-total-value">AED {{ number_format($order->total_amount, 2) }}</td>
-                    </tr>
-                    @if($order->paid_amount > 0)
-                    <tr class="total-row" style="margin-top: 5px;">
-                        <td class="total-label" style="color: #15803D;">Paid</td>
-                        <td class="total-value" style="color: #15803D;">AED {{ number_format($order->paid_amount, 2) }}</td>
-                    </tr>
-                    @endif
-                    @if($order->due_amount > 0)
-                    <tr class="total-row">
-                        <td class="total-label" style="color: #B91C1C;">Due</td>
-                        <td class="total-value" style="color: #B91C1C;">AED {{ number_format($order->due_amount, 2) }}</td>
-                    </tr>
-                    @endif
-                </table>
+        <!-- Footer -->
+        <div class="footer clearfix">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Receiver's Signature</div>
             </div>
-        </div>
-
-        <!-- Footer / Terms -->
-        <div class="footer">
-            <table style="width: 100%;">
-                <tr>
-                    <td style="width: 60%; vertical-align: top;">
-                        <div class="notes-section">
-                            <div class="notes-title">Notes / Terms</div>
-                             <ul style="padding-left: 15px; margin: 0;">
-                                <li>Goods once sold will not be returned or exchanged.</li>
-                                <li>Warranty as per manufacturer's terms and conditions.</li>
-                                <li>This document is computer generated and requires no signature.</li>
-                            </ul>
-                        </div>
-                    </td>
-            </table>
+            <div class="signature-box-right">
+                <div class="signature-line"></div>
+                <div class="signature-label">Authorized Signature</div>
+            </div>
         </div>
     </div>
     <script type="text/php">
@@ -423,9 +314,9 @@
                 // Border Line
                 $pdf->line(40, $y - 10, $pdf->get_width() - 40, $y - 10, array(0.8, 0.8, 0.8), 0.75);
 
-                // Left: Invoice Number
-                $invoiceNo = isset($GLOBALS["invoice_no"]) ? $GLOBALS["invoice_no"] : "";
-                $leftText = "Invoice: " . $invoiceNo;
+                // Left: Challan Number
+                $challanNo = isset($GLOBALS["challan_number"]) ? $GLOBALS["challan_number"] : "";
+                $leftText = "DC: " . $challanNo;
                 $pdf->text(40, $y, $leftText, $font, $size, $color);
 
                 // Right: Page Number

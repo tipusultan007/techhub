@@ -1,104 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quotation #{{ $quotation->quotation_no }}</title>
-    
     <style>
-        * {
-            font-family: "DejaVu Sans", sans-serif !important;
+        /* Professional Premium Theme */
+        :root {
+            --brand-primary: #2DAE9A; /* Teal */
+            --brand-dark: #0F172A;    /* Navy/Slate */
+            --gray-light: #F8FAFC;
+            --gray-border: #E2E8F0;
+            --text-main: #333333;
+            --text-secondary: #64748B;
         }
 
         body {
+           
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
             margin: 0;
             padding: 0;
-            font-size: 11px;
-            color: #1e293b;
             background-color: #fff;
         }
 
         .invoice-box {
             width: 100%;
+            margin: 0 auto;
             background: #fff;
-            position: relative;
         }
 
+        /* Helpers */
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-uppercase { text-transform: uppercase; }
+        .font-bold { font-weight: bold; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+        /* Header */
         .header-table {
             width: 100%;
             margin-bottom: 30px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 20px;
+            border-bottom: 2px solid #E2E8F0;
+            padding-bottom: 25px;
         }
 
         .shop-name {
-            font-size: 24px;
-            font-weight: bold;
-            color: #0f172a;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0F172A;
             margin-bottom: 5px;
-            text-transform: uppercase;
         }
 
-        .shop-site {
-            font-size: 10px;
-            font-weight: bold;
-            color: #2563eb;
-            letter-spacing: 1px;
+        .doc-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2DAE9A;
             text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
         }
 
-        .header-right {
-            text-align: right;
+        .doc-details {
+            margin-top: 15px;
+            font-size: 11px;
+            color: #64748B;
         }
 
-        .doc-type {
-            font-size: 32px;
-            font-weight: bold;
-            color: #e2e8f0;
-            text-transform: uppercase;
-            margin-bottom: 10px;
+        .detail-row {
+            margin-bottom: 4px;
         }
 
         .info-label {
-            color: #94a3b8;
-            font-size: 9px;
-            font-weight: bold;
+            font-weight: 600;
             text-transform: uppercase;
+            color: #64748B;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            margin-right: 5px;
         }
 
         .info-value {
-            font-size: 12px;
-            font-weight: bold;
-            color: #1e293b;
+            font-weight: 600;
+            color: #0F172A;
+            font-size: 11px;
         }
 
-        .customer-section {
+        /* Customer & Meta */
+        .section-table {
             width: 100%;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
 
-        .customer-box {
-            background-color: #f8fafc;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #f1f5f9;
-            width: 45%;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 9px;
-            font-weight: bold;
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748B;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px;
+            width: 80%;
         }
 
-        .badge-pending { background: #fef9c3; color: #854d0e; }
-        .badge-converted { background: #dcfce7; color: #166534; }
-        .badge-cancelled { background: #fee2e2; color: #991b1b; }
+        .customer-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 4px;
+        }
 
+        /* Items Table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -106,101 +120,115 @@
         }
 
         .items-table th {
-            background-color: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 10px;
+            background-color: #F8FAFC;
+            padding: 12px 10px;
             text-align: left;
-            font-size: 9px;
-            font-weight: bold;
-            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+            color: #0F172A;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-top: 1px solid #E2E8F0;
+            border-bottom: 1px solid #E2E8F0;
         }
 
         .items-table td {
-            padding: 15px 10px;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 14px 10px;
+            border-bottom: 1px solid #F8FAFC;
+            vertical-align: top;
         }
 
+        .item-name {
+            font-size: 12px;
+            font-weight: 400;
+            color: #0F172A;
+            margin-bottom: 2px;
+        }
+
+        .item-desc {
+            font-size: 10px;
+            color: #64748B;
+            line-height: 1.3;
+        }
+
+        /* Totals */
+        .totals-container {
+            width: 100%;
+        }
+        
         .totals-table {
-            width: 250px;
+            width: 280px;
             float: right;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
             padding: 15px;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
+            background-color: #F8FAFC;
         }
 
-        .total-row {
-            margin-bottom: 8px;
+        .total-row td {
+            padding: 4px 0;
         }
 
         .total-label {
-            font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
-            font-size: 9px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748B;
         }
 
         .total-value {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0F172A;
             text-align: right;
-            font-weight: bold;
-            color: #334155;
         }
 
         .grand-total {
-            border-top: 1px solid #cbd5e1;
+            border-top: 1px solid #CBD5E1;
             margin-top: 10px;
             padding-top: 10px;
         }
 
         .grand-total-label {
-            font-size: 11px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0F172A;
             text-transform: uppercase;
         }
 
         .grand-total-value {
             font-size: 18px;
-            font-weight: bold;
-            color: #2563eb;
+            font-weight: 700;
+            color: #2DAE9A;
             text-align: right;
         }
 
-        .footer-section {
-            margin-top: 100px;
-            border-top: 1px solid #f1f5f9;
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            border-top: 1px solid #E2E8F0;
             padding-top: 20px;
         }
 
-        .terms-title {
-            font-size: 9px;
-            font-weight: bold;
-            color: #94a3b8;
+        .notes-section {
+            font-size: 10px;
+            color: #64748B;
+            line-height: 1.5;
+        }
+
+        .notes-title {
+            font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
-        .terms-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            font-size: 8px;
-            color: #64748b;
-            font-weight: bold;
-            font-style: normal;
-            line-height: 1.6;
-        }
-
-        .clearfix::after {
-            content: "";
-            clear: both;
-            display: table;
+            margin-bottom: 5px;
+            font-size: 9px;
+            color: #64748B;
         }
     </style>
 </head>
 
 <body>
+    @php
+        $GLOBALS['quotation_no'] = $quotation->quotation_no;
+    @endphp
     <div class="invoice-box">
         <!-- Header -->
         <table class="header-table">
@@ -208,80 +236,86 @@
                 <td style="width: 50%; vertical-align: top;">
                     @if(settings('site_logo'))
                         @php
-                            $logoPath = settings('site_logo');
+                            $logoSettings = settings('site_logo');
+                            $logoBase64 = '';
                             try {
-                                $path = parse_url($logoPath, PHP_URL_PATH);
-                                $fullPath = public_path($path);
-                                if (file_exists($fullPath)) {
-                                    $type = pathinfo($fullPath, PATHINFO_EXTENSION);
-                                    $data = file_get_contents($fullPath);
-                                    $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                                } else {
-                                    $logoBase64 = $logoPath;
+                                if ($logoSettings) {
+                                    $relativePath = parse_url($logoSettings, PHP_URL_PATH);
+                                    $absolutePath = public_path($relativePath);
+                                    if (file_exists($absolutePath)) {
+                                        $type = pathinfo($absolutePath, PATHINFO_EXTENSION);
+                                        $data = file_get_contents($absolutePath);
+                                        // Handle WebP explicitly if needed, but standard data URI usually works
+                                        $mime = 'image/' . ($type == 'svg' ? 'svg+xml' : $type);
+                                        $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+                                    }
                                 }
-                            } catch (\Exception $e) {
-                                $logoBase64 = $logoPath;
-                            }
+                            } catch (\Exception $e) {}
                         @endphp
-                        <img src="{{ $logoBase64 }}" alt="{{ settings('site_name') }}" style="max-height: 45px; margin-bottom: 8px;">
+                        @if($logoBase64)
+                            <img src="{{ $logoBase64 }}" alt="Logo" style="max-height: 60px; margin-bottom: 10px; display: block;">
+                        @else
+                           <!-- Debug: Logo file not found or load failed -->
+                           <div style="height: 60px; margin-bottom: 10px;"></div>
+                        @endif
                     @endif
-                    <div style="color: #64748b; line-height: 1.4; font-size: 11px;">
+                    
+                    <div style="font-size: 11px; color: #64748B; line-height: 1.4;">
                         {{ settings('shop_address', 'Dubai, UAE') }}<br>
-                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
-                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
-                        <div style="font-weight: bold; color: #1e293b; margin-top: 8px; text-transform: uppercase; font-size: 12px;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</div>
+                        <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <strong>TRN:</strong> {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
                     </div>
                 </td>
-                <td style="width: 50%; text-align: right; vertical-align: top;">
-                    <h1 style="font-size: 28px; font-weight: bold; color: #1e293b; margin: 0; text-transform: uppercase;">
-                        Quotation
-                    </h1>
-                    <div style="margin-top: 10px; font-size: 11px; line-height: 1.6;">
-                        <div style="margin-bottom: 2px;">
-                            <span class="info-label">Quotation #:</span> 
+                <td style="width: 50%; vertical-align: top; text-align: right;">
+                    <div class="doc-title">Quotation</div>
+                    
+                    <div class="doc-details">
+                        <div class="detail-row">
+                            <span class="info-label">Quotation #:</span>
                             <span class="info-value">{{ $quotation->quotation_no }}</span>
                         </div>
-                        <div style="margin-bottom: 2px;">
-                            <span class="info-label">Date:</span> 
+                        <div class="detail-row">
+                            <span class="info-label">Date:</span>
                             <span class="info-value">{{ ($quotation->date ?? $quotation->created_at)->format('d M Y') }}</span>
                         </div>
                         @if($quotation->expiry_date)
-                        <div style="margin-bottom: 2px;">
-                            <span class="info-label">Valid Until:</span> 
-                            <span class="info-value" style="color: #e11d48;">{{ $quotation->expiry_date->format('d M Y') }}</span>
+                        <div class="detail-row">
+                            <span class="info-label">Valid Until:</span>
+                            <span class="info-value" style="color: #E11D48;">{{ $quotation->expiry_date->format('d M Y') }}</span>
                         </div>
                         @endif
-                        <div style="margin-top: 8px;">
-                            <span class="info-label">Status:</span> 
-                            <span class="badge badge-{{ $quotation->status }}">{{ $quotation->status }}</span>
+                        <div class="detail-row" style="margin-top: 8px;">
+                            <span class="info-label">Status:</span>
+                            <span style="font-weight: 700; text-transform: uppercase; font-size: 10px; padding: 2px 6px; background: #F1F5F9; border-radius: 4px; color: #475569;">
+                                {{ $quotation->status }}
+                            </span>
                         </div>
                     </div>
                 </td>
             </tr>
         </table>
 
-        <!-- Info Sections -->
-        <table class="customer-section">
+        <!-- Customer Section -->
+        <table class="section-table">
             <tr>
                 <td style="width: 60%; vertical-align: top;">
-                    <div class="info-label" style="margin-bottom: 8px; color: #94a3b8;">Customer Details:</div>
-                    <div style="font-size: 16px; font-weight: bold; color: #0f172a; margin-bottom: 4px;">{{ $quotation->customer_name }}</div>
+                    <div class="section-title">Customer Details</div>
+                    <div class="customer-name">{{ $quotation->customer_name }}</div>
                     @if($quotation->customer)
-                        <div style="color: #475569; line-height: 1.5; font-size: 11px;">
-                            <span>{{ $quotation->customer->phone }}</span><br>
-                            @if($quotation->customer->email)
-                                <span>{{ $quotation->customer->email }}</span><br>
-                            @endif
+                        <div style="font-size: 11px; color: #475569; line-height: 1.5;">
+                            {{ $quotation->customer->phone }}<br>
+                            {{ $quotation->customer->email }}<br>
                             @if($quotation->customer->trn_number)
-                                <span style="font-weight: bold; color: #2563eb; margin-top: 6px; display: inline-block;">TRN: {{ $quotation->customer->trn_number }}</span>
+                                <div style="margin-top: 4px; font-weight: 600; color: #2DAE9A;">TRN: {{ $quotation->customer->trn_number }}</div>
                             @endif
                         </div>
                     @endif
                 </td>
                 <td style="width: 40%; vertical-align: top; text-align: right;">
-                    <div class="info-label" style="margin-bottom: 8px; color: #94a3b8;">Generated By:</div>
-                    <div style="color: #475569; line-height: 1.6; font-size: 11px;">
-                         <span style="font-weight: bold; color: #1e293b;">{{ $quotation->user->name ?? 'Admin' }}</span>
+                    <div class="section-title" style="margin-left: auto;">Generated By</div>
+                    <div style="font-size: 12px; font-weight: 600; color: #0F172A;">
+                        {{ $quotation->user->name ?? 'Admin' }}
                     </div>
                 </td>
             </tr>
@@ -291,42 +325,50 @@
         <table class="items-table">
             <thead>
                 <tr>
+                    <th style="width: 5%; text-align: center;">#</th>
                     <th style="width: 45%;">Item Description</th>
-                    <th style="width: 10%; text-align: center;">Qty</th>
+                    <th style="width: 5%; text-align: center;">Qty</th>
                     <th style="width: 15%; text-align: right;">Rate</th>
-                    <th style="width: 10%; text-align: center;">Tax %</th>
+                    <th style="width: 8%; text-align: center;">Tax %</th>
                     <th style="width: 10%; text-align: right;">Tax</th>
-                    <th style="width: 10%; text-align: right;">Amount</th>
+                    <th style="width: 12%; text-align: right;">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($quotation->items as $item)
                 <tr>
-                    <td><span style="font-weight: 400; color: #0f172a; font-size: 12px;">{{ $item->product_name }}</span></td>
-                    <td align="center" style="font-weight: 400;">{{ number_format($item->quantity, 3) }}</td>
-                    <td align="right" style="color: #475569;">{{ number_format($item->unit_price, 2) }}</td>
-                    <td align="center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
-                    <td align="right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
-                    <td align="right" style="font-weight: 400; color: #0f172a;">{{ number_format($item->subtotal, 2) }}</td>
+                    <td style="text-align: center; color: #64748B;">{{ $loop->iteration }}</td>
+                    <td>
+                        <div class="item-name">{{ $item->product_name }}</div>
+                        @if($item->description)
+                            <div class="item-desc">{{ $item->description }}</div>
+                        @endif
+                    </td>
+                    <td class="text-center" style="font-weight: 700; font-size: 12px;">{{ number_format($item->quantity, 0) }}</td>
+                    <td class="text-right" style="color: #475569;">{{ number_format($item->unit_price, 2) }}</td>
+                    <td class="text-center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
+                    <td class="text-right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
+                    <td class="text-right" style="font-weight: 700; color: #0F172A;">{{ number_format($item->subtotal, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <!-- Totals -->
+         <!-- Totals -->
         <div class="clearfix">
             <div class="totals-table">
                 <table style="width: 100%;">
-                    <tr>
+                    <tr class="total-row">
                         <td class="total-label">Subtotal</td>
                         <td class="total-value">AED {{ number_format($quotation->subtotal, 2) }}</td>
                     </tr>
                     @if($quotation->discount > 0)
-                    <tr>
-                        <td class="total-label" style="color: #e11d48;">Discount</td>
-                        <td class="total-value" style="color: #e11d48;">- AED {{ number_format($quotation->discount, 2) }}</td>
+                    <tr class="total-row">
+                        <td class="total-label" style="color: #E11D48;">Discount</td>
+                        <td class="total-value" style="color: #E11D48;">- AED {{ number_format($quotation->discount, 2) }}</td>
                     </tr>
                     @endif
+                    
                     @php
                         $groupedTaxes = $quotation->items->groupBy('tax_rate');
                     @endphp
@@ -336,11 +378,12 @@
                             if($taxAmount <= 0) continue;
                             $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
                         @endphp
-                        <tr>
+                        <tr class="total-row">
                             <td class="total-label">{{ $label }}</td>
                             <td class="total-value">AED {{ number_format($taxAmount, 2) }}</td>
                         </tr>
                     @endforeach
+                    
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
                         <td class="grand-total-value">AED {{ number_format($quotation->total, 2) }}</td>
@@ -349,35 +392,52 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="footer-section">
+        <!-- Footer / Terms -->
+        <div class="footer">
             <table style="width: 100%;">
                 <tr>
                     <td style="width: 60%; vertical-align: top;">
-                        <div class="terms-title">Notes</div>
-                        <ul class="terms-list">
+                        <div class="notes-section">
+                            <div class="notes-title">Notes / Terms</div>
                             @if(settings('quotation_notes'))
                                 {!! nl2br(e(settings('quotation_notes'))) !!}
                             @else
-                                <li>1. Prices are valid for 15 days from the date of quotation.</li>
-                                <li>2. Items are subject to availability at the time of order confirmation.</li>
-                                <li>3. Standard warranty applies to all electronic items unless otherwise specified.</li>
-                                <li>4. This is a computer-generated document and does not require a physical signature.</li>
+                                <ul style="padding-left: 15px; margin: 0;">
+                                    <li>Prices are valid for 15 days from the date of quotation.</li>
+                                    <li>Items are subject to availability at confirmation.</li>
+                                    <li>Standard manufacturer warranty applies to all items.</li>
+                                </ul>
                             @endif
-                        </ul>
-                    </td>
-                    <td style="width: 40%; vertical-align: bottom; text-align: right;">
-                        <div style="font-size: 8px; font-weight: bold; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">
-                            Official Quotation • {{ settings('site_name', 'Tech Hub') }}
-                        </div>
-                        <div style="font-size: 8px; color: #e2e8f0; margin-top: 5px;">
-                            Generated by {{ settings('site_name', 'Tech Hub') }} ERP
                         </div>
                     </td>
+                
                 </tr>
             </table>
         </div>
     </div>
-</body>
+    <script type="text/php">
+        if (isset($pdf)) {
+            $pdf->page_script('
+                $font = $fontMetrics->get_font("Helvetica", "normal");
+                $size = 9;
+                $color = array(0.39, 0.45, 0.55); // #64748B
+                $y = $pdf->get_height() - 35;
 
+                // Border Line
+                $pdf->line(40, $y - 10, $pdf->get_width() - 40, $y - 10, array(0.8, 0.8, 0.8), 0.75);
+
+                // Left: Quotation Number
+                $quotationNo = isset($GLOBALS["quotation_no"]) ? $GLOBALS["quotation_no"] : "";
+                $leftText = "Ref: " . $quotationNo;
+                $pdf->text(40, $y, $leftText, $font, $size, $color);
+
+                // Right: Page Number
+                $rightText = "Page " . $PAGE_NUM . " of " . $PAGE_COUNT;
+                $textWidth = $fontMetrics->getTextWidth($rightText, $font, $size);
+                $x = $pdf->get_width() - $textWidth - 40;
+                $pdf->text($x, $y, $rightText, $font, $size, $color);
+            ');
+        }
+    </script>
+</body>
 </html>

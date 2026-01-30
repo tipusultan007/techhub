@@ -31,6 +31,10 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <link rel="icon" href="{{ settings('site_favicon') ? asset(settings('site_favicon')) : asset('favicon.ico') }}">
+    
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <!-- Custom Styles -->
     @stack('styles')
@@ -217,6 +221,11 @@
                 <a href="{{ route('quotations.index') }}"
                    class="sidebar-item {{ request()->routeIs('quotations*') ? 'active' : '' }}">
                     <i class="fas fa-file-invoice"></i> <span>Quotations</span>
+                </a>
+                
+                <a href="{{ route('delivery-challans.index') }}"
+                   class="sidebar-item {{ request()->routeIs('delivery-challans*') ? 'active' : '' }}">
+                    <i class="fas fa-truck"></i> <span>Delivery Challans</span>
                 </a>
                 @endcan
 
@@ -476,33 +485,15 @@
             <div class="flex-1 overflow-y-auto p-6 scroll-smooth">
                 <!-- Flash Messages -->
                 @if (session('success'))
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm relative"
-                        role="alert">
-                        <span class="block sm:inline">{{ session('success') }}</span>
-                        <button onclick="this.parentElement.remove()" class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+                    <!-- Session Success Handled by Toastr -->
                 @endif
 
                 @if (session('error'))
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm relative"
-                        role="alert">
-                        <span class="block sm:inline">{{ session('error') }}</span>
-                        <button onclick="this.parentElement.remove()" class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+                    <!-- Session Error Handled by Toastr -->
                 @endif
 
                 @if ($errors->any())
-                    <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-                        <ul class="list-disc pl-5">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                    <!-- Validation Errors Handled by Toastr -->
                 @endif
 
                 @yield('content')
@@ -512,6 +503,77 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Global Deletion & Notification Logic -->
+    <script>
+        $(document).ready(function() {
+            // Configure Toastr
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "timeOut": "5000"
+            };
+
+            // Convert Session Messages to Toastr
+            @if(session('success'))
+                toastr.success("{{ session('success') }}");
+            @endif
+
+            @if(session('error'))
+                toastr.error("{{ session('error') }}");
+            @endif
+
+            @if($errors->any())
+                @foreach($errors->all() as $error)
+                    toastr.error("{{ $error }}");
+                @endforeach
+            @endif
+
+            // Global Delete Confirmation
+            $(document).on('click', '.btn-delete-confirm', function(e) {
+                e.preventDefault();
+                const form = $(this).closest('form');
+                const title = $(this).data('title') || 'Delete Record?';
+                const type = $(this).data('type') || 'Record';
+                const summary = $(this).data('summary') || {};
+                
+                let summaryHtml = `
+                    <div class="text-left bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
+                        <p class="text-xs text-gray-400 font-black uppercase tracking-widest mb-2">${type} Summary</p>
+                `;
+
+                for (const [label, value] of Object.entries(summary)) {
+                    summaryHtml += `
+                        <div class="flex justify-between py-1.5 border-b border-gray-100 last:border-0">
+                            <span class="text-gray-500 text-xs font-bold uppercase">${label}:</span>
+                            <span class="font-black text-gray-800 text-sm">${value}</span>
+                        </div>
+                    `;
+                }
+                summaryHtml += `</div>`;
+
+                Swal.fire({
+                    title: title,
+                    html: summaryHtml + `<p class="text-sm text-gray-500 mt-4">Are you sure you want to delete this ${type.toLowerCase()}? This action cannot be undone.</p>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i> Yes, Delete',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        confirmButton: 'px-6 py-2.5 rounded-lg font-bold shadow-lg shadow-red-500/30',
+                        cancelButton: 'px-6 py-2.5 rounded-lg font-bold'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
     <!-- Mobile Sidebar Logic -->
     <script>
         const btn = document.getElementById('mobile-menu-btn');

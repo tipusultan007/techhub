@@ -167,10 +167,19 @@
                     </a>
 
                     <!-- Delete Order -->
-                    <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this order? This action cannot be undone.');">
+                    <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline-block">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-900" title="Delete Order">
+                        <button type="button" 
+                            class="text-red-600 hover:text-red-900 btn-delete-confirm" 
+                            title="Delete Order"
+                            data-type="Order"
+                            data-title="Delete Sales Order?"
+                            data-summary='{
+                                "Invoice": "{{ $order->invoice_no }}",
+                                "Customer": "{{ $order->customer_name ?? "Guest" }}",
+                                "Total": "AED {{ number_format($order->total, 2) }}"
+                            }'>
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>

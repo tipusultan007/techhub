@@ -407,8 +407,6 @@ class PurchaseOrderController extends Controller
         $purchase = PurchaseOrder::with(['supplier', 'items.product', 'items.variant'])->findOrFail($id);
         
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.purchases.pdf', compact('purchase'));
-        $pdf->setPaper('a4', 'portrait');
-
         return $pdf->download("PO-{$purchase->reference_no}.pdf");
     }
 
@@ -484,5 +482,25 @@ class PurchaseOrderController extends Controller
     {
         $purchase = PurchaseOrder::with(['supplier', 'items.product', 'items.variant'])->findOrFail($id);
         return view('admin.purchases.print', compact('purchase'));
+    }
+    public function destroy($id)
+    {
+        $purchase = PurchaseOrder::with('items')->findOrFail($id);
+
+        // Restriction: Cannot delete if items were received or status is completed
+        if ($purchase->status === 'completed' || $purchase->items->sum('received_quantity') > 0) {
+            return back()->with('error', 'Cannot delete this purchase order because items have already been received or the order is marked as completed.');
+        }
+
+        try {
+            DB::transaction(function () use ($purchase) {
+                $purchase->items()->delete();
+                $purchase->delete();
+            });
+
+            return back()->with('success', 'Purchase order deleted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 }

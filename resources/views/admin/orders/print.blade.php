@@ -261,9 +261,9 @@
                         <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" style="max-height: 60px; margin-bottom: 8px;">
                     @endif
                     <div style="color: #64748b; line-height: 1.4; font-size: 11px;">
-                        {{ settings('shop_address', 'Dubai, UAE') }}<br>
-                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
-                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <strong>{{ settings('shop_address', 'Dubai, UAE') }}</strong><br>
+                        <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
                         <div style="font-weight: 800; color: #1e293b; margin-top: 8px; text-transform: uppercase; font-size: 12px;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</div>
                     </div>
                 </td>
