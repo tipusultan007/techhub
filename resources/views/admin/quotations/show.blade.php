@@ -28,7 +28,7 @@
             @endif
             @if($quotation->status == 'submitted')
             <button type="button"
-                onclick="confirmConversion({{ $quotation->id }}, '{{ $quotation->quotation_no }}', '{{ $quotation->customer_name }}', '{{ number_format($quotation->total, 2) }}', {{ $quotation->items->count() }})"
+                onclick="confirmConversion({{ $quotation->id }}, '{{ $quotation->quotation_no }}', '{{ $quotation->customer_name }}', '{{ number_format($quotation->total, 2) }}', {{ $quotation->items->count() }}, '{{ $quotation->po_number }}')"
                 class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2">
                 <i class="fas fa-shopping-cart"></i> Convert to Sale
             </button>
@@ -191,7 +191,7 @@
 </style>
 @push('scripts')
 <script>
-    function confirmConversion(id, quNo, customer, total, itemsCount) {
+    function confirmConversion(id, quNo, customer, total, itemsCount, existingPo = '') {
         Swal.fire({
             title: 'Convert to Sale?',
             html: `
@@ -209,9 +209,14 @@
                         <span class="text-gray-500">Total Items:</span>
                         <span class="font-bold text-gray-800">${itemsCount}</span>
                     </div>
-                    <div class="flex justify-between pt-2">
+                    <div class="flex justify-between pt-2 mb-4">
                         <span class="text-gray-700 font-bold uppercase">Grand Total:</span>
                         <span class="font-black text-blue-600 text-lg">AED ${total}</span>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">PO Number (Optional)</label>
+                        <input type="text" id="swal-po-number" class="swal2-input !m-0 !w-full !text-sm" placeholder="Enter PO#" value="${existingPo}">
                     </div>
                 </div>
                 <p class="text-xs text-red-500 mt-4 font-bold italic"><i class="fas fa-exclamation-triangle mr-1"></i> Stock will be deducted upon conversion.</p>
@@ -222,13 +227,26 @@
             cancelButtonColor: '#374151',
             confirmButtonText: '<i class="fas fa-check-circle mr-2"></i> Yes, Convert Now',
             cancelButtonText: 'Cancel',
+            preConfirm: () => {
+                return document.getElementById('swal-po-number').value;
+            },
             customClass: {
                 confirmButton: 'px-6 py-2.5 rounded-lg font-bold',
                 cancelButton: 'px-6 py-2.5 rounded-lg font-bold'
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('convert-form-' + id).submit();
+                let poNumber = result.value;
+                let form = document.getElementById('convert-form-' + id);
+                
+                // Add PO# input to form
+                let poInput = document.createElement('input');
+                poInput.type = 'hidden';
+                poInput.name = 'po_number';
+                poInput.value = poNumber;
+                form.appendChild(poInput);
+                
+                form.submit();
             }
         });
     }

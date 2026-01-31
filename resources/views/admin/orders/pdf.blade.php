@@ -271,6 +271,12 @@
                             <span class="info-label">Invoice #:</span>
                             <span class="info-value">{{ $order->invoice_no }}</span>
                         </div>
+                        @if($order->po_number)
+                            <div class="detail-row">
+                                <span class="info-label">PO #:</span>
+                                <span class="info-value text-uppercase">{{ $order->po_number }}</span>
+                            </div>
+                        @endif
                         <div class="detail-row">
                             <span class="info-label">Date:</span>
                             <span class="info-value">{{ $order->created_at->format('d M Y') }}</span>

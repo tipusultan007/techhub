@@ -335,7 +335,7 @@ class QuotationController extends Controller
         return $pdf->download('Quotation-' . $quotation->quotation_no . '.pdf');
     }
 
-    public function convertToSale(Quotation $quotation)
+    public function convertToSale(Request $request, Quotation $quotation)
     {
         if ($quotation->status == 'converted') {
             return back()->with('error', 'Quotation already converted to sale.');
@@ -352,6 +352,7 @@ class QuotationController extends Controller
                 'invoice_no' => $invoiceNo,
                 'customer_id' => $quotation->customer_id,
                 'customer_name' => $quotation->customer_name,
+                'po_number' => $request->po_number ?? $quotation->po_number,
                 'subtotal' => $quotation->subtotal,
                 'vat_amount' => $quotation->vat_amount,
                 'discount' => $quotation->discount,

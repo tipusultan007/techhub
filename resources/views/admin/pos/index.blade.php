@@ -110,7 +110,7 @@
     <div class="flex-1 flex overflow-hidden">
 
         <!-- LEFT COLUMN: PRODUCTS & SEARCH -->
-        <div class="w-full md:w-2/3 flex flex-col border-r border-gray-300 bg-gray-50">
+        <div class="w-full md:w-1/2 flex flex-col border-r border-gray-300 bg-gray-50">
 
             <!-- Search Bar -->
             <div class="p-4 bg-white shadow-sm z-10">
@@ -131,15 +131,17 @@
                 <button onclick="openServiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow transition">
                     <i class="fas fa-plus-circle mr-1"></i> Add Service
                 </button>
-                @foreach ($categories ?? [] as $cat)
-                    <button
-                        class="bg-gray-200 text-gray-700 hover:bg-slate-200 px-4 py-2 rounded-full text-sm font-bold transition">{{ $cat->name }}</button>
-                @endforeach
+                @if(isset($categories) && count($categories) > 0)
+                    @foreach ($categories as $cat)
+                        <button
+                            class="bg-gray-200 text-gray-700 hover:bg-slate-200 px-4 py-2 rounded-full text-sm font-bold transition">{{ $cat->name }}</button>
+                    @endforeach
+                @endif
             </div>
 
             <!-- Product Grid -->
             <div class="flex-1 overflow-y-auto p-4 bg-gray-100" id="product-container">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="product-grid">
+                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="product-grid">
                     @foreach ($initialProducts as $p)
                         @php
                             // Secure JSON encoding to prevent HTML attribute breaking
@@ -179,22 +181,40 @@
         </div>
 
         <!-- RIGHT COLUMN: CART & CHECKOUT -->
-        <div class="w-full md:w-1/3 bg-white flex flex-col shadow-2xl z-10">
+        <div class="w-full md:w-1/2 bg-white flex flex-col shadow-2xl z-10">
 
-            <!-- Customer Select -->
-            <div class="p-4 border-b bg-gray-50 flex gap-2">
-                <div class="flex-1">
-                    <select id="customer_id"
-                        class="w-full border border-gray-300 rounded p-2 text-sm focus:border-[#2dae9a] outline-none select2">
-                        <option value="">Walk-in Customer</option>
-                        @foreach ($customers as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->phone }})</option>
-                        @endforeach
-                    </select>
+            <!-- Customer & PO Section -->
+            <div class="p-4 border-b bg-gray-50">
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Customer Select -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Customer</label>
+                        <div class="flex gap-1">
+                            <div class="flex-1">
+                                <select id="customer_id"
+                                    class="w-full border border-gray-300 rounded p-2 text-sm focus:border-[#2dae9a] outline-none select2">
+                                    <option value="">Walk-in Customer</option>
+                                    @foreach ($customers as $c)
+                                        <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->phone }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="button" id="add-customer-btn" class="bg-[#2dae9a] text-white px-3 rounded hover:bg-emerald-700 h-[38px]" title="Add Customer">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- PO Number at Top -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">PO # (Optional)</label>
+                        <div class="relative">
+                            <input type="text" id="po_number" placeholder="PO Number..."
+                                class="w-full border border-gray-300 rounded p-2 pl-9 text-sm focus:border-[#2dae9a] outline-none font-bold text-gray-700 h-[38px]"
+                                title="Purchase Order Number">
+                            <div class="absolute left-3 top-2.5 text-gray-400"><i class="fas fa-file-invoice"></i></div>
+                        </div>
+                    </div>
                 </div>
-                <button type="button" id="add-customer-btn" class="bg-[#2dae9a] text-white px-3 rounded hover:bg-emerald-700" title="Add Customer">
-                    <i class="fas fa-user-plus"></i>
-                </button>
             </div>
 
             <!-- Cart Header -->
@@ -614,10 +634,10 @@
                         </td>
                         <td class="p-2 text-center align-middle" style="width: 17%;">
                             ${item.serial ? `<span class="font-bold text-gray-800">1</span>` : `
-                            <div class="flex items-center justify-center border rounded bg-white h-7">
-                                <button onclick="updateQty(${index}, -1)" class="w-6 h-full text-gray-500 hover:text-red-500">-</button>
-                                <span class="px-1 text-xs font-bold">${item.qty}</span>
-                                <button onclick="updateQty(${index}, 1)" class="w-6 h-full text-gray-500 hover:text-green-500">+</button>
+                            <div class="flex items-center justify-center bg-gray-100 rounded-lg p-0.5 w-20 mx-auto">
+                                <button onclick="updateQty(${index}, -1)" class="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm hover:bg-gray-50 text-gray-600 font-bold transition">-</button>
+                                <div class="flex-1 text-center font-bold text-gray-800 text-xs mx-1">${item.qty}</div>
+                                <button onclick="updateQty(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-white rounded shadow-sm hover:bg-gray-50 text-gray-600 font-bold transition">+</button>
                             </div>`}
                         </td>
                         <td class="p-2 text-center align-middle" style="width: 25%;">
@@ -835,6 +855,7 @@
         customer_id: $('#customer_id').val(),
         payment_method: method,
         discount: discount,
+        po_number: $('#po_number').val(),
         
         // --- FIX: Map the calculated total to 'amount_paid' ---
         amount_paid: finalPayable, 
@@ -856,8 +877,9 @@
                 // Reset UI
                 cart = [];
                 $('#discount_input').val(0);
-                $('#customer_id').val(''); 
+                $('#customer_id').val('').trigger('change'); 
                 $('#payment_method').val('cash');
+                $('#po_number').val('');
                 renderCart();
                 
                 $('#processingOverlay').addClass('hidden').removeClass('flex');

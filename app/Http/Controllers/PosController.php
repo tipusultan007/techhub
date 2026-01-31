@@ -249,6 +249,7 @@ class PosController extends Controller
             'invoice_no' => $invoiceNo,
             'customer_id' => $request->customer_id,
             'customer_name' => $request->customer_id ? Customer::find($request->customer_id)->name : 'Walk-in Customer',
+            'po_number' => $request->po_number,
             
             // Financials
             'subtotal' => $netAmount,   // Amount before Tax

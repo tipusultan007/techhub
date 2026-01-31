@@ -122,8 +122,11 @@
         <tbody class="divide-y divide-gray-200 bg-white">
             @forelse($orders as $order)
             <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
-                    {{ $order->invoice_no }}
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="font-bold text-blue-600">{{ $order->invoice_no }}</div>
+                    @if($order->po_number)
+                        <div class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">PO#: {{ $order->po_number }}</div>
+                    @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     @if($order->channel == 'pos')

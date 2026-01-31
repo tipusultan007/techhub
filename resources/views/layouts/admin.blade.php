@@ -198,13 +198,28 @@
 
                 <!-- SALES & CUSTOMERS -->
                 <div class="sidebar-header">Core Operations</div>
+                @can('view quotations')
+                <a href="{{ route('quotations.index') }}"
+                   class="sidebar-item {{ request()->routeIs('quotations*') ? 'active' : '' }}">
+                    <i class="fas fa-file-invoice"></i> <span>Quotations</span>
+                </a>
+                @endcan
                 @can('view orders')
                 <a href="{{ route('orders.index') }}"
                    class="sidebar-item {{ request()->routeIs('orders*') ? 'active' : '' }}">
-                    <i class="fas fa-shopping-bag"></i> <span>Order History</span>
+                    <i class="fas fa-shopping-bag"></i> <span>Invoices</span>
                 </a>
                 @endcan
-
+                @can('view purchases')
+                <a href="{{ route('purchases.index') }}"
+                   class="sidebar-item {{ request()->routeIs('purchases*') ? 'active' : '' }}">
+                    <i class="fas fa-truck-loading"></i> <span>Purchase Orders</span>
+                </a>
+                @endcan
+                <a href="{{ route('delivery-challans.index') }}"
+                   class="sidebar-item {{ request()->routeIs('delivery-challans*') ? 'active' : '' }}">
+                    <i class="fas fa-truck"></i> <span>Delivery Challans</span>
+                </a>
                 @can('manage returns')
                 <a href="{{ route('returns.index') }}"
                    class="sidebar-item {{ request()->routeIs('returns*') ? 'active' : '' }}">
@@ -217,18 +232,8 @@
                     <i class="fas fa-user-friends"></i> <span>Customer CRM</span>
                 </a>
 
-                @can('view quotations')
-                <a href="{{ route('quotations.index') }}"
-                   class="sidebar-item {{ request()->routeIs('quotations*') ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice"></i> <span>Quotations</span>
-                </a>
                 
-                <a href="{{ route('delivery-challans.index') }}"
-                   class="sidebar-item {{ request()->routeIs('delivery-challans*') ? 'active' : '' }}">
-                    <i class="fas fa-truck"></i> <span>Delivery Challans</span>
-                </a>
-                @endcan
-
+                
                 <!-- CATALOG & INVENTORY -->
                 <div class="sidebar-header">Catalog Management</div>
                 @can('view products')
@@ -254,13 +259,7 @@
 
                 <!-- FINANCIALS -->
                 <div class="sidebar-header">Financial Resources</div>
-                @can('view purchases')
-                <a href="{{ route('purchases.index') }}"
-                   class="sidebar-item {{ request()->routeIs('purchases*') ? 'active' : '' }}">
-                    <i class="fas fa-truck-loading"></i> <span>Purchase Orders</span>
-                </a>
-                @endcan
-
+                
                 <a href="{{ route('suppliers.index') }}"
                    class="sidebar-item {{ request()->routeIs('suppliers*') ? 'active' : '' }}">
                     <i class="fas fa-address-book"></i> <span>Supplier Registry</span>
