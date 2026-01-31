@@ -367,15 +367,21 @@ class QuotationController extends Controller
                 if (!$item->is_service) {
                     if ($item->product_variant_id) {
                         $variant = ProductVariant::lockForUpdate()->find($item->product_variant_id);
-                        if (!$variant || $variant->stock_quantity < $item->quantity) {
-                            throw new \Exception("Insufficient stock for variant: " . ($variant->sku ?? 'Unknown'));
+                        if (!$variant) {
+                            throw new \Exception("Variant not found for item: " . $item->product_name);
+                        }
+                        if ($variant->stock_quantity < $item->quantity) {
+                            throw new \Exception("Insufficient stock for variant: " . $variant->sku);
                         }
                         $variant->decrement('stock_quantity', $item->quantity);
                     } else {
                         $product = Product::lockForUpdate()->find($item->product_id);
+                        if (!$product) {
+                            throw new \Exception("Product not found: " . $item->product_name);
+                        }
                         if ($product->type !== 'service') {
-                            if (!$product || $product->stock_quantity < $item->quantity) {
-                                throw new \Exception("Insufficient stock for product: " . ($product->name ?? 'Unknown'));
+                            if ($product->stock_quantity < $item->quantity) {
+                                throw new \Exception("Insufficient stock for product: " . $product->name);
                             }
                             $product->decrement('stock_quantity', $item->quantity);
                         }
