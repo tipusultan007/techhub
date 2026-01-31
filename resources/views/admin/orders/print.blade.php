@@ -269,7 +269,7 @@
                 </td>
                 <td style="width: 50%; text-align: right; vertical-align: top;">
                     <h1 style="font-size: 28px; font-weight: 800; color: #2DAE9A; margin: 0; text-transform: uppercase;">
-                        {{ $order->vat_amount > 0 ? 'Invoice' : 'Sales Receipt' }}
+                        {{ $order->vat_amount > 0 ? 'Invoice' : 'Invoice' }}
                     </h1>
                     <div style="margin-top: 10px; font-size: 11px; line-height: 1.6;">
                         <div style="margin-bottom: 2px;">

@@ -357,7 +357,7 @@
                 <table style="width: 100%;">
                     <tr class="total-row">
                         <td class="total-label">Subtotal</td>
-                        <td class="total-value">AED {{ number_format($order->sub_total, 2) }}</td>
+                        <td class="total-value">AED {{ number_format($order->subtotal + $order->discount, 2) }}</td>
                     </tr>
                     @if($order->discount > 0)
                     <tr class="total-row">
@@ -365,6 +365,10 @@
                         <td class="total-value" style="color: #E11D48;">- AED {{ number_format($order->discount, 2) }}</td>
                     </tr>
                     @endif
+                    <tr class="total-row">
+                        <td class="total-label" style="color: #64748B;">Net Amount</td>
+                        <td class="total-value" style="color: #64748B;">AED {{ number_format($order->subtotal, 2) }}</td>
+                    </tr>
                     
                     @php
                         $groupedTaxes = $order->items->groupBy('tax_rate');
@@ -383,20 +387,8 @@
                     
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
-                        <td class="grand-total-value">AED {{ number_format($order->total_amount, 2) }}</td>
+                        <td class="grand-total-value">AED {{ number_format($order->total, 2) }}</td>
                     </tr>
-                    @if($order->paid_amount > 0)
-                    <tr class="total-row" style="margin-top: 5px;">
-                        <td class="total-label" style="color: #15803D;">Paid</td>
-                        <td class="total-value" style="color: #15803D;">AED {{ number_format($order->paid_amount, 2) }}</td>
-                    </tr>
-                    @endif
-                    @if($order->due_amount > 0)
-                    <tr class="total-row">
-                        <td class="total-label" style="color: #B91C1C;">Due</td>
-                        <td class="total-value" style="color: #B91C1C;">AED {{ number_format($order->due_amount, 2) }}</td>
-                    </tr>
-                    @endif
                 </table>
             </div>
         </div>
