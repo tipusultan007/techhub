@@ -103,7 +103,12 @@
             <tbody class="text-gray-700">
                 @forelse($quotations as $quo)
                 <tr class="hover:bg-gray-50 transition border-b last:border-0">
-                    <td class="px-6 py-4 font-mono font-bold">{{ $quo->quotation_no }}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-mono font-bold">{{ $quo->quotation_no }}</div>
+                        @if($quo->po_number)
+                            <div class="text-[10px] text-gray-500 font-bold uppercase tracking-tighter">PO#: {{ $quo->po_number }}</div>
+                        @endif
+                    </td>
                     <td class="px-6 py-4">
                         <div class="font-bold">{{ $quo->customer_name }}</div>
                         <div class="text-xs text-gray-500">{{ $quo->customer?->phone }}</div>
@@ -136,7 +141,7 @@
                             @endif
                             @if($quo->status == 'submitted')
                             <button type="button" 
-                                onclick="confirmConversion({{ $quo->id }}, '{{ $quo->quotation_no }}', '{{ $quo->customer_name }}', '{{ number_format($quo->total, 2) }}', {{ $quo->items->count() }})"
+                                onclick="confirmConversion({{ $quo->id }}, '{{ $quo->quotation_no }}', '{{ $quo->customer_name }}', '{{ number_format($quo->total, 2) }}', {{ $quo->items->count() }}, '{{ $quo->po_number }}', '{{ ($quo->date ?? $quo->created_at)->format('d M, Y') }}')"
                                 class="text-green-600 hover:text-green-800" title="Convert to Sale">
                                 <i class="fas fa-shopping-cart"></i>
                             </button>
@@ -191,7 +196,7 @@
         });
     });
 
-    function confirmConversion(id, quNo, customer, total, itemsCount) {
+    function confirmConversion(id, quNo, customer, total, itemsCount, poNumber, date) {
         Swal.fire({
             title: 'Convert to Sale?',
             html: `
@@ -201,6 +206,12 @@
                         <span class="text-gray-500">Quotation #:</span>
                         <span class="font-bold text-gray-800">${quNo}</span>
                     </div>
+                    ${poNumber ? `
+                    <div class="flex justify-between py-1 border-b border-gray-100">
+                        <span class="text-gray-500">PO #:</span>
+                        <span class="font-bold text-gray-800">${poNumber}</span>
+                    </div>
+                    ` : ''}
                     <div class="flex justify-between py-1 border-b border-gray-100">
                         <span class="text-gray-500">Customer:</span>
                         <span class="font-bold text-gray-800">${customer}</span>

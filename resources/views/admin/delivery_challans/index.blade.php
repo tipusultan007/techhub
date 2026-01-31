@@ -8,16 +8,22 @@
         </h1>
         
         <!-- Search & Filter Form -->
-        <form action="{{ route('delivery-challans.index') }}" method="GET" class="flex flex-wrap gap-2 w-full md:w-auto">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Number, Customer..." class="border rounded px-3 py-2 text-sm w-full md:w-48">
-            <input type="date" name="start_date" value="{{ request('start_date') }}" class="border rounded px-3 py-2 text-sm">
-            <input type="date" name="end_date" value="{{ request('end_date') }}" class="border rounded px-3 py-2 text-sm">
-            
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700">Filter</button>
-            @if(request()->hasAny(['search', 'start_date', 'end_date']))
-            <a href="{{ route('delivery-challans.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded text-sm font-bold hover:bg-gray-600">Clear</a>
-            @endif
-        </form>
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <form action="{{ route('delivery-challans.index') }}" method="GET" class="flex flex-wrap gap-2 w-full md:w-auto">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Number, PO#, Customer..." class="border rounded px-3 py-2 text-sm w-full md:w-56">
+                <input type="date" name="start_date" value="{{ request('start_date') }}" class="border rounded px-3 py-2 text-sm">
+                <input type="date" name="end_date" value="{{ request('end_date') }}" class="border rounded px-3 py-2 text-sm">
+                
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700">Filter</button>
+                @if(request()->hasAny(['search', 'start_date', 'end_date']))
+                <a href="{{ route('delivery-challans.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded text-sm font-bold hover:bg-gray-600">Clear</a>
+                @endif
+            </form>
+
+            <a href="{{ route('delivery-challans.create') }}" class="bg-[#d97706] text-white px-4 py-2 rounded text-sm font-bold hover:bg-[#b45309] flex items-center gap-2">
+                <i class="fas fa-plus"></i> Create Challan
+            </a>
+        </div>
     </div>
 
     <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -26,6 +32,7 @@
                 <tr>
                     <th class="px-6 py-4">Date</th>
                     <th class="px-6 py-4">Challan #</th>
+                    <th class="px-6 py-4 text-center">PO #</th>
                     <th class="px-6 py-4">Reference Quotation</th>
                     <th class="px-6 py-4">Customer</th>
                     <th class="px-6 py-4 text-right">Actions</th>
@@ -35,11 +42,18 @@
                 @forelse($challans as $challan)
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 text-sm font-bold text-gray-600">{{ \Carbon\Carbon::parse($challan->date)->format('d M, Y') }}</td>
-                    <td class="px-6 py-4 text-sm font-mono font-bold text-[#d97706]">{{ $challan->challan_number }}</td>
-                    <td class="px-6 py-4 text-sm">
-                        <a href="{{ route('quotations.show', $challan->quotation_id) }}" class="text-blue-600 hover:underline font-bold">
-                            {{ $challan->quotation->quotation_no }}
-                        </a>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-mono font-bold text-[#d97706]">{{ $challan->challan_number }}</div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="text-sm font-bold text-gray-600">{{ $challan->po_number ?? '' }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm font-bold text-gray-500">
+                        @if($challan->quotation)
+                            <a href="{{ route('quotations.show', $challan->quotation_id) }}" class="text-blue-600 hover:underline font-bold">
+                                {{ $challan->quotation->quotation_no }}
+                            </a>
+                        @endif
                     </td>
                     <td class="px-6 py-4 text-sm">{{ $challan->customer->name ?? $challan->quotation->customer_name }}</td>
                 <td class="px-6 py-4 text-right space-x-2">

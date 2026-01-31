@@ -275,6 +275,12 @@
                             <span class="info-label">Quotation #:</span>
                             <span class="info-value">{{ $quotation->quotation_no }}</span>
                         </div>
+                        @if($quotation->po_number)
+                        <div class="detail-row">
+                            <span class="info-label">PO#:</span>
+                            <span class="info-value">{{ $quotation->po_number }}</span>
+                        </div>
+                        @endif
                         <div class="detail-row">
                             <span class="info-label">Date:</span>
                             <span class="info-value">{{ ($quotation->date ?? $quotation->created_at)->format('d M Y') }}</span>

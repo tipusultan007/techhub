@@ -52,8 +52,13 @@
             <div class="document-title">Delivery Challan</div>
             <div class="document-details">
                 <strong>Number:</strong> {{ $challan->challan_number }}<br>
+                @if($challan->po_number)
+                    <strong>PO#:</strong> {{ $challan->po_number }}<br>
+                @endif
                 <strong>Date:</strong> {{ \Carbon\Carbon::parse($challan->date)->format('d M, Y') }}<br>
-                <strong>Ref Quotation:</strong> {{ $challan->quotation->quotation_no }}
+                @if($challan->quotation)
+                    <strong>Ref Quotation:</strong> {{ $challan->quotation->quotation_no }}
+                @endif
             </div>
         </div>
     </div>

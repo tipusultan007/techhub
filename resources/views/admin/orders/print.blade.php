@@ -409,10 +409,6 @@
                         <ul class="terms-list">
                             @if(settings('invoice_notes'))
                                 {!! nl2br(e(settings('invoice_notes'))) !!}
-                            @else
-                                <li>1. Commercial goods are subject to standard UAE VAT laws.</li>
-                                <li>2. Items can be exchanged within 7 days with original receipt. No cash refunds.</li>
-                                <li>3. Warranty claims require this original invoice.</li>
                             @endif
                         </ul>
                     </td>

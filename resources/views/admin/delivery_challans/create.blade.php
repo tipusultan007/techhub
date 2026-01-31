@@ -33,16 +33,26 @@
                     <span class="block text-xs uppercase text-gray-500 font-bold">Quotation Date</span>
                     <span class="font-bold text-gray-800">{{ ($quotation->date ?? $quotation->created_at)->format('d M, Y') }}</span>
                 </div>
+                @if($quotation->po_number)
+                <div>
+                    <span class="block text-xs uppercase text-gray-500 font-bold">PO Number</span>
+                    <span class="font-bold text-gray-800 font-mono">{{ $quotation->po_number }}</span>
+                </div>
+                @endif
             </div>
         </div>
 
         <form action="{{ route('quotations.challan.store', $quotation->id) }}" method="POST">
             @csrf
             
-            <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
                     <input type="date" name="date" value="{{ date('Y-m-d') }}" class="w-full border rounded-lg px-3 py-2 bg-gray-50">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">PO# (Optional)</label>
+                    <input type="text" name="po_number" value="{{ $quotation->po_number }}" class="w-full border rounded-lg px-3 py-2 bg-gray-50" placeholder="Enter PO#">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Note (Optional)</label>

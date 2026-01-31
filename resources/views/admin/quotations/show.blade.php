@@ -61,6 +61,9 @@
                 <h2 class="text-4xl font-black text-blue-600 mb-2">QUOTATION</h2>
                 <div class="text-sm font-bold text-gray-700">
                     <p>Number: <span class="text-slate-900 font-mono">{{ $quotation->quotation_no }}</span></p>
+                    @if($quotation->po_number)
+                        <p>PO#: <span class="text-slate-900 font-mono">{{ $quotation->po_number }}</span></p>
+                    @endif
                     <p>Date: <span class="text-slate-900">{{ ($quotation->date ?? $quotation->created_at)->format('d M, Y') }}</span></p>
                     <p>Valid Until: <span class="text-slate-900">{{ $quotation->expiry_date?->format('d M, Y') }}</span></p>
                 </div>

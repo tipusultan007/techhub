@@ -139,7 +139,8 @@ class QuotationController extends Controller
             'items' => 'required|array|min:1',
             'amount_paid' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
-            'customer_id' => 'nullable|exists:customers,id'
+            'customer_id' => 'nullable|exists:customers,id',
+            'po_number' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -161,6 +162,7 @@ class QuotationController extends Controller
                 'customer_id' => $request->customer_id,
                 'customer_name' => $request->customer_id ? Customer::find($request->customer_id, ['name'])->name : 'Walk-in Customer',
                 'date' => $request->date ?? now(),
+                'po_number' => $request->po_number,
                 'subtotal' => $subtotal,
                 'vat_amount' => $totalTax,
                 'discount' => $discount,
@@ -232,7 +234,8 @@ class QuotationController extends Controller
         $request->validate([
             'items' => 'required|array|min:1',
             'discount' => 'nullable|numeric|min:0',
-            'customer_id' => 'nullable|exists:customers,id'
+            'customer_id' => 'nullable|exists:customers,id',
+            'po_number' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -254,6 +257,7 @@ class QuotationController extends Controller
                 'customer_id' => $request->customer_id,
                 'customer_name' => $request->customer_id ? Customer::find($request->customer_id, ['name'])->name : 'Walk-in Customer',
                 'date' => $request->date ?? $quotation->date,
+                'po_number' => $request->po_number,
                 'subtotal' => $subtotal,
                 'vat_amount' => $totalTax,
                 'discount' => $discount,

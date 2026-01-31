@@ -229,14 +229,22 @@
                             <span class="info-label">DC #:</span>
                             <span class="info-value">{{ $challan->challan_number }}</span>
                         </div>
+                        @if($challan->po_number)
+                        <div class="detail-row">
+                            <span class="info-label">PO #:</span>
+                            <span class="info-value">{{ $challan->po_number }}</span>
+                        </div>
+                        @endif
                         <div class="detail-row">
                             <span class="info-label">Date:</span>
                             <span class="info-value">{{ \Carbon\Carbon::parse($challan->date)->format('d M, Y') }}</span>
                         </div>
+                        @if($challan->quotation)
                         <div class="detail-row">
                             <span class="info-label">Ref Quote:</span>
                             <span class="info-value">{{ $challan->quotation->quotation_no }}</span>
                         </div>
+                        @endif
                     </div>
                 </td>
             </tr>

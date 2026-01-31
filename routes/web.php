@@ -176,6 +176,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         
         // Delivery Challans
         Route::get('/delivery-challans', [DeliveryChallanController::class, 'index'])->name('delivery-challans.index');
+        Route::get('/delivery-challans/create', [DeliveryChallanController::class, 'manualCreate'])->name('delivery-challans.create');
+        Route::post('/delivery-challans/manual', [DeliveryChallanController::class, 'manualStore'])->name('delivery-challans.manual.store');
+        Route::get('/delivery-challans/search-products', [DeliveryChallanController::class, 'searchProducts'])->name('delivery-challans.search-products');
         Route::get('/quotations/{quotation}/challan/create', [DeliveryChallanController::class, 'create'])->name('quotations.challan.create');
         Route::post('/quotations/{quotation}/challan', [DeliveryChallanController::class, 'store'])->name('quotations.challan.store');
         Route::get('/delivery-challans/{id}', [DeliveryChallanController::class, 'show'])->name('delivery-challans.show');

@@ -6,6 +6,10 @@ use App\Models\DeliveryChallan;
 use App\Models\DeliveryChallanItem;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
+use App\Models\Customer;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\ProductVariant;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,14 +26,17 @@ class DeliveryChallanController extends Controller
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where('challan_number', 'like', "%{$search}%")
-                ->orWhereHas('customer', function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
-                })
-                ->orWhereHas('quotation', function($q) use ($search) {
-                    $q->where('quotation_no', 'like', "%{$search}%");
-                });
+            $query->where(function ($q) use ($search) {
+                $q->where('challan_number', 'like', "%{$search}%")
+                    ->orWhere('po_number', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($sub) use ($search) {
+                        $sub->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('quotation', function ($sub) use ($search) {
+                        $sub->where('quotation_no', 'like', "%{$search}%");
+                    });
+            });
         }
 
         if ($request->has('start_date') && !empty($request->start_date)) {
@@ -43,6 +50,138 @@ class DeliveryChallanController extends Controller
         $challans = $query->paginate(15);
 
         return view('admin.delivery_challans.index', compact('challans'));
+    }
+
+    public function manualCreate()
+    {
+        $customers = Customer::latest()->get();
+        $categories = Category::latest()->get();
+        $initialProducts = Product::published()->latest()->take(20)->get();
+
+        return view('admin.delivery_challans.manual_create', compact('customers', 'categories', 'initialProducts'));
+    }
+
+    public function searchProducts(Request $request)
+    {
+        $term = $request->term;
+        $category_id = $request->category_id;
+        $queryLimit = 40;
+
+        $products = Product::published()
+            ->when($category_id, function ($q) use ($category_id) {
+                $q->where('category_id', $category_id);
+            })
+            ->when($term, function ($q) use ($term) {
+                $q->where(function($sub) use ($term) {
+                    $sub->where('name', 'LIKE', "%$term%")
+                        ->orWhere('sku', 'LIKE', "%$term%")
+                        ->orWhere('barcode', 'LIKE', "%$term%");
+                });
+            })
+            ->latest()
+            ->take($queryLimit)
+            ->get();
+
+        $variants = ProductVariant::with('product')
+            ->when($term, function ($q) use ($term) {
+                $q->where(function($sub) use ($term) {
+                    $sub->where('variant_name', 'LIKE', "%$term%")
+                        ->orWhere('sku', 'LIKE', "%$term%")
+                        ->orWhere('barcode', 'LIKE', "%$term%")
+                        ->orWhereHas('product', fn($p) => $p->where('name', 'LIKE', "%$term%"));
+                });
+            })
+            ->latest()
+            ->take($queryLimit)
+            ->get();
+
+        $results = [];
+
+        foreach ($products as $p) {
+            $results[] = [
+                'id' => $p->id,
+                'name' => $p->name,
+                'price' => $p->price,
+                'sku' => $p->sku,
+                'image' => $p->image,
+                'type' => 'simple'
+            ];
+        }
+
+        foreach ($variants as $v) {
+            $results[] = [
+                'id' => $v->id,
+                'product_id' => $v->product_id,
+                'name' => ($v->product->name ?? '') . ' - ' . $v->variant_name,
+                'price' => $v->price,
+                'sku' => $v->sku,
+                'image' => $v->product->image ?? '',
+                'type' => 'variable'
+            ];
+        }
+
+        return response()->json($results);
+    }
+
+    public function manualStore(Request $request)
+    {
+        $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'date' => 'required|date',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required',
+            'items.*.qty' => 'required|numeric|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Generate Sequence: DC-YYYY-00001
+            $year = now()->year;
+            $lastChallan = DeliveryChallan::whereYear('created_at', $year)->latest()->first();
+            $sequence = $lastChallan ? (int)substr($lastChallan->challan_number, -5) + 1 : 1;
+            $challanNumber = 'DC-' . $year . '-' . str_pad($sequence, 5, '0', STR_PAD_LEFT);
+
+            $challan = DeliveryChallan::create([
+                'quotation_id' => null,
+                'customer_id' => $request->customer_id,
+                'challan_number' => $challanNumber,
+                'po_number' => $request->po_number,
+                'date' => $request->date,
+                'note' => $request->note,
+            ]);
+
+            foreach ($request->items as $itemData) {
+                DeliveryChallanItem::create([
+                    'delivery_challan_id' => $challan->id,
+                    'quotation_item_id' => null,
+                    'product_id' => ($itemData['type'] == 'simple') ? $itemData['product_id'] : $itemData['product_id_parent'],
+                    'product_variant_id' => ($itemData['type'] == 'variable') ? $itemData['product_id'] : null,
+                    'product_name' => $itemData['name'],
+                    'quantity' => $itemData['qty'],
+                ]);
+            }
+
+            DB::commit();
+
+            $this->logActivity('Delivery Challan', 'Create Manual', "Created Manual Delivery Challan #{$challan->challan_number}", [
+                'challan_id' => $challan->id,
+                'challan_number' => $challan->challan_number,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Delivery Challan Created Successfully',
+                'redirect' => route('delivery-challans.show', $challan->id)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
     }
 
     public function create(Quotation $quotation)
@@ -75,6 +214,7 @@ class DeliveryChallanController extends Controller
                 'quotation_id' => $quotation->id,
                 'customer_id' => $quotation->customer_id,
                 'challan_number' => $challanNumber,
+                'po_number' => $request->po_number ?? $quotation->po_number,
                 'date' => $request->date,
                 'note' => $request->note,
             ]);
@@ -165,6 +305,7 @@ class DeliveryChallanController extends Controller
 
             $challan = DeliveryChallan::findOrFail($id);
             $challan->update([
+                'po_number' => $request->po_number,
                 'date' => $request->date,
                 'note' => $request->note,
             ]);
@@ -178,15 +319,17 @@ class DeliveryChallanController extends Controller
                 $difference = $newQty - $oldQty;
 
                 if ($difference != 0) {
-                    // Check availability: (Remaining + Old) must be >= New
-                    // effectively: Remaining >= Difference (if difference is positive)
-                    if ($difference > 0 && $difference > $quotationItem->remaining_qty) {
-                         throw new \Exception("Cannot increase quantity for {$challanItem->product_name}. Exceeds available remaining quantity.");
+                    // If linked to a quotation item, check availability and update delivered_qty
+                    if ($quotationItem) {
+                        // Check availability: (Remaining + Old) must be >= New
+                        if ($difference > 0 && $difference > $quotationItem->remaining_qty) {
+                            throw new \Exception("Cannot increase quantity for {$challanItem->product_name}. Exceeds available remaining quantity.");
+                        }
+                        $quotationItem->increment('delivered_qty', $difference);
                     }
 
-                    // Update values
+                    // Update challan item quantity
                     $challanItem->update(['quantity' => $newQty]);
-                    $quotationItem->increment('delivered_qty', $difference); // increment works for distinct +ve and -ve
                 }
             }
 

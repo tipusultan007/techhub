@@ -75,7 +75,7 @@
     <div class="flex-1 flex overflow-hidden">
 
         <!-- LEFT COLUMN: PRODUCTS & SEARCH -->
-        <div class="w-full md:w-2/3 flex flex-col border-r border-gray-300 bg-gray-50">
+        <div class="w-full md:w-1/2 flex flex-col border-r border-gray-300 bg-gray-50">
 
             <!-- Search Bar -->
             <div class="p-4 bg-white shadow-sm z-10">
@@ -103,7 +103,7 @@
 
             <!-- Product Grid -->
             <div class="flex-1 overflow-y-auto p-4 bg-gray-100" id="product-container">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="product-grid">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="product-grid">
                     @foreach ($initialProducts as $p)
                         @php
                             $pJson = json_encode($p);
@@ -128,7 +128,7 @@
         </div>
 
         <!-- RIGHT COLUMN: CART & SUMMARY -->
-        <div class="w-full md:w-1/3 bg-white flex flex-col shadow-2xl z-10">
+        <div class="w-full md:w-1/2 bg-white flex flex-col shadow-2xl z-10">
 
             <!-- Customer Select -->
             <div class="p-4 border-b bg-gray-50 flex gap-4">
@@ -140,6 +140,10 @@
                             <option value="{{ $c->id }}" {{ $quotation->customer_id == $c->id ? 'selected' : '' }}>{{ $c->name }} ({{ $c->phone }})</option>
                         @endforeach
                     </select>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">PO# (Optional)</label>
+                    <input type="text" id="po_number" value="{{ $quotation->po_number }}" placeholder="Enter PO#" class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none">
                 </div>
                 <div class="w-32">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Quote Date</label>
@@ -298,10 +302,10 @@
                             let pStr = JSON.stringify(p).replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                             let image = p.image || 'https://placehold.co/150?text=No+Image';
                             html += `
-                            <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-400 transition p-2" onclick='addToCart(${pStr})'>
+                            <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-blue-400 transition p-2 relative" onclick='addToCart(${pStr})'>
                                 <img src="${image}" class="h-24 w-full object-contain mb-2">
                                 <div class="text-xs font-bold h-8 overflow-hidden">${p.name}</div>
-                                <div class="text-blue-600 font-bold">AED ${parseFloat(p.price).toFixed(2)}</div>
+                                <div class="text-blue-600 font-bold text-sm">AED ${parseFloat(p.price).toFixed(2)}</div>
                             </div>`;
                         });
                     }
@@ -350,10 +354,10 @@
                             <div class="text-[10px] text-gray-400 mt-1 font-mono">${item.sku || ''}</div>
                         </td>
                         <td class="p-2 text-center w-[15%]">
-                            <div class="flex items-center justify-center border rounded">
-                                <button onclick="updateQty(${index}, -1)" class="px-1 border-r text-xs">-</button>
-                                <span class="px-2 text-xs">${item.qty}</span>
-                                <button onclick="updateQty(${index}, 1)" class="px-1 border-l text-xs">+</button>
+                            <div class="flex items-center justify-center bg-gray-100 rounded-lg p-1 w-24 mx-auto">
+                                <button onclick="updateQty(${index}, -1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm hover:bg-gray-50 text-gray-600 font-bold transition">-</button>
+                                <div class="flex-1 text-center font-bold text-gray-800 text-sm mx-1">${item.qty}</div>
+                                <button onclick="updateQty(${index}, 1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm hover:bg-gray-50 text-gray-600 font-bold transition">+</button>
                             </div>
                         </td>
                         <td class="p-2 text-center w-[15%]">
@@ -495,6 +499,7 @@
                 data: {
                     items: cart,
                     customer_id: $('#customer_id').val(),
+                    po_number: $('#po_number').val(),
                     date: $('#quotation_date').val(),
                     expiry_date: $('#expiry_date').val(),
                     discount: $('#discount_input').val(),

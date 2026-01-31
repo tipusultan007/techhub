@@ -3,8 +3,8 @@
 @section('content')
 <div class="p-6 max-w-4xl mx-auto">
     <div class="mb-6 flex justify-between items-center no-print">
-        <a href="{{ route('quotations.show', $challan->quotation_id) }}" class="text-gray-600 hover:text-gray-800 flex items-center gap-2">
-            <i class="fas fa-arrow-left"></i> Back to Quotation
+        <a href="{{ $challan->quotation_id ? route('quotations.show', $challan->quotation_id) : route('delivery-challans.index') }}" class="text-gray-600 hover:text-gray-800 flex items-center gap-2">
+            <i class="fas fa-arrow-left"></i> Back to {{ $challan->quotation_id ? 'Quotation' : 'List' }}
         </a>
         <div class="flex gap-2">
             <a href="{{ route('delivery-challans.print', $challan->id) }}" target="_blank" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-slate-900 transition flex items-center gap-2">
@@ -37,8 +37,13 @@
                 <h2 class="text-3xl font-black text-gray-800 mb-2">DELIVERY CHALLAN</h2>
                 <div class="text-sm font-bold text-gray-700">
                     <p>Challan #: <span class="text-slate-900 font-mono">{{ $challan->challan_number }}</span></p>
+                    @if($challan->po_number)
+                        <p>PO#: <span class="text-slate-900 font-mono">{{ $challan->po_number }}</span></p>
+                    @endif
                     <p>Date: <span class="text-slate-900">{{ \Carbon\Carbon::parse($challan->date)->format('d M, Y') }}</span></p>
-                    <p>Ref Quotation: <span class="text-slate-900">{{ $challan->quotation->quotation_no }}</span></p>
+                    @if($challan->quotation)
+                        <p>Ref Quotation: <span class="text-slate-900">{{ $challan->quotation->quotation_no }}</span></p>
+                    @endif
                 </div>
             </div>
         </div>

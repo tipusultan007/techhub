@@ -17,14 +17,18 @@
             @csrf
             @method('PUT')
             
-            <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Date</label>
                     <input type="date" name="date" value="{{ $challan->date }}" class="w-full border rounded-lg px-3 py-2 bg-gray-50">
                 </div>
                 <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">PO# (Optional)</label>
+                    <input type="text" name="po_number" value="{{ $challan->po_number }}" class="w-full border rounded-lg px-3 py-2 bg-gray-50" placeholder="Enter PO#">
+                </div>
+                <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Note (Optional)</label>
-                    <textarea name="note" rows="1" class="w-full border rounded-lg px-3 py-2 bg-gray-50">{{ $challan->note }}</textarea>
+                    <textarea name="note" rows="1" class="w-full border rounded-lg px-3 py-2 bg-gray-50" placeholder="Driver name, vehicle no, etc.">{{ $challan->note }}</textarea>
                 </div>
             </div>
 
@@ -40,14 +44,20 @@
                 <tbody class="text-sm divide-y">
                     @foreach($challan->items as $item)
                         @php
-                            $maxQty = $item->quantity + $item->quotationItem->remaining_qty;
+                            $maxQty = $item->quotationItem ? ($item->quantity + $item->quotationItem->remaining_qty) : 999999;
                         @endphp
                         <tr>
                             <td class="px-4 py-3">
                                 <div class="font-bold text-gray-800">{{ $item->product_name }}</div>
                             </td>
                             <td class="px-4 py-3 text-center text-gray-500">{{ $item->quantity }}</td>
-                            <td class="px-4 py-3 text-center text-green-600 font-bold">+{{ $item->quotationItem->remaining_qty }}</td>
+                            <td class="px-4 py-3 text-center @if($item->quotationItem) text-green-600 font-bold @else text-gray-300 italic @endif">
+                                @if($item->quotationItem)
+                                    +{{ $item->quotationItem->remaining_qty }}
+                                @else
+                                    N/A (Manual)
+                                @endif
+                            </td>
                             <td class="px-4 py-3">
                                 <input type="hidden" name="items[{{ $loop->index }}][id]" value="{{ $item->id }}">
                                 <input type="number" 
@@ -56,7 +66,9 @@
                                        min="0" 
                                        max="{{ $maxQty }}" 
                                        class="w-full border rounded px-2 py-1 text-center font-bold outline-none focus:border-[#d97706] focus:ring-1 focus:ring-[#d97706]">
-                                <div class="text-[10px] text-gray-400 text-center mt-1">Max: {{ $maxQty }}</div>
+                                @if($item->quotationItem)
+                                    <div class="text-[10px] text-gray-400 text-center mt-1">Max: {{ $maxQty }}</div>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
