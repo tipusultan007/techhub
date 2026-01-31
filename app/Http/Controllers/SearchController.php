@@ -19,7 +19,7 @@ class SearchController extends Controller
         }
 
         // Search products with basic security
-        $products = Product::physical()
+        $products = Product::published()->physical()
             ->where(function($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
                   ->orWhere('description', 'LIKE', "%{$query}%");
@@ -56,7 +56,7 @@ class SearchController extends Controller
             return redirect()->route('home');
         }
 
-        $products = Product::physical()
+        $products = Product::published()->physical()
             ->where(function($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
                   ->orWhere('description', 'LIKE', "%{$query}%");

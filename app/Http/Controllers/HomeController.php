@@ -18,7 +18,7 @@ class HomeController extends Controller
             ->take(16)
             ->get();
 
-        $products = Product::physical()
+        $products = Product::published()->physical()
             ->with(['category', 'variants', 'media'])
             ->latest()
             ->take(10)
@@ -35,12 +35,12 @@ class HomeController extends Controller
 
     public function product($slug)
     {
-        $product = Product::where('slug', $slug)
+        $product = Product::published()->where('slug', $slug)
             ->with(['category', 'brand', 'variants', 'media'])
             ->firstOrFail();
 
         // Get Related Products (Same category, excluding current)
-        $relatedProducts = Product::physical()
+        $relatedProducts = Product::published()->physical()
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->with('media')

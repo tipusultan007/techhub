@@ -64,6 +64,16 @@
                             <option value="service">Service (Installation, Support, etc.)</option>
                         </select>
                     </div>
+
+                    <!-- Product Status -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700">Display Status <span class="text-red-500">*</span></label>
+                        <select name="status"
+                            class="w-full mt-1 border border-gray-300 rounded-md p-2 bg-white">
+                            <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft (Hidden from Live Site)</option>
+                            <option value="published" {{ old('status') == 'published' ? 'selected' : '' }}>Published (Visible on Live Site)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 

@@ -37,7 +37,7 @@ class Product extends Model implements HasMedia
      protected $fillable = [
         'name', 'slug', 'brand_id', 'category_id', 'description',
         'tax_method', 'tax_rate',
-        'type', 'specifications',
+        'type', 'status', 'specifications',
         'sku', 'barcode', 'cost_price', 'selling_price','sale_price', 'stock_quantity', 'alert_quantity'
     ];
 
@@ -53,6 +53,11 @@ class Product extends Model implements HasMedia
     public function scopePhysical($query)
     {
         return $query->where('type', '!=', 'service');
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 
     public function brand(): BelongsTo

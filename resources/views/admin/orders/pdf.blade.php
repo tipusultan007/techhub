@@ -367,7 +367,7 @@
                         @php
                             $taxAmount = $items->sum('tax_amount');
                             if($taxAmount <= 0) continue;
-                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
+                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "VAT ($rate%)");
                         @endphp
                         <tr class="total-row">
                             <td class="total-label">{{ $label }}</td>
@@ -403,9 +403,9 @@
                         <div class="notes-section">
                             <div class="notes-title">Notes / Terms</div>
                              <ul style="padding-left: 15px; margin: 0;">
-                                <li>Goods once sold will not be returned or exchanged.</li>
-                                <li>Warranty as per manufacturer's terms and conditions.</li>
-                                <li>This document is computer generated and requires no signature.</li>
+                                 @if(settings('invoice_notes'))
+                                    {!! nl2br(e(settings('invoice_notes'))) !!}
+                                 @endif
                             </ul>
                         </div>
                     </td>

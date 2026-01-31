@@ -9,10 +9,10 @@
     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <form action="{{ route('products.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <!-- Search -->
-            <div>
+            <div class="lg:col-span-full">
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search Name/SKU</label>
                 <div class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border rounded-lg text-sm">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by product name, SKU, or barcode..." class="w-full pl-10 pr-4 py-2 border rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
                 </div>
             </div>
@@ -50,8 +50,18 @@
                 </select>
             </div>
 
+            <!-- Status -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
+                <select name="status" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                    <option value="">All Status</option>
+                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                    <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
+                </select>
+            </div>
+
             <!-- Actions -->
-            <div class="flex items-end gap-2">
+            <div class="flex items-end gap-2 lg:col-span-1">
                 <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded shadow transition text-sm">
                     <i class="fas fa-filter mr-1"></i> Filter
                 </button>
@@ -98,6 +108,7 @@
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Category / Brand</th>
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Price (AED)</th>
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
                             <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
@@ -168,6 +179,15 @@
                                         <span class="text-orange-600 font-bold text-sm">{{ $totalStock }}</span>
                                     @else
                                         <span class="text-green-600 font-bold text-sm">{{ $totalStock }}</span>
+                                    @endif
+                                </td>
+
+                                <!-- Status Badge -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if ($product->status === 'draft')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800">Draft</span>
+                                    @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Published</span>
                                     @endif
                                 </td>
 

@@ -371,7 +371,7 @@
                         @php
                             $taxAmount = $items->sum('tax_amount');
                             if($taxAmount <= 0) continue;
-                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
+                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "VAT ($rate%)");
                         @endphp
                         <tr>
                             <td class="total-label">{{ $label }}</td>

@@ -78,6 +78,7 @@ class ProductController extends Controller
             'specifications' => 'nullable|string',
             'tax_method' => 'required|in:inclusive,exclusive',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'status' => 'required|in:draft,published',
         ];
 
         if ($request->type === 'simple' || $request->type === 'service') {
@@ -105,6 +106,7 @@ class ProductController extends Controller
                 'brand_id' => $request->brand_id,
                 'category_id' => $request->category_id,
                 'type' => $request->type,
+                'status' => $request->status,
                 'description' => $request->description,
                 'specifications' => $request->specifications,
                 'tax_method' => $request->tax_method,
@@ -226,6 +228,7 @@ class ProductController extends Controller
             'specifications' => 'nullable|string',
             'tax_method' => 'required|in:inclusive,exclusive',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'status' => 'required|in:draft,published',
             'image' => 'nullable|image|max:2048',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|max:2048',
@@ -257,6 +260,7 @@ class ProductController extends Controller
                 'slug' => \Str::slug($request->name),
                 'brand_id' => $request->brand_id,
                 'category_id' => $request->category_id,
+                'status' => $request->status,
                 'description' => $request->description,
                 'specifications' => $request->specifications,
                 'tax_method' => $request->tax_method,

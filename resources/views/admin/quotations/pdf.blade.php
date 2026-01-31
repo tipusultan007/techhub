@@ -376,7 +376,7 @@
                         @php
                             $taxAmount = $items->sum('tax_amount');
                             if($taxAmount <= 0) continue;
-                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "Tax ($rate%)");
+                            $label = $rate == 0 ? 'Zero Rate (0%)' : ($rate == 5 ? 'VAT (5%)' : "VAT ($rate%)");
                         @endphp
                         <tr class="total-row">
                             <td class="total-label">{{ $label }}</td>
@@ -403,9 +403,7 @@
                                 {!! nl2br(e(settings('quotation_notes'))) !!}
                             @else
                                 <ul style="padding-left: 15px; margin: 0;">
-                                    <li>Prices are valid for 15 days from the date of quotation.</li>
-                                    <li>Items are subject to availability at confirmation.</li>
-                                    <li>Standard manufacturer warranty applies to all items.</li>
+                                  
                                 </ul>
                             @endif
                         </div>
