@@ -102,10 +102,22 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right text-sm">
+                                <a href="{{ route('expenses.show', $expense) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View"><i class="fas fa-eye"></i></a>
                                 <button @click="showModal = true; editData = {{ $expense }}" class="text-blue-600 hover:text-blue-900 mr-3" title="Edit"><i class="fas fa-edit"></i></button>
-                                <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="inline" onsubmit="return confirm('Delete expense?')">
+                                <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="inline">
                                     @csrf @method('DELETE')
-                                    <button class="text-red-600 hover:text-red-900" title="Delete"><i class="fas fa-trash"></i></button>
+                                    <button type="button" 
+                                        class="text-red-600 hover:text-red-900 btn-delete-confirm" 
+                                        title="Delete"
+                                        data-type="Expense"
+                                        data-title="Delete Expense Record?"
+                                        data-summary='{
+                                            "Date": "{{ $expense->date->format("d M Y") }}",
+                                            "Category": "{{ $expense->category->name }}",
+                                            "Amount": "AED {{ number_format($expense->amount, 2) }}"
+                                        }'>
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </form>
                             </td>
                         </tr>

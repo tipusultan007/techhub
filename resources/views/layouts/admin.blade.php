@@ -386,6 +386,13 @@
                 </a>
                 @endcan
 
+                @if(auth()->user()->hasAnyRole(['Admin','Super Admin']))
+                <a href="{{ route('activity-logs.index') }}"
+                   class="sidebar-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
+                    <i class="fas fa-history"></i> <span>Activity Logs</span>
+                </a>
+                @endif
+
             </nav>
 
             <!-- User Footer Section -->

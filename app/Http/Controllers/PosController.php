@@ -17,8 +17,11 @@ use App\Notifications\LowStockNotification;
 use App\Notifications\OrderConfirmationNotification;
 use Illuminate\Support\Facades\Notification;
 
+use App\Traits\LogsActivity;
+
 class PosController extends Controller
 {
+    use LogsActivity;
     // // 1. Load the POS Interface
     // public function index()
     // {
@@ -360,6 +363,12 @@ class PosController extends Controller
         }
 
         DB::commit();
+
+        $this->logActivity('POS', 'Create', "Created POS order #{$order->invoice_no}", [
+            'order_id' => $order->id,
+            'invoice_no' => $order->invoice_no,
+            'total' => $order->total,
+        ]);
         
         return response()->json([
             'status' => 'success', 
@@ -392,6 +401,11 @@ class PosController extends Controller
             'address' => $request->address,
             'trn_number' => $request->trn_number,
             'password' => bcrypt('12345678'), // Default password, they can reset it
+        ]);
+
+        $this->logActivity('POS', 'Create', "Created customer {$customer->name} via POS", [
+            'customer_id' => $customer->id,
+            'name' => $customer->name,
         ]);
 
         return response()->json([

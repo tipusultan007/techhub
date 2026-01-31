@@ -13,8 +13,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
+use App\Traits\LogsActivity;
+
 class PurchaseOrderController extends Controller
 {
+    use LogsActivity;
     /**
      * Display a listing of Purchase Orders.
      */
@@ -111,6 +114,12 @@ class PurchaseOrderController extends Controller
             }
 
             DB::commit();
+
+            $this->logActivity('Purchase', 'Create', "Created Purchase Order #{$po->reference_no}", [
+                'purchase_order_id' => $po->id,
+                'reference_no' => $po->reference_no,
+            ]);
+
             return redirect()->route('purchases.index')->with('success', 'Purchase Order saved successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -217,6 +226,12 @@ class PurchaseOrderController extends Controller
             }
 
             DB::commit();
+
+            $this->logActivity('Purchase', 'Edit', "Updated Purchase Order #{$po->reference_no}", [
+                'purchase_order_id' => $po->id,
+                'reference_no' => $po->reference_no,
+            ]);
+
             return redirect()->route('purchases.index')->with('success', 'Purchase Order updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -296,6 +311,12 @@ class PurchaseOrderController extends Controller
             $this->updatePOStatus($po);
 
             DB::commit();
+
+            $this->logActivity('Purchase', 'Edit', "Received items for Purchase Order #{$po->reference_no}", [
+                'purchase_order_id' => $po->id,
+                'reception_no' => $reception->reception_no,
+            ]);
+
             return back()->with('success', 'Reception recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -356,6 +377,11 @@ class PurchaseOrderController extends Controller
             $po->update(['status' => 'completed']);
 
             DB::commit();
+
+            $this->logActivity('Purchase', 'Edit', "Marked Purchase Order #{$po->reference_no} as Completed", [
+                'purchase_order_id' => $po->id,
+            ]);
+
             return back()->with('success', 'Purchase Order marked as completed.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -497,6 +523,10 @@ class PurchaseOrderController extends Controller
                 $purchase->items()->delete();
                 $purchase->delete();
             });
+
+            $this->logActivity('Purchase', 'Delete', "Deleted Purchase Order #{$purchase->reference_no}", [
+                'reference_no' => $purchase->reference_no,
+            ]);
 
             return back()->with('success', 'Purchase order deleted successfully.');
         } catch (\Exception $e) {

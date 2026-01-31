@@ -15,8 +15,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
+use App\Traits\LogsActivity;
+
 class QuotationController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $query = Quotation::with('customer', 'user', 'order');
@@ -186,6 +189,11 @@ class QuotationController extends Controller
 
             DB::commit();
 
+            $this->logActivity('Quotation', 'Create', "Created Quotation #{$quotation->quotation_no}", [
+                'quotation_id' => $quotation->id,
+                'quotation_no' => $quotation->quotation_no,
+            ]);
+
             return response()->json([
                 'status' => 'success',
                 'quotation_id' => $quotation->id,
@@ -274,6 +282,11 @@ class QuotationController extends Controller
             }
 
             DB::commit();
+
+            $this->logActivity('Quotation', 'Edit', "Updated Quotation #{$quotation->quotation_no}", [
+                'quotation_id' => $quotation->id,
+                'quotation_no' => $quotation->quotation_no,
+            ]);
 
             return response()->json([
                 'status' => 'success',
@@ -386,6 +399,11 @@ class QuotationController extends Controller
 
             DB::commit();
 
+            $this->logActivity('Quotation', 'Edit', "Converted Quotation #{$quotation->quotation_no} to Sale #{$order->invoice_no}", [
+                'quotation_id' => $quotation->id,
+                'order_id' => $order->id,
+            ]);
+
             return redirect()->route('orders.show', $order->id)->with('success', 'Quotation converted to sale successfully');
 
         } catch (\Exception $e) {
@@ -399,6 +417,10 @@ class QuotationController extends Controller
         if ($quotation->status === 'converted') {
             return back()->with('error', 'Cannot delete a quotation that has already been converted to a sale.');
         }
+        
+        $this->logActivity('Quotation', 'Delete', "Deleted Quotation #{$quotation->quotation_no}", [
+            'quotation_no' => $quotation->quotation_no,
+        ]);
         
         $quotation->delete();
         return back()->with('success', 'Quotation deleted successfully');

@@ -31,6 +31,7 @@ use App\Http\Controllers\TrackOrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -278,6 +279,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
             'update' => 'coupons.admin.update',
             'destroy' => 'coupons.admin.destroy',
         ]);
+
+        // Activity Logs
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 
 });

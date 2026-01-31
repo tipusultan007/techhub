@@ -10,8 +10,11 @@ use Illuminate\Support\Facades\DB;
 use App\Notifications\OrderStatusUpdateNotification;
 use Illuminate\Support\Facades\Notification;
 
+use App\Traits\LogsActivity;
+
 class OrderController extends Controller
 {
+    use LogsActivity;
     /**
      * Display a listing of sales orders.
      */
@@ -119,6 +122,12 @@ class OrderController extends Controller
             'status' => $request->status,
         ]);
 
+        $this->logActivity('Order', 'Edit', "Updated Order #{$order->invoice_no} status to {$request->status}", [
+            'order_id' => $order->id,
+            'invoice_no' => $order->invoice_no,
+            'status' => $request->status,
+        ]);
+
         // Log Activity
         $history = $order->history()->create([
             'status' => $request->status,
@@ -175,6 +184,10 @@ class OrderController extends Controller
                 // 3. Delete the Order Header
                 $order->delete();
             });
+
+            $this->logActivity('Order', 'Delete', "Deleted Order #{$order->invoice_no}", [
+                'invoice_no' => $order->invoice_no,
+            ]);
 
             return back()->with('success', 'Order deleted and items restocked successfully.');
 

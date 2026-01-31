@@ -7,8 +7,11 @@ use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Traits\LogsActivity;
+
 class ExpenseController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         // 1. Base Query
@@ -50,7 +53,19 @@ class ExpenseController extends Controller
             $expense->addMediaFromRequest('attachment')->toMediaCollection('attachment');
         }
 
+        $this->logActivity('Expense', 'Create', "Recorded Expense of {$expense->amount} for category {$expense->category->name}", [
+            'expense_id' => $expense->id,
+            'amount' => $expense->amount,
+            'category' => $expense->category->name,
+        ]);
+
         return back()->with('success', 'Expense recorded successfully.');
+    }
+
+    public function show(Expense $expense)
+    {
+        $expense->load(['category', 'user']);
+        return view('admin.expenses.show', compact('expense'));
     }
 
     public function update(Request $request, Expense $expense)
@@ -68,11 +83,24 @@ class ExpenseController extends Controller
             $expense->addMediaFromRequest('attachment')->toMediaCollection('attachment');
         }
 
+        $this->logActivity('Expense', 'Edit', "Updated Expense of {$expense->amount} for category {$expense->category->name}", [
+            'expense_id' => $expense->id,
+            'amount' => $expense->amount,
+            'category' => $expense->category->name,
+        ]);
+
         return back()->with('success', 'Expense updated successfully.');
     }
 
     public function destroy(Expense $expense)
     {
+        // Explicitly clear media to ensure storage files are removed
+        $expense->clearMediaCollection('attachment');
+
+        $this->logActivity('Expense', 'Delete', "Deleted Expense of {$expense->amount}", [
+            'amount' => $expense->amount,
+        ]);
+
         $expense->delete();
         return back()->with('success', 'Expense deleted.');
     }

@@ -15,8 +15,11 @@ use Picqer\Barcode\BarcodeGeneratorHTML;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductsImport;
 
+use App\Traits\LogsActivity;
+
 class ProductController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $query = Product::with(['brand', 'category', 'variants']);
@@ -162,6 +165,12 @@ class ProductController extends Controller
                 }
             }
         });
+
+        $product = Product::latest()->first(); // To get the created product for logging
+        $this->logActivity('Product', 'Create', "Created Product: {$product->name}", [
+            'product_id' => $product->id,
+            'sku' => $product->sku,
+        ]);
 
         return redirect()->route('products.index')->with('success', 'Product created.');
     }
@@ -363,6 +372,11 @@ class ProductController extends Controller
             }
         });
 
+        $this->logActivity('Product', 'Edit', "Updated Product: {$product->name}", [
+            'product_id' => $product->id,
+            'sku' => $product->sku,
+        ]);
+
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
@@ -371,13 +385,17 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Spatie Media Library auto-deletes images.
-        // Database "ON DELETE CASCADE" should handle variants,
-        // but we can manually delete for safety if FKs aren't set up perfectly.
-
         if ($product->type === 'variable') {
             $product->variants()->delete();
         }
+
+        // Explicitly clear media to ensure storage files are removed
+        $product->clearMediaCollection('product_image');
+        $product->clearMediaCollection('product_gallery');
+
+        $this->logActivity('Product', 'Delete', "Deleted Product: {$product->name}", [
+            'sku' => $product->sku,
+        ]);
 
         $product->delete();
 
@@ -434,6 +452,11 @@ class ProductController extends Controller
 
         try {
             Excel::import(new ProductsImport, $request->file('file'));
+            
+            $this->logActivity('Product', 'Create', "Imported products via Excel", [
+                'filename' => $request->file('file')->getClientOriginalName(),
+            ]);
+
             return redirect()->route('products.index')->with('success', 'Products imported successfully!');
         } catch (\Exception $e) {
             return back()->with('error', 'Import failed: ' . $e->getMessage());

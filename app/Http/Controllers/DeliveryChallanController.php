@@ -10,8 +10,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Traits\LogsActivity;
+
 class DeliveryChallanController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         $query = DeliveryChallan::with('customer', 'quotation')
@@ -109,6 +112,11 @@ class DeliveryChallanController extends Controller
 
             DB::commit();
 
+            $this->logActivity('Delivery Challan', 'Create', "Created Delivery Challan #{$challan->challan_number}", [
+                'challan_id' => $challan->id,
+                'challan_number' => $challan->challan_number,
+            ]);
+
             return redirect()->route('delivery-challans.show', $challan->id)
                 ->with('success', 'Delivery Challan Created Successfully');
 
@@ -184,6 +192,11 @@ class DeliveryChallanController extends Controller
 
             DB::commit();
 
+            $this->logActivity('Delivery Challan', 'Edit', "Updated Delivery Challan #{$challan->challan_number}", [
+                'challan_id' => $challan->id,
+                'challan_number' => $challan->challan_number,
+            ]);
+
             return redirect()->route('delivery-challans.index')
                 ->with('success', 'Delivery Challan updated successfully.');
 
@@ -217,6 +230,10 @@ class DeliveryChallanController extends Controller
             $challan->delete();
 
             DB::commit();
+
+            $this->logActivity('Delivery Challan', 'Delete', "Deleted Delivery Challan #{$challan->challan_number}", [
+                'challan_number' => $challan->challan_number,
+            ]);
 
             return redirect()->route('delivery-challans.index')
                 ->with('success', 'Delivery Challan deleted successfully. Stock reverted to Quotation.');
