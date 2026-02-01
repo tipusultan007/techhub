@@ -156,26 +156,10 @@
         .grand-total { border-top: 1px solid #cbd5e1; margin-top: 10px; padding-top: 10px; }
         .grand-total td { font-size: 13px; font-weight: bold; }
 
-        /* Footer */
-        .footer {
-            margin-top: 60px;
-            border-top: 1px solid #E2E8F0;
-            padding-top: 20px;
-        }
+        .policy-box { background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 9px; color: #92400e; line-height: 1.5; font-style: normal; }
+        .signature-line { border-bottom: 1px solid #334155; margin-top: 40px; width: 220px; }
 
-        .notes-section {
-            font-size: 10px;
-            color: #64748B;
-            line-height: 1.5;
-        }
 
-        .notes-title {
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            font-size: 9px;
-            color: #64748B;
-        }
     </style>
 </head>
 
@@ -298,8 +282,16 @@
          <!-- Totals -->
          <div class="footer-container">
             <div class="footer-left">
-                <!-- Signature or notes can go here later if needed to match layout -->
-                &nbsp;
+                <div class="policy-box">
+                    <strong>Purchasing Policy & Delivery Instructions:</strong><br>
+                    {!! nl2br(e(settings('purchase_policy', ""))) !!}
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <div class="signature-line"></div>
+                    <div style="font-weight: bold; margin-top: 8px; text-transform: uppercase; font-size: 10px; color: #1e293b;">Authorized Signature</div>
+                    <div style="font-size: 8px; color: #94a3b8; margin-top: 2px; font-weight: bold;">PROCUREMENT DEPARTMENT • TECH HUB GROUP</div>
+                </div>
             </div>
             <div class="footer-right">
                 <div class="totals-box">
@@ -326,19 +318,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="footer">
-            <table style="width: 100%;">
-                <tr>
-                    <td style="width: 60%; vertical-align: top;">
-                        <div class="notes-section">
-                            <div class="notes-title">Authorized Signature</div>
-                            <div style="border-bottom: 1px solid #334155; width: 200px; margin-top: 40px;"></div>
-                        </div>
-                    </td>
-                    
-                </tr>
-            </table>
-        </div>
+
     </div>
 
     <script type="text/php">
