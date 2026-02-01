@@ -14,6 +14,9 @@
             <a href="{{ route('orders.index') }}" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded shadow-sm hover:bg-gray-50">
                 Back to List
             </a>
+            <a href="{{ route('orders.edit', $order) }}" class="bg-emerald-600 text-white px-4 py-2 rounded shadow-sm hover:bg-emerald-700">
+                <i class="fas fa-edit mr-2"></i> Edit Order
+            </a>
             <a href="{{ route('orders.print', $order) }}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded shadow-sm hover:bg-blue-700">
                 <i class="fas fa-print mr-2"></i> Print Invoice
             </a>

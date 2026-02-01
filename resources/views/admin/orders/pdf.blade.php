@@ -260,6 +260,7 @@
                         {{ settings('shop_address', 'Dubai, UAE') }}<br>
                         <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
                         <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <strong>Website:</strong> https://techhubrak.ae<br>
                         <strong>TRN:</strong> {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
                     </div>
                 </td>

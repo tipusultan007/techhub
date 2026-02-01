@@ -282,6 +282,8 @@
                             <option value="cash" selected>💵 Cash</option>
                             <option value="card">💳 Card</option>
                             <option value="transfer">🏦 Bank</option>
+                            <option value="advance">💰 Advance</option>
+                            <option value="custom">⚙️ Custom</option>
                         </select>
                     </div>
 

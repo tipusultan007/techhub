@@ -45,7 +45,7 @@
                <strong>{{ settings('shop_address', 'Computer Street, Bur Dubai, UAE') }}</strong><br>
                 <strong>Phone:</strong> {{ settings('shop_phone', settings('contact_phone', '+971 4 000 0000')) }}<br>
                 <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }} <br>
-                <strong>Website:</strong> www.techhubrak.ae
+                <strong>Website:</strong> https://techhubrak.ae
             </div>
         </div>
         <div>

@@ -81,6 +81,158 @@ class OrderController extends Controller
     }
 
     /**
+     * Show the form for editing the specified order.
+     */
+    public function edit(Order $order)
+    {
+        $order->load(['items.product', 'items.variant', 'customer']);
+        $customers = \App\Models\Customer::orderBy('name')->get();
+        
+        return view('admin.orders.edit', compact('order', 'customers'));
+    }
+
+    /**
+     * Update the specified order in storage.
+     */
+    public function update(Request $request, Order $order)
+    {
+        $request->validate([
+            'customer_id' => 'nullable|exists:customers,id',
+            'po_number' => 'nullable|string|max:50',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.variant_id' => 'nullable|exists:product_variants,id',
+            'items.*.product_name' => 'nullable|string|max:255',
+            'items.*.qty' => 'required|numeric|min:0.01',
+            'items.*.price' => 'required|numeric|min:0',
+            'items.*.tax_rate' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,card,transfer,advance,custom',
+            'discount' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request, $order) {
+                // 1. Restore Stock from Old Items
+                foreach ($order->items as $oldItem) {
+                    if ($oldItem->product_id) {
+                        if ($oldItem->product_variant_id) {
+                            ProductVariant::where('id', $oldItem->product_variant_id)->increment('stock_quantity', $oldItem->quantity);
+                        } else {
+                            Product::where('id', $oldItem->product_id)->increment('stock_quantity', $oldItem->quantity);
+                        }
+                    }
+                }
+
+                // 2. Delete Old Items
+                $order->items()->delete();
+
+                // 3. Re-calculate and Insert New Items
+                $totalTax = 0;
+                $totalSubtotal = 0; // Net amount (sum of row subtotals before tax)
+                $totalGrand = 0;
+
+                foreach ($request->items as $itemData) {
+                    $qty = $itemData['qty'];
+                    $price = $itemData['price']; // This is treated as inclusive price matching POS behavior
+                    $taxRate = $itemData['tax_rate'];
+
+                    // POS Model: Price is inclusive
+                    // subtotal (inclusive) = price * qty
+                    // tax_amount = inclusive_subtotal - (inclusive_subtotal / (1 + tax_rate/100))
+                    // net_subtotal = inclusive_subtotal - tax_amount
+
+                    $rowInclusiveTotal = $price * $qty;
+                    $rowTaxAmount = $rowInclusiveTotal - ($rowInclusiveTotal / (1 + ($taxRate / 100)));
+                    $rowNetSubtotal = $rowInclusiveTotal - $rowTaxAmount;
+
+                    $productName = $itemData['product_name'] ?? 'Unknown Item';
+                    if ($itemData['product_id']) {
+                        $p = Product::find($itemData['product_id']);
+                        $productName = $p->name;
+                        if ($itemData['variant_id']) {
+                             $v = ProductVariant::find($itemData['variant_id']);
+                             if ($v) $productName .= ' - ' . $v->variant_name;
+                        }
+                    }
+
+                    $orderItem = $order->items()->create([
+                        'product_id' => $itemData['product_id'] ?? null,
+                        'product_variant_id' => $itemData['variant_id'] ?? null,
+                        'product_name' => $productName,
+                        'quantity' => $qty,
+                        'unit_price' => $price,
+                        'tax_rate' => $taxRate,
+                        'tax_amount' => $rowTaxAmount,
+                        'subtotal' => $rowInclusiveTotal, // Row total inclusive
+                    ]);
+
+                    // 4. Deduct New Stock
+                    if ($orderItem->product_id) {
+                        if ($orderItem->product_variant_id) {
+                            $variant = ProductVariant::find($orderItem->product_variant_id);
+                            if ($variant && $variant->stock_quantity < $qty) {
+                                throw new \Exception("Insufficient stock for " . $orderItem->product_name);
+                            }
+                            if ($variant) $variant->decrement('stock_quantity', $qty);
+                        } else {
+                            $product = Product::find($orderItem->product_id);
+                            if ($product && $product->type !== 'service') {
+                                if ($product->stock_quantity < $qty) {
+                                    throw new \Exception("Insufficient stock for " . $orderItem->product_name);
+                                }
+                                $product->decrement('stock_quantity', $qty);
+                            }
+                        }
+                    }
+
+                    $totalTax += $rowTaxAmount;
+                    $totalSubtotal += $rowNetSubtotal;
+                    $totalGrand += $rowInclusiveTotal;
+                }
+
+                // 5. Update Order Header
+                $discount = $request->discount ?? 0;
+                $finalGrand = $totalGrand - $discount;
+
+                // Adjust tax proportionally if discount is applied to total
+                if ($totalGrand > 0) {
+                    $totalTax = $totalTax * ($finalGrand / $totalGrand);
+                }
+
+                $order->update([
+                    'customer_id' => $request->customer_id,
+                    'customer_name' => $request->customer_id ? \App\Models\Customer::find($request->customer_id)->name : 'Guest/Walk-in',
+                    'po_number' => $request->po_number,
+                    'payment_method' => $request->payment_method,
+                    'subtotal' => $totalSubtotal, // This should eventually be totalGrand - totalTax?
+                    'vat_amount' => $totalTax,
+                    'discount' => $discount,
+                    'total' => $finalGrand,
+                ]);
+
+                // 6. Log History
+                $order->history()->create([
+                    'status' => $order->status,
+                    'comment' => 'Order details updated by ' . auth()->user()->name,
+                    'user_id' => auth()->id(),
+                ]);
+
+                $this->logActivity('Order', 'Edit', "Updated Order #{$order->invoice_no}", [
+                    'order_id' => $order->id,
+                    'invoice_no' => $order->invoice_no,
+                    'grand_total' => $finalGrand,
+                ]);
+            });
+
+            return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error("Error updating order #{$order->id}: " . $e->getMessage());
+            return back()->with('error', 'Update failed: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    /**
      * Print layout (Thermal Printer 80mm).
      * This method renders the specific print view designed for POS printers.
      */

@@ -69,6 +69,8 @@
                     <option value="cash" {{ request('payment_method') == 'cash' ? 'selected' : '' }}>Cash</option>
                     <option value="card" {{ request('payment_method') == 'card' ? 'selected' : '' }}>Card</option>
                     <option value="transfer" {{ request('payment_method') == 'transfer' ? 'selected' : '' }}>Bank</option>
+                    <option value="advance" {{ request('payment_method') == 'advance' ? 'selected' : '' }}>Advance</option>
+                    <option value="custom" {{ request('payment_method') == 'custom' ? 'selected' : '' }}>Custom</option>
                 </select>
             </div>
 
@@ -157,6 +159,11 @@
                     <!-- View Details -->
                     <a href="{{ route('orders.show', $order) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View Details">
                         <i class="fas fa-eye"></i>
+                    </a>
+
+                    <!-- Edit Order -->
+                    <a href="{{ route('orders.edit', $order) }}" class="text-emerald-600 hover:text-emerald-900 mr-3" title="Edit Order">
+                        <i class="fas fa-edit"></i>
                     </a>
 
                     <!-- Print Receipt -->
