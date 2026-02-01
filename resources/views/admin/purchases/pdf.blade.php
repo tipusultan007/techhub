@@ -113,94 +113,48 @@
         }
 
         /* Items Table */
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
+        .items-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 30px; 
         }
-
-        .items-table th {
-            background-color: #F8FAFC;
-            padding: 12px 10px;
-            text-align: left;
-            font-size: 10px;
-            font-weight: 700;
-            color: #0F172A;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-top: 1px solid #E2E8F0;
-            border-bottom: 1px solid #E2E8F0;
+        .items-table th { 
+            background: #1e293b; 
+            color: #fff; 
+            padding: 10px; 
+            text-align: left; 
+            font-size: 9px; 
+            text-transform: uppercase; 
+            font-weight: bold; 
         }
-
-        .items-table td {
-            padding: 14px 10px;
-            border-bottom: 1px solid #F8FAFC;
-            vertical-align: top;
-        }
-
-        .item-name {
-            font-size: 12px;
-            font-weight: 400;
-            color: #0F172A;
-            margin-bottom: 2px;
-        }
-
-        .item-desc {
-            font-size: 10px;
-            color: #64748B;
-            line-height: 1.3;
-        }
-
-        /* Totals */
-        .totals-container {
-            width: 100%;
+        .items-table td { 
+            padding: 12px 10px; 
+            border-bottom: 1px solid #f1f5f9; 
+            vertical-align: middle; 
         }
         
-        .totals-table {
-            width: 280px;
-            float: right;
-            border: 1px solid #E2E8F0;
-            border-radius: 6px;
-            padding: 15px;
-            background-color: #F8FAFC;
+        .product-name { 
+            font-weight: 400; 
+            font-size: 12px; 
+            color: #0f172a; 
+        }
+        .variant-name { 
+            font-size: 9px; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            margin-top: 2px; 
         }
 
-        .total-row td {
-            padding: 4px 0;
-        }
-
-        .total-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #64748B;
-        }
-
-        .total-value {
-            font-size: 11px;
-            font-weight: 700;
-            color: #0F172A;
-            text-align: right;
-        }
-
-        .grand-total {
-            border-top: 1px solid #CBD5E1;
-            margin-top: 10px;
-            padding-top: 10px;
-        }
-
-        .grand-total-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #0F172A;
-            text-transform: uppercase;
-        }
-
-        .grand-total-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #2DAE9A;
-            text-align: right;
-        }
+        /* Summary area */
+        .footer-container { margin-top: 20px; }
+        .footer-left { width: 60%; float: left; }
+        .footer-right { width: 35%; float: right; }
+        .clear { clear: both; }
+        
+        .totals-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; }
+        .total-row { border-bottom: 1px solid #fff; padding: 4px 0; }
+        .grand-total { border-top: 1px solid #cbd5e1; margin-top: 10px; padding-top: 10px; }
+        .grand-total td { font-size: 13px; font-weight: bold; }
 
         /* Footer */
         .footer {
@@ -260,6 +214,7 @@
                         {{ settings('shop_address', 'Dubai, UAE') }}<br>
                         <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
                         <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        <strong>Website:</strong> https://techhubrak.ae<br>
                         <strong>TRN:</strong> {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
                     </div>
                 </td>
@@ -311,62 +266,63 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 5%; text-align: center;">#</th>
-                    <th style="width: 45%;">Product Description</th>
-                    <th style="width: 15%; text-align: right;">Unit Cost</th>
-                    <th style="width: 10%; text-align: center;">Qty</th>
-                    <th style="width: 10%; text-align: right;">Tax</th>
-                    <th style="width: 15%; text-align: right;">Total</th>
+                    <th style="width: 30px;" class="text-center">#</th>
+                    <th>Product Description</th>
+                    <th style="width: 80px;" class="text-right">Unit Cost</th>
+                    <th style="width: 40px;" class="text-center">Qty</th>
+                    <th style="width: 40px;" class="text-center">Tax %</th>
+                    <th style="width: 60px;" class="text-right">Tax</th>
+                    <th style="width: 80px;" class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($purchase->items as $index => $item)
                 <tr>
-                    <td style="text-align: center; color: #64748B;">{{ $index + 1 }}</td>
+                    <td class="text-center" style="color: #94a3b8; font-weight: bold;">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
                     <td>
-                        <div class="item-name">{{ $item->product->name ?? 'Item' }}</div>
+                        <div class="product-name">{{ $item->product->name ?? 'N/A' }}</div>
                         @if($item->variant)
-                        <div class="item-desc">{{ $item->variant->name }}</div>
+                            <div class="variant-name">{{ $item->variant->variant_name }}</div>
                         @endif
                     </td>
-                    <td class="text-right" style="color: #475569;">{{ number_format($item->net_unit_cost, 2) }}</td>
-                    <td class="text-center" style="font-weight: 700; font-size: 12px;">{{ $item->quantity }}</td>
-                    <td class="text-right" style="color: #475569;">{{ number_format($item->tax, 2) }}</td>
-                    <td class="text-right" style="font-weight: 700; color: #0F172A;">{{ number_format($item->total, 2) }}</td>
+                    <td class="text-right" style="color: #475569;">{{ number_format($item->unit_cost, 2) }}</td>
+                    <td class="text-center" style="font-weight: bold; color: #1e293b;">{{ $item->quantity }}</td>
+                    <td class="text-center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
+                    <td class="text-right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
+                    <td class="text-right" style="font-weight: bold; color: #0f172a;">{{ number_format($item->subtotal + $item->tax_amount, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
          <!-- Totals -->
-        <div class="clearfix">
-            <div class="totals-table">
-                <table style="width: 100%;">
-                    <tr class="total-row">
-                        <td class="total-label">Subtotal</td>
-                        <td class="total-value">{{ number_format($purchase->total_cost, 2) }}</td>
-                    </tr>
-                    <tr class="total-row">
-                        <td class="total-label">Order Tax</td>
-                        <td class="total-value">{{ number_format($purchase->order_tax, 2) }}</td>
-                    </tr>
-                    <tr class="total-row">
-                        <td class="total-label">Shipping</td>
-                        <td class="total-value">{{ number_format($purchase->shipping_cost, 2) }}</td>
-                    </tr>
-                    @if($purchase->discount > 0)
-                    <tr class="total-row">
-                        <td class="total-label" style="color: #E11D48;">Discount</td>
-                        <td class="total-value" style="color: #E11D48;">-{{ number_format($purchase->discount, 2) }}</td>
-                    </tr>
-                    @endif
-                    
-                    <tr class="grand-total">
-                        <td class="grand-total-label">Grand Total</td>
-                        <td class="grand-total-value">{{ number_format($purchase->grand_total, 2) }}</td>
-                    </tr>
-                </table>
+         <div class="footer-container">
+            <div class="footer-left">
+                <!-- Signature or notes can go here later if needed to match layout -->
+                &nbsp;
             </div>
+            <div class="footer-right">
+                <div class="totals-box">
+                    <table class="w-full">
+                        <tr class="total-row">
+                            <td style="color: #64748b; font-weight: bold; padding: 5px 0;">Subtotal (Net)</td>
+                            <td class="text-right" style="font-weight: bold;">{{ number_format($purchase->total_cost - $purchase->tax_amount, 2) }}</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td style="color: #64748b; font-weight: bold; padding: 5px 0;">Tax (VAT)</td>
+                            <td class="text-right" style="color: #ef4444; font-weight: bold;">{{ number_format($purchase->tax_amount, 2) }}</td>
+                        </tr>
+                        <tr class="grand-total">
+                            <td style="font-weight: bold; color: #161616; text-transform: uppercase;">Grand Total</td>
+                            <td class="text-right" style="color: #2DAE9A;">
+                                <span style="font-size: 9px; color: #94a3b8; margin-right: 3px;">AED</span>
+                                <span style="font-size: 18px; font-weight: bold;">{{ number_format($purchase->total_cost, 2) }}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="clear"></div>
         </div>
 
         <!-- Footer -->
