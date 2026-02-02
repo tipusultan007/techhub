@@ -256,7 +256,7 @@
 
     <script>
         let cart = [];
-        const beep = new Audio('https://www.soundjay.com/button/sounds/beep-07.mp3');
+       
 
         $(document).ready(function() {
             $('#search').focus();
@@ -315,7 +315,6 @@
         });
 
         function addToCart(product) {
-            beep.play();
             let existing = cart.find(i => i.id === product.id && i.variant_id === product.variant_id);
             if (existing) {
                 existing.qty++;
@@ -468,8 +467,7 @@
                 return;
             }
 
-            beep.currentTime = 0;
-            beep.play();
+        
 
             cart.push({
                 id: null,

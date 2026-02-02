@@ -420,16 +420,12 @@
     </div>
 
     <!-- Sound Effects -->
-    <audio id="beep-sound" src="https://www.soundjay.com/button/sounds/beep-07.mp3"></audio>
-    <audio id="error-sound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
-
+   
     <script>
         // --- GLOBAL VARIABLES ---
         let cart = [];
         let pendingProduct = null;
-        const beep = document.getElementById('beep-sound');
-        const errorBeep = document.getElementById('error-sound');
-
+       
         $(document).ready(function() {
             $('#search').focus();
             setInterval(() => {
@@ -519,7 +515,7 @@
                     html =
                         `<div class="col-span-full text-center py-10 text-gray-400"><i class="fas fa-search text-4xl mb-2"></i><p>No products found</p></div>`;
                     if (isScan) {
-                        errorBeep.play();
+                        
                         toastr.error('Product not found');
                         $('#search').select();
                     }
@@ -552,7 +548,7 @@
         // --- 2. CART LOGIC ---
         function addToCart(product) {
             if (product.type !== 'service' && product.stock <= 0) {
-                errorBeep.play();
+               
                 toastr.error('Item is Out of Stock!');
                 return;
             }
@@ -561,8 +557,6 @@
                 return;
             }
 
-            beep.currentTime = 0;
-            beep.play();
             let existing = cart.find(i => i.id === product.id && i.variant_id === product.variant_id && !i.serial);
             if (existing) {
                 if (existing.qty >= product.stock) {
@@ -747,9 +741,6 @@
                 return;
             }
 
-            beep.currentTime = 0;
-            beep.play();
-
             cart.push({
                 id: null,
                 variant_id: null,
@@ -796,12 +787,12 @@
             let serial = $('#modalSerialInput').val().trim();
             if (serial === "") {
                 $('#serialError').text("Please scan a serial number").removeClass('hidden');
-                errorBeep.play();
+               
                 return;
             }
             if (cart.find(i => i.serial === serial)) {
                 $('#serialError').text("Serial already in cart").removeClass('hidden');
-                errorBeep.play();
+                
                 return;
             }
 
@@ -814,7 +805,7 @@
                 },
                 success: function(response) {
                     if (response.valid) {
-                        beep.play();
+                        
                         cart.push({
                             ...pendingProduct,
                             qty: 1,
@@ -824,7 +815,7 @@
                         closeSerialModal();
                         toastr.success('Serial Verified');
                     } else {
-                        errorBeep.play();
+                        
                         $('#serialError').text(response.message).removeClass('hidden');
                         $('#modalSerialInput').select();
                     }
@@ -891,7 +882,7 @@
         },
         error: function(xhr) {
             $('#processingOverlay').addClass('hidden').removeClass('flex');
-            errorBeep.play();
+            
             // Show specific validation error if available
             let msg = xhr.responseJSON ? xhr.responseJSON.message : 'Unknown Error';
             if(xhr.status === 422 && xhr.responseJSON.errors) {

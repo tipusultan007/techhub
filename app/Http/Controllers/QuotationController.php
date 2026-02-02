@@ -357,7 +357,7 @@ class QuotationController extends Controller
                 'vat_amount' => $quotation->vat_amount,
                 'discount' => $quotation->discount,
                 'total' => $quotation->total,
-                'payment_method' => 'cash', // Default or ask user? Defaulting to cash for conversion
+                'payment_method' => $request->payment_method ?? 'cash',
                 'status' => 'completed',
                 'user_id' => Auth::id(),
                 'channel' => 'pos'

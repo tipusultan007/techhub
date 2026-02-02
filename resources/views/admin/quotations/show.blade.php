@@ -214,9 +214,21 @@
                         <span class="font-black text-blue-600 text-lg">AED ${total}</span>
                     </div>
 
-                    <div class="mt-4">
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">PO Number (Optional)</label>
-                        <input type="text" id="swal-po-number" class="swal2-input !m-0 !w-full !text-sm" placeholder="Enter PO#" value="${existingPo}">
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">PO Number (Optional)</label>
+                            <input type="text" id="swal-po-number" class="swal2-input !m-0 !w-full !text-sm" placeholder="Enter PO#" value="${existingPo}">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Method</label>
+                            <select id="swal-payment-method" class="swal2-input !m-0 !w-full !text-sm">
+                                <option value="cash" selected>💵 Cash</option>
+                                <option value="card">💳 Card</option>
+                                <option value="transfer">🏦 Bank Transfer</option>
+                                <option value="advance">💰 Advance</option>
+                                <option value="custom">⚙️ Custom</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <p class="text-xs text-red-500 mt-4 font-bold italic"><i class="fas fa-exclamation-triangle mr-1"></i> Stock will be deducted upon conversion.</p>
@@ -228,7 +240,10 @@
             confirmButtonText: '<i class="fas fa-check-circle mr-2"></i> Yes, Convert Now',
             cancelButtonText: 'Cancel',
             preConfirm: () => {
-                return document.getElementById('swal-po-number').value;
+                return {
+                    po_number: document.getElementById('swal-po-number').value,
+                    payment_method: document.getElementById('swal-payment-method').value
+                };
             },
             customClass: {
                 confirmButton: 'px-6 py-2.5 rounded-lg font-bold',
@@ -236,15 +251,21 @@
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                let poNumber = result.value;
                 let form = document.getElementById('convert-form-' + id);
                 
                 // Add PO# input to form
                 let poInput = document.createElement('input');
                 poInput.type = 'hidden';
                 poInput.name = 'po_number';
-                poInput.value = poNumber;
+                poInput.value = result.value.po_number;
                 form.appendChild(poInput);
+
+                // Add Payment Method input to form
+                let pmInput = document.createElement('input');
+                pmInput.type = 'hidden';
+                pmInput.name = 'payment_method';
+                pmInput.value = result.value.payment_method;
+                form.appendChild(pmInput);
                 
                 form.submit();
             }

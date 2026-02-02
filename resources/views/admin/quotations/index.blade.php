@@ -206,12 +206,6 @@
                         <span class="text-gray-500">Quotation #:</span>
                         <span class="font-bold text-gray-800">${quNo}</span>
                     </div>
-                    ${poNumber ? `
-                    <div class="flex justify-between py-1 border-b border-gray-100">
-                        <span class="text-gray-500">PO #:</span>
-                        <span class="font-bold text-gray-800">${poNumber}</span>
-                    </div>
-                    ` : ''}
                     <div class="flex justify-between py-1 border-b border-gray-100">
                         <span class="text-gray-500">Customer:</span>
                         <span class="font-bold text-gray-800">${customer}</span>
@@ -220,9 +214,26 @@
                         <span class="text-gray-500">Total Items:</span>
                         <span class="font-bold text-gray-800">${itemsCount}</span>
                     </div>
-                    <div class="flex justify-between pt-2">
+                    <div class="flex justify-between pt-2 mb-4">
                         <span class="text-gray-700 font-bold uppercase">Grand Total:</span>
                         <span class="font-black text-blue-600 text-lg">AED ${total}</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">PO Number (Optional)</label>
+                            <input type="text" id="swal-po-number" class="swal2-input !m-0 !w-full !text-sm" placeholder="Enter PO#" value="${poNumber || ''}">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Method</label>
+                            <select id="swal-payment-method" class="swal2-input !m-0 !w-full !text-sm">
+                                <option value="cash" selected>💵 Cash</option>
+                                <option value="card">💳 Card</option>
+                                <option value="transfer">🏦 Bank Transfer</option>
+                                <option value="advance">💰 Advance</option>
+                                <option value="custom">⚙️ Custom</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <p class="text-xs text-red-500 mt-4 font-bold italic"><i class="fas fa-exclamation-triangle mr-1"></i> Stock will be deducted upon conversion.</p>
@@ -233,13 +244,35 @@
             cancelButtonColor: '#374151',
             confirmButtonText: '<i class="fas fa-check-circle mr-2"></i> Yes, Convert Now',
             cancelButtonText: 'Cancel',
+            preConfirm: () => {
+                return {
+                    po_number: document.getElementById('swal-po-number').value,
+                    payment_method: document.getElementById('swal-payment-method').value
+                };
+            },
             customClass: {
                 confirmButton: 'px-6 py-2.5 rounded-lg font-bold',
                 cancelButton: 'px-6 py-2.5 rounded-lg font-bold'
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('convert-form-' + id).submit();
+                let form = document.getElementById('convert-form-' + id);
+                
+                // Add PO# input to form
+                let poInput = document.createElement('input');
+                poInput.type = 'hidden';
+                poInput.name = 'po_number';
+                poInput.value = result.value.po_number;
+                form.appendChild(poInput);
+
+                // Add Payment Method input to form
+                let pmInput = document.createElement('input');
+                pmInput.type = 'hidden';
+                pmInput.name = 'payment_method';
+                pmInput.value = result.value.payment_method;
+                form.appendChild(pmInput);
+                
+                form.submit();
             }
         });
     }
