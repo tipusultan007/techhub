@@ -475,7 +475,7 @@ class ProductController extends Controller
             'ids.*' => 'exists:products,id'
         ]);
 
-        $products = Product::withCount(['orderItems', 'purchaseOrderItems'])
+        $products = Product::withCount(['orderItems', 'purchaseOrderItems', 'returnItems', 'quotationItems', 'deliveryChallanItems'])
             ->whereIn('id', $request->ids)
             ->get();
 
@@ -484,7 +484,13 @@ class ProductController extends Controller
         $toDeleteIds = [];
 
         foreach ($products as $product) {
-            if ($product->order_items_count > 0 || $product->purchase_order_items_count > 0) {
+            if (
+                $product->order_items_count > 0 || 
+                $product->purchase_order_items_count > 0 ||
+                $product->return_items_count > 0 ||
+                $product->quotation_items_count > 0 ||
+                $product->delivery_challan_items_count > 0
+            ) {
                 $skipped[] = $product->name;
                 continue;
             }

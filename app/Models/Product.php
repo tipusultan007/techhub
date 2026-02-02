@@ -88,6 +88,21 @@ class Product extends Model implements HasMedia
         return $this->hasMany(PurchaseOrderItem::class);
     }
 
+    public function returnItems(): HasMany
+    {
+        return $this->hasMany(ReturnItem::class);
+    }
+
+    public function quotationItems(): HasMany
+    {
+        return $this->hasMany(QuotationItem::class);
+    }
+
+    public function deliveryChallanItems(): HasMany
+    {
+        return $this->hasMany(DeliveryChallanItem::class);
+    }
+
     public function getActivePriceAttribute()
     {
         if ($this->type === 'simple') {
