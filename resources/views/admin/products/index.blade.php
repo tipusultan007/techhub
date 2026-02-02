@@ -325,7 +325,18 @@
                         ids: ids
                     }).then(response => {
                         if (response.data.success) {
-                            Swal.fire('Deleted!', response.data.message, 'success').then(() => {
+                            let skippedMsg = '';
+                            if (response.data.skipped && response.data.skipped.length > 0) {
+                                skippedMsg = '<div class="mt-4 text-left"><p class="font-bold text-red-600">The following products were skipped because they are linked to orders or purchases:</p><ul class="list-disc list-inside text-sm text-gray-700 max-h-40 overflow-y-auto mt-2">' + 
+                                    response.data.skipped.map(name => `<li>${name}</li>`).join('') + 
+                                    '</ul></div>';
+                            }
+
+                            Swal.fire({
+                                title: 'Bulk Delete Result',
+                                html: `<p>${response.data.message}</p>${skippedMsg}`,
+                                icon: response.data.skipped.length > 0 ? 'warning' : 'success'
+                            }).then(() => {
                                 window.location.reload();
                             });
                         }

@@ -475,9 +475,32 @@ class ProductController extends Controller
             'ids.*' => 'exists:products,id'
         ]);
 
-        Product::whereIn('id', $request->ids)->delete();
+        $products = Product::withCount(['orderItems', 'purchaseOrderItems'])
+            ->whereIn('id', $request->ids)
+            ->get();
 
-        return response()->json(['success' => true, 'message' => 'Selected products deleted successfully.']);
+        $deletedCount = 0;
+        $skipped = [];
+        $toDeleteIds = [];
+
+        foreach ($products as $product) {
+            if ($product->order_items_count > 0 || $product->purchase_order_items_count > 0) {
+                $skipped[] = $product->name;
+                continue;
+            }
+            $toDeleteIds[] = $product->id;
+        }
+
+        if (!empty($toDeleteIds)) {
+            Product::whereIn('id', $toDeleteIds)->delete();
+            $deletedCount = count($toDeleteIds);
+        }
+
+        return response()->json([
+            'success' => true, 
+            'message' => "Successfully deleted $deletedCount products.",
+            'skipped' => $skipped
+        ]);
     }
 
     public function bulkUpdateStatus(Request $request)
