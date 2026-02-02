@@ -60,14 +60,21 @@
                 </select>
             </div>
 
+            <!-- Per Page -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Per Page</label>
+                <select name="per_page" class="w-full border border-gray-300 rounded-lg p-2 text-sm" onchange="this.form.submit()">
+                    @foreach([15, 25, 50, 100] as $size)
+                        <option value="{{ $size }}" {{ request('per_page', 15) == $size ? 'selected' : '' }}>{{ $size }} per page</option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Actions -->
             <div class="flex items-end gap-2 lg:col-span-1">
                 <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded shadow transition text-sm">
                     <i class="fas fa-filter mr-1"></i> Filter
                 </button>
-                <a href="{{ route('products.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded text-center transition text-sm">
-                    <i class="fas fa-undo mr-1"></i> Reset
-                </a>
             </div>
         </form>
     </div>
@@ -75,6 +82,32 @@
     <!-- Top Action Bar (Print and Add) -->
     <div class="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
         <div class="flex gap-2">
+            <!-- Reset Button Moved Here -->
+            <a href="{{ route('products.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded shadow flex items-center text-sm">
+                <i class="fas fa-undo mr-1"></i> Reset
+            </a>
+
+            <!-- Bulk Actions Dropdown -->
+            <div class="relative inline-block text-left" x-data="{ open: false }">
+                <button type="button" @click="open = !open" class="bg-slate-700 text-white px-4 py-2 rounded shadow hover:bg-slate-600 font-bold text-sm flex items-center">
+                    <i class="fas fa-tasks mr-2"></i> Bulk Actions <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                </button>
+                <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                    <div class="py-1">
+                        <button type="button" onclick="bulkUpdateStatus('published')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <i class="fas fa-check-circle mr-2 text-green-500"></i> Mark as Published
+                        </button>
+                        <button type="button" onclick="bulkUpdateStatus('draft')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <i class="fas fa-file-alt mr-2 text-slate-500"></i> Mark as Draft
+                        </button>
+                        <div class="border-t border-gray-100"></div>
+                        <button type="button" onclick="bulkDelete()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center font-semibold">
+                            <i class="fas fa-trash-alt mr-2"></i> Delete Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Print Labels Button -->
             <button type="button" onclick="document.getElementById('barcode-form').submit();" class="bg-slate-800 text-white px-4 py-2 rounded shadow hover:bg-slate-700 font-bold text-sm">
                 <i class="fas fa-barcode mr-2"></i> Print Labels
@@ -259,6 +292,81 @@
                 if (result.isConfirmed) {
                     // Find the hidden form for this product and submit it
                     document.getElementById('delete-form-' + productId).submit();
+                }
+            })
+        }
+
+        function getSelectedIds() {
+            let ids = [];
+            document.querySelectorAll('.product-checkbox:checked').forEach(checkbox => {
+                ids.push(checkbox.value);
+            });
+            return ids;
+        }
+
+        function bulkDelete() {
+            const ids = getSelectedIds();
+            if (ids.length === 0) {
+                Swal.fire('No selection', 'Please select at least one product.', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete ${ids.length} products!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete selected!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.post("{{ route('products.bulk_delete') }}", {
+                        ids: ids
+                    }).then(response => {
+                        if (response.data.success) {
+                            Swal.fire('Deleted!', response.data.message, 'success').then(() => {
+                                window.location.reload();
+                            });
+                        }
+                    }).catch(error => {
+                        console.error(error);
+                        Swal.fire('Error', 'Something went wrong while deleting products.', 'error');
+                    });
+                }
+            })
+        }
+
+        function bulkUpdateStatus(status) {
+            const ids = getSelectedIds();
+            if (ids.length === 0) {
+                Swal.fire('No selection', 'Please select at least one product.', 'info');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Confirm status update?',
+                text: `You are about to update the status of ${ids.length} products to "${status}".`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#aaa',
+                confirmButtonText: 'Yes, update status'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.post("{{ route('products.bulk_update_status') }}", {
+                        ids: ids,
+                        status: status
+                    }).then(response => {
+                        if (response.data.success) {
+                            Swal.fire('Updated!', response.data.message, 'success').then(() => {
+                                window.location.reload();
+                            });
+                        }
+                    }).catch(error => {
+                        console.error(error);
+                        Swal.fire('Error', 'Something went wrong while updating product status.', 'error');
+                    });
                 }
             })
         }

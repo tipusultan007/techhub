@@ -48,7 +48,13 @@ class ProductController extends Controller
             $query->where('brand_id', $request->brand_id);
         }
 
-        $products = $query->latest()->paginate(15)->withQueryString();
+        // Filter by Status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $perPage = $request->get('per_page', 15);
+        $products = $query->latest()->paginate($perPage)->withQueryString();
         
         $categories = Category::select('id', 'name')->orderBy('name')->get();
         $brands = Brand::select('id', 'name')->orderBy('name')->get();
@@ -451,19 +457,39 @@ class ProductController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+            'file' => 'required|mimes:xlsx,xls,csv',
         ]);
 
         try {
             Excel::import(new ProductsImport, $request->file('file'));
-            
-            $this->logActivity('Product', 'Create', "Imported products via Excel", [
-                'filename' => $request->file('file')->getClientOriginalName(),
-            ]);
-
-            return redirect()->route('products.index')->with('success', 'Products imported successfully!');
+            return redirect()->route('products.index')->with('success', 'Products imported successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Import failed: ' . $e->getMessage());
+            return back()->with('error', 'Error importing products: ' . $e->getMessage());
         }
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:products,id'
+        ]);
+
+        Product::whereIn('id', $request->ids)->delete();
+
+        return response()->json(['success' => true, 'message' => 'Selected products deleted successfully.']);
+    }
+
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:products,id',
+            'status' => 'required|in:draft,published'
+        ]);
+
+        Product::whereIn('id', $request->ids)->update(['status' => $request->status]);
+
+        return response()->json(['success' => true, 'message' => 'Status updated successfully for selected products.']);
     }
 }

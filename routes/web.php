@@ -141,6 +141,8 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::get('/products/import', [ProductController::class, 'importForm'])->name('products.import.form');
         Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
 
+        Route::post('/products/bulk-delete', [ProductController::class, 'bulkDestroy'])->name('products.bulk_delete');
+        Route::post('/products/bulk-update-status', [ProductController::class, 'bulkUpdateStatus'])->name('products.bulk_update_status');
         Route::resource('products', ProductController::class);
         Route::resource('brands', BrandController::class);
         Route::resource('categories', CategoryController::class);
