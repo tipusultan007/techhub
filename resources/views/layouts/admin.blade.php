@@ -8,10 +8,8 @@
 
     <title>{{ settings('site_name', 'Tech Hub') }} Admin</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    @vite(['resources/js/app.js'])
+    <!-- Tailwind CSS & Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">

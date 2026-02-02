@@ -23,8 +23,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
-    <!-- Tailwind CSS (for modern UI components) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS & Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <link rel="stylesheet" href="{{ asset('frontend/css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
