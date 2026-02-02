@@ -93,7 +93,7 @@
             @endif
         </div>
 
-        <div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto">
+        <div class="flex flex-wrap gap-2 justify-end w-full md:w-auto">
             <!-- Reset Button Moved Here -->
             <a href="{{ route('products.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded shadow flex items-center text-sm">
                 <i class="fas fa-undo mr-1"></i> Reset
@@ -101,7 +101,7 @@
 
             <!-- Bulk Actions Dropdown -->
             <div class="relative inline-block text-left" x-data="{ open: false }">
-                <button type="button" @click="open = !open" class="bg-slate-700 text-white px-4 py-2 rounded shadow hover:bg-slate-600 font-bold text-sm flex items-center">
+                <button type="button" @click="open = !open" class="bg-slate-700 text-white px-4 py-2 rounded shadow hover:bg-slate-600 font-bold text-sm flex items-center whitespace-nowrap">
                     <i class="fas fa-tasks mr-2"></i> Bulk Actions <i class="fas fa-chevron-down ml-2 text-xs"></i>
                 </button>
                 <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
