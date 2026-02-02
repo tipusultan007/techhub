@@ -80,8 +80,20 @@
     </div>
 
     <!-- Top Action Bar (Print and Add) -->
-    <div class="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
-        <div class="flex gap-2">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div class="flex items-center gap-2">
+            <div class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg border border-gray-200 flex items-center gap-2 shadow-sm">
+                <i class="fas fa-layer-group text-slate-400"></i>
+                <span class="text-xs font-bold uppercase tracking-wider">Total Products:</span>
+                <span class="text-sm font-black text-blue-600">{{ $products->total() }}</span>
+            </div>
+            
+            @if(request()->anyFilled(['search', 'type', 'category_id', 'brand_id', 'status']))
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">(Filtered Results)</span>
+            @endif
+        </div>
+
+        <div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto">
             <!-- Reset Button Moved Here -->
             <a href="{{ route('products.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded shadow flex items-center text-sm">
                 <i class="fas fa-undo mr-1"></i> Reset
