@@ -58,6 +58,7 @@
                         <a href="{{ route('purchases.print', $order->id) }}" target="_blank" class="text-gray-500 hover:text-gray-900 mr-3" title="Print Invoice">
                             <i class="fas fa-print"></i>
                         </a>
+                        @if(auth()->user()->hasRole('Super Admin'))
                         <form action="{{ route('purchases.destroy', $order->id) }}" method="POST" class="inline-block">
                             @csrf
                             @method('DELETE')
@@ -74,6 +75,7 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
+                        @endif
                     </td>
                 </tr>
                 @empty

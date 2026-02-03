@@ -122,15 +122,24 @@
                     </div>
                 </div>
 
-                <!-- Featured Checkbox -->
-                <div class="flex items-start mt-4">
-                    <div class="flex items-center h-5">
-                        <input id="is_featured" name="is_featured" value="1" type="checkbox"
-                               {{ $category->is_featured ? 'checked' : '' }}
-                               class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                <!-- Priority & Featured -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="is_featured" name="is_featured" value="1" type="checkbox"
+                                   {{ $category->is_featured ? 'checked' : '' }}
+                                   class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="is_featured" class="font-medium text-gray-700">Feature on Homepage</label>
+                        </div>
                     </div>
-                    <div class="ml-3 text-sm">
-                        <label for="is_featured" class="font-medium text-gray-700">Feature on Homepage</label>
+
+                    <div class="flex items-center space-x-3">
+                        <label for="priority" class="text-sm font-bold text-gray-700 whitespace-nowrap">Display Priority</label>
+                        <input type="number" name="priority" id="priority" value="{{ old('priority', $category->priority) }}" min="0"
+                               class="block w-24 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
+                        <p class="text-xs text-gray-400">(Lower = First)</p>
                     </div>
                 </div>
 

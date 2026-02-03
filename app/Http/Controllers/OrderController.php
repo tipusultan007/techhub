@@ -299,13 +299,36 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
-        // Prevent accidental deletion of completed orders (Optional safety check)
-         if ($order->status === 'completed') {
+        // 1. Authorization: Only Super Admin can delete
+        if (!auth()->user()->hasRole('Super Admin')) {
+            return back()->with('error', 'Only Super Admin can delete sales orders.');
+        }
+
+        // 2. Bypass restriction for Super Admin
+        // Prevent accidental deletion of completed orders for others
+        if ($order->status === 'completed' && !auth()->user()->hasRole('Super Admin')) {
              return back()->with('error', 'Cannot delete a completed order. Please mark as returned instead.');
-         }
+        }
 
         try {
             DB::transaction(function () use ($order) {
+                // 0. Delete Related Returns & Revert their stock addition
+                $returns = \App\Models\ReturnOrder::with('items')->where('order_id', $order->id)->get();
+                foreach ($returns as $return) {
+                    foreach ($return->items as $rItem) {
+                        if ($rItem->restock_status === 'restockable') {
+                            if ($rItem->product_variant_id) {
+                                $variant = \App\Models\ProductVariant::find($rItem->product_variant_id);
+                                if ($variant) $variant->decrement('stock_quantity', $rItem->quantity);
+                            } else {
+                                $product = \App\Models\Product::find($rItem->product_id);
+                                if ($product) $product->decrement('stock_quantity', $rItem->quantity);
+                            }
+                        }
+                    }
+                    $return->items()->delete();
+                    $return->delete();
+                }
 
                 // 1. Restock Inventory
                 foreach ($order->items as $item) {

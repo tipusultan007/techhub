@@ -45,12 +45,14 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.frontend', function ($view) {
             // Get only Top Level categories (Parent is null)
             $categories = Category::whereNull('parent_id')
-                ->orderBy('id', 'asc')
+                ->orderBy('priority', 'asc')
+                ->orderBy('name', 'asc')
                 ->get();
 
             // Footer Data
             $footerCategories = Category::whereNull('parent_id')
-                ->orderBy('id', 'asc')
+                ->orderBy('priority', 'asc')
+                ->orderBy('name', 'asc')
                 ->take(5)
                 ->get();
             

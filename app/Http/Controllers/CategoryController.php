@@ -11,7 +11,10 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::with('parent')->latest()->get();
+        $categories = Category::with('parent')
+            ->orderBy('priority', 'asc')
+            ->orderBy('name', 'asc')
+            ->get();
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -31,6 +34,7 @@ class CategoryController extends Controller
             'icon_class'  => $request->icon_class,
             // Convert checkbox "on"/null to boolean true/false
             'is_featured' => $request->boolean('is_featured'),
+            'priority'    => $request->priority ?? 0,
         ]);
 
         // 2. Handle Image Upload (Spatie)
@@ -58,6 +62,7 @@ class CategoryController extends Controller
             'parent_id'   => $request->parent_id,
             'icon_class'  => $request->icon_class,
             'is_featured' => $request->boolean('is_featured'),
+            'priority'    => $request->priority ?? 0,
         ]);
 
         // 2. Handle Image Upload
@@ -71,11 +76,14 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if($category->children()->exists()) {
+        if ($category->children()->exists()) {
             return back()->with('error', 'Cannot delete category because it has sub-categories attached.');
         }
 
+        // Unset category_id for all related products (Requirement)
+        \App\Models\Product::where('category_id', $category->id)->update(['category_id' => null]);
+
         $category->delete();
-        return redirect()->route('categories.index')->with('success', 'Category deleted.');
+        return redirect()->route('categories.index')->with('success', 'Category deleted. Related products are now uncategorized.');
     }
 }

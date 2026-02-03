@@ -50,7 +50,10 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
+        // Unset brand_id for all related products
+        \App\Models\Product::where('brand_id', $brand->id)->update(['brand_id' => null]);
+
         $brand->delete(); // Spatie automatically cleans up files
-        return redirect()->route('brands.index')->with('success', 'Brand deleted.');
+        return redirect()->route('brands.index')->with('success', 'Brand deleted. Related products are now unbranded.');
     }
 }

@@ -52,10 +52,15 @@
                         <a href="{{ route('suppliers.edit', $supplier) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <form action="{{ route('suppliers.destroy', $supplier) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure? This cannot be undone.')">
+                        <form action="{{ route('suppliers.destroy', $supplier) }}" method="POST" class="inline-block">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
+                            <button type="submit" class="text-red-600 hover:text-red-900 btn-delete-confirm"
+                                title="Delete"
+                                data-title="Delete Supplier: {{ $supplier->name }}?"
+                                data-type="Supplier"
+                                data-summary='{"Purchase Orders": "{{ $supplier->purchaseOrders()->count() }}"}'
+                            >
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>

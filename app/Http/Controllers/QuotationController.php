@@ -425,10 +425,20 @@ class QuotationController extends Controller
 
     public function destroy(Quotation $quotation)
     {
-        if ($quotation->status === 'converted') {
+        if (!auth()->user()->hasRole('Super Admin')) {
+            return back()->with('error', 'Only Super Admin can delete quotations.');
+        }
+
+        if ($quotation->status === 'converted' && !auth()->user()->hasRole('Super Admin')) {
             return back()->with('error', 'Cannot delete a quotation that has already been converted to a sale.');
         }
         
+        // Delete related delivery challans
+        foreach ($quotation->deliveryChallans as $challan) {
+            $challan->items()->delete();
+            $challan->delete();
+        }
+
         $this->logActivity('Quotation', 'Delete', "Deleted Quotation #{$quotation->quotation_no}", [
             'quotation_no' => $quotation->quotation_no,
         ]);

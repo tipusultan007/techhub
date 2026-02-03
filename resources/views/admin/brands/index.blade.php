@@ -39,12 +39,21 @@
                     {{ $brand->updated_at->diffForHumans() }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="{{ route('brands.edit', $brand) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                    <a href="{{ route('brands.edit', $brand) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </a>
                     
-                    <form action="{{ route('brands.destroy', $brand) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this brand?');">
+                    <form action="{{ route('brands.destroy', $brand) }}" method="POST" class="inline-block">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                        <button type="submit" class="text-red-600 hover:text-red-900 btn-delete-confirm"
+                            title="Delete"
+                            data-title="Delete Brand: {{ $brand->name }}?"
+                            data-type="Brand"
+                            data-summary='{"Products": "{{ $brand->products()->count() }}"}'
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </form>
                 </td>
             </tr>

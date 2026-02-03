@@ -149,6 +149,7 @@
                                 @csrf
                             </form>
                             @endif
+                            @if(auth()->user()->hasRole('Super Admin'))
                             <form action="{{ route('quotations.destroy', $quo->id) }}" method="POST" class="inline-block">
                                 @csrf
                                 @method('DELETE')
@@ -165,6 +166,7 @@
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
+                            @endif
                         </div>
                     </td>
                 </tr>

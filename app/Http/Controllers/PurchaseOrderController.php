@@ -513,13 +513,40 @@ class PurchaseOrderController extends Controller
     {
         $purchase = PurchaseOrder::with('items')->findOrFail($id);
 
-        // Restriction: Cannot delete if items were received or status is completed
-        if ($purchase->status === 'completed' || $purchase->items->sum('received_quantity') > 0) {
+        if (!auth()->user()->hasRole('Super Admin')) {
+            return back()->with('error', 'Only Super Admin can delete purchase orders.');
+        }
+
+        // Restriction: Cannot delete if items were received or status is completed (Unless Super Admin)
+        if (($purchase->status === 'completed' || $purchase->items->sum('received_quantity') > 0) && !auth()->user()->hasRole('Super Admin')) {
             return back()->with('error', 'Cannot delete this purchase order because items have already been received or the order is marked as completed.');
         }
 
         try {
             DB::transaction(function () use ($purchase) {
+                // 1. Destock received items
+                foreach ($purchase->items as $item) {
+                    if ($item->received_quantity > 0) {
+                        if ($item->product_variant_id) {
+                            $variant = \App\Models\ProductVariant::find($item->product_variant_id);
+                            if ($variant) {
+                                $variant->decrement('stock_quantity', $item->received_quantity);
+                            }
+                        } else {
+                            $product = \App\Models\Product::find($item->product_id);
+                            if ($product) {
+                                $product->decrement('stock_quantity', $item->received_quantity);
+                            }
+                        }
+                    }
+                }
+
+                // 2. Delete related receptions
+                foreach ($purchase->receptions as $reception) {
+                    $reception->items()->delete();
+                    $reception->delete();
+                }
+
                 $purchase->items()->delete();
                 $purchase->delete();
             });

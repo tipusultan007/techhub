@@ -177,6 +177,7 @@
                     </a>
 
                     <!-- Delete Order -->
+                    @if(auth()->user()->hasRole('Super Admin'))
                     <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline-block">
                         @csrf
                         @method('DELETE')
@@ -193,6 +194,7 @@
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>
+                    @endif
                 </td>
             </tr>
             @empty

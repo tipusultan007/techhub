@@ -17,6 +17,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
         </thead>
@@ -46,19 +47,31 @@
                         </span>
                     @endif
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                    <span class="px-3 py-1 bg-gray-100 rounded-lg font-bold text-gray-700">{{ $category->priority }}</span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="{{ route('categories.edit', $category) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                    <a href="{{ route('categories.edit', $category) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </a>
                     
-                    <form action="{{ route('categories.destroy', $category) }}" method="POST" class="inline-block" onsubmit="return confirm('Delete this category?');">
+                    <form action="{{ route('categories.destroy', $category) }}" method="POST" class="inline-block">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                        <button type="submit" class="text-red-600 hover:text-red-900 btn-delete-confirm"
+                            title="Delete"
+                            data-title="Delete Category: {{ $category->name }}?"
+                            data-type="Category"
+                            data-summary='{"Products": "{{ $category->products()->count() }}", "Sub-Categories": "{{ $category->children()->count() }}"}'
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </form>
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="px-6 py-4 text-center text-gray-500">No categories found.</td>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500">No categories found.</td>
             </tr>
             @endforelse
         </tbody>

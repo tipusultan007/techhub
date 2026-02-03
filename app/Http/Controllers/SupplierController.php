@@ -91,14 +91,51 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier)
     {
-        // Prevent deletion if supplier has history
-        if ($supplier->purchaseOrders()->exists()) {
-            return back()->with('error', 'Cannot delete this supplier because they have existing Purchase Orders. Delete the orders first.');
+        if (!auth()->user()->hasRole('Super Admin')) {
+            // Prevent deletion if supplier has history
+            if ($supplier->purchaseOrders()->exists()) {
+                return back()->with('error', 'Cannot delete this supplier because they have existing Purchase Orders. Contact Super Admin for force deletion.');
+            }
         }
 
-        $supplier->delete();
+        try {
+            \DB::transaction(function () use ($supplier) {
+                // 1. Delete Purchase Orders and related data (Cascading)
+                // We need to destock items before deleting
+                $pos = $supplier->purchaseOrders()->with('items')->get();
+                foreach ($pos as $po) {
+                    // Revert Stock
+                    foreach ($po->items as $item) {
+                        if ($item->received_quantity > 0) {
+                            if ($item->product_variant_id) {
+                                $variant = \App\Models\ProductVariant::find($item->product_variant_id);
+                                if ($variant) $variant->decrement('stock_quantity', $item->received_quantity);
+                            } else {
+                                $product = \App\Models\Product::find($item->product_id);
+                                if ($product) $product->decrement('stock_quantity', $item->received_quantity);
+                            }
+                        }
+                    }
 
-        return redirect()->route('suppliers.index')
-                         ->with('success', 'Supplier deleted successfully.');
+                    // Delete Receptions
+                    $receptions = \App\Models\PurchaseReception::where('purchase_order_id', $po->id)->get();
+                    foreach ($receptions as $reception) {
+                        $reception->items()->delete();
+                        $reception->delete();
+                    }
+
+                    // Delete PO Items and PO
+                    $po->items()->delete();
+                    $po->delete();
+                }
+
+                $supplier->delete();
+            });
+
+            return redirect()->route('suppliers.index')
+                             ->with('success', 'Supplier and all related purchase data deleted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error deleting supplier: ' . $e->getMessage());
+        }
     }
 }

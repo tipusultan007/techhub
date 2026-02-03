@@ -17,7 +17,8 @@ class Category extends Model implements HasMedia
         'slug',
         'parent_id',
         'icon_class',
-        'is_featured'
+        'is_featured',
+        'priority'
     ];
 
     /**
@@ -34,7 +35,7 @@ class Category extends Model implements HasMedia
      */
     public function children(): HasMany
     {
-        return $this->hasMany(Category::class, 'parent_id');
+        return $this->hasMany(Category::class, 'parent_id')->orderBy('priority', 'asc')->orderBy('name', 'asc');
     }
 
     /**

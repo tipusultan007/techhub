@@ -10,8 +10,11 @@ use App\Models\User;
 use App\Notifications\NewCustomerNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+use App\Traits\LogsActivity;
+
 class CustomerController extends Controller
 {
+    use LogsActivity;
     /**
      * Display a listing of customers.
      */
@@ -106,14 +109,91 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        // Prevent deletion if customer has orders (Data Integrity)
-        if ($customer->orders()->exists()) {
-            return back()->with('error', 'Cannot delete customer. They have existing sales records.');
+        if (!auth()->user()->hasRole('Super Admin')) {
+            return back()->with('error', 'Only Super Admin can delete customers.');
         }
 
-        $customer->delete();
+        try {
+            \DB::transaction(function () use ($customer) {
+                // 1. Delete Orders and related data (with restocking)
+                foreach ($customer->orders as $order) {
+                    // Restock Inventory
+                    foreach ($order->items as $item) {
+                        if ($item->product_variant_id) {
+                            $variant = \App\Models\ProductVariant::find($item->product_variant_id);
+                            if ($variant) {
+                                $variant->increment('stock_quantity', $item->quantity);
+                            }
+                        } else {
+                            $product = \App\Models\Product::find($item->product_id);
+                            if ($product) {
+                                $product->increment('stock_quantity', $item->quantity);
+                            }
+                        }
+                    }
 
-        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
+                    // Delete return items and returns (with destocking)
+                    $returns = \App\Models\ReturnOrder::with('items')->where('order_id', $order->id)->get();
+                    foreach ($returns as $return) {
+                        foreach ($return->items as $rItem) {
+                            if ($rItem->restock_status === 'restockable') {
+                                if ($rItem->product_variant_id) {
+                                    $variant = \App\Models\ProductVariant::find($rItem->product_variant_id);
+                                    if ($variant) $variant->decrement('stock_quantity', $rItem->quantity);
+                                } else {
+                                    $product = \App\Models\Product::find($rItem->product_id);
+                                    if ($product) $product->decrement('stock_quantity', $rItem->quantity);
+                                }
+                            }
+                        }
+                        $return->items()->delete();
+                        $return->delete();
+                    }
+                    
+                    // Delete order items and history
+                    $order->items()->delete();
+                    $order->history()->delete();
+                    $order->delete();
+                }
+
+                // 2. Delete Quotations and related data
+                foreach ($customer->quotations as $quotation) {
+                    // Delete delivery challan items and challans
+                    foreach ($quotation->deliveryChallans as $challan) {
+                        $challan->items()->delete();
+                        $challan->delete();
+                    }
+                    
+                    // Delete quotation items
+                    $quotation->items()->delete();
+                    $quotation->delete();
+                }
+
+                // 3. Delete leftover Delivery Challans (manual ones not linked to quotations)
+                foreach ($customer->deliveryChallans as $challan) {
+                    $challan->items()->delete();
+                    $challan->delete();
+                }
+
+                // 4. Delete Addresses and Wishlist
+                $customer->addresses()->delete();
+                \App\Models\Wishlist::where('customer_id', $customer->id)->delete();
+
+                // 5. Delete Customer
+                $customerName = $customer->name;
+                $customer->delete();
+
+                $this->logActivity('Customer', 'Delete', "Deleted Customer: {$customerName} and all related records.", [
+                    'customer_name' => $customerName
+                ]);
+            });
+
+            return redirect()->route('customers.index')->with('success', 'Customer and all related records deleted successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error("Error deleting customer #{$customer->id}: " . $e->getMessage());
+            return back()->with('error', 'Something went wrong while deleting the customer.');
+        }
     }
 
     public function dashboard()

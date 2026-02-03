@@ -351,6 +351,10 @@ class DeliveryChallanController extends Controller
 
     public function destroy($id)
     {
+        if (!auth()->user()->hasRole('Super Admin')) {
+            return back()->with('error', 'Only Super Admin can delete delivery challans.');
+        }
+
         try {
             DB::beginTransaction();
 
