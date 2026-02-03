@@ -97,6 +97,10 @@ Route::group(['middleware' => ['maintenance']], function () {
     Route::post('/cart/coupon/apply', [App\Http\Controllers\CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
     Route::post('/cart/coupon/remove', [App\Http\Controllers\CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 
+    // Contact Page
+    Route::get('/contact', [App\Http\Controllers\ContactMessageController::class, 'index'])->name('contact');
+    Route::post('/contact', [App\Http\Controllers\ContactMessageController::class, 'store'])->name('contact.store');
+
     // Public Dynamic Pages (MUST BE LAST)
     Route::get('/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('pages.show');
 });
@@ -284,6 +288,11 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
             'update' => 'coupons.admin.update',
             'destroy' => 'coupons.admin.destroy',
         ]);
+
+        // Contact Messages Management
+        Route::get('/contact-messages', [App\Http\Controllers\ContactMessageController::class, 'adminIndex'])->name('admin.contact_messages.index');
+        Route::get('/contact-messages/{message}', [App\Http\Controllers\ContactMessageController::class, 'adminShow'])->name('admin.contact_messages.show');
+        Route::delete('/contact-messages/{message}', [App\Http\Controllers\ContactMessageController::class, 'adminDestroy'])->name('admin.contact_messages.destroy');
 
         // Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');

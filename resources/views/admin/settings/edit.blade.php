@@ -541,6 +541,28 @@
                             <p class="text-xs text-slate-400 mt-2 font-medium">Found in Facebook Events Manager under Settings.</p>
                         </div>
                     </div>
+
+                    <!-- Google reCAPTCHA -->
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-2xl font-black text-slate-900 tracking-tight">Google reCAPTCHA v2</h3>
+                            <p class="text-slate-500 font-medium">Protect your site from spam and bot submissions.</p>
+                        </div>
+                        <div class="h-px bg-slate-100 w-full"></div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Site Key</label>
+                                <input type="text" name="recaptcha_site_key" value="{{ settings('recaptcha_site_key') }}" placeholder="Enter your reCAPTCHA Site Key" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2dae9a] focus:ring-0 shadow-sm transition">
+                                <p class="text-xs text-slate-400 mt-2 font-medium">Displayed in the HTML of your site.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Secret Key</label>
+                                <input type="password" name="recaptcha_secret_key" value="{{ settings('recaptcha_secret_key') }}" placeholder="Enter your reCAPTCHA Secret Key" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2dae9a] focus:ring-0 shadow-sm transition">
+                                <p class="text-xs text-slate-400 mt-2 font-medium">Used for backend verification. Never share this.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 9. SMTP TAB -->

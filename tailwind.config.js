@@ -14,6 +14,14 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                brand: {
+                    navy: '#024959',
+                    emerald: '#2dae9a',
+                    teal: '#037F8C',
+                    magenta: '#e11d48', // Using a vibrant rose/magenta for accents
+                }
+            }
         },
     },
 

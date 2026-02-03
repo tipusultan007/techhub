@@ -300,6 +300,11 @@
                 </a>
                 @endcan
 
+                <a href="{{ route('admin.contact_messages.index') }}"
+                   class="sidebar-item {{ request()->routeIs('admin.contact_messages.*') ? 'active' : '' }}">
+                    <i class="fas fa-envelope-open-text"></i> <span>Contact Messages</span>
+                </a>
+
 
 
                 @can('manage pages')
