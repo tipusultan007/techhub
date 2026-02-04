@@ -10,6 +10,7 @@ use App\Models\Quotation;
 use App\Models\QuotationItem;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\InventoryTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -387,6 +388,18 @@ class QuotationController extends Controller
                             $product->decrement('stock_quantity', $item->quantity);
                         }
                     }
+
+                    // Log Inventory Transaction (Conversion Out)
+                    InventoryTransaction::create([
+                        'product_id' => $item->product_id,
+                        'product_variant_id' => $item->product_variant_id,
+                        'type' => 'out',
+                        'quantity' => $item->quantity,
+                        'description' => "Quotation Conversion: {$quotation->quotation_no} -> {$order->invoice_no}",
+                        'reference_id' => $order->id,
+                        'reference_type' => get_class($order),
+                        'user_id' => Auth::id(),
+                    ]);
                 }
 
                 OrderItem::create([

@@ -14,6 +14,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
@@ -114,6 +115,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
 
     // --- COMMON BACKEND ROUTES ---
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/inventory/transactions', [InventoryController::class, 'transactions'])->name('inventory.transactions');
 
     // Notifications
     Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
@@ -170,6 +172,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
 
         // Customers & Returns
         Route::resource('customers', CustomerController::class);
+        Route::get('/returns/search-orders', [ReturnController::class, 'searchOrders'])->name('returns.search-orders');
         Route::post('/returns/find-order', [ReturnController::class, 'findOrder'])->name('returns.find');
         Route::resource('returns', ReturnController::class)->except(['edit', 'update', 'destroy']);
 

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\InventoryTransaction;
 use App\Notifications\NewOrderNotification;
 use App\Notifications\LowStockNotification;
 use App\Notifications\OrderConfirmationNotification;
@@ -290,6 +291,18 @@ class PosController extends Controller
                 if ($variant->stock_quantity <= $variant->alert_quantity) {
                     User::role('Admin')->get()->each->notify(new LowStockNotification($variant->product, $variant->stock_quantity));
                 }
+
+                // Log Inventory Transaction
+                InventoryTransaction::create([
+                    'product_id' => $variant->product_id,
+                    'product_variant_id' => $variant->id,
+                    'type' => 'out',
+                    'quantity' => $item['qty'],
+                    'description' => 'POS Sale: ' . $order->invoice_no,
+                    'reference_id' => $order->id,
+                    'reference_type' => get_class($order),
+                    'user_id' => Auth::id(),
+                ]);
             } elseif (!empty($item['id'])) {
                 // Simple or Service Product
                 $product = Product::lockForUpdate()->find($item['id']);
@@ -304,6 +317,17 @@ class PosController extends Controller
                     if ($product->stock_quantity <= $product->alert_quantity) {
                         User::role('Admin')->get()->each->notify(new LowStockNotification($product, $product->stock_quantity));
                     }
+
+                    // Log Inventory Transaction
+                    InventoryTransaction::create([
+                        'product_id' => $product->id,
+                        'type' => 'out',
+                        'quantity' => $item['qty'],
+                        'description' => 'POS Sale: ' . $order->invoice_no,
+                        'reference_id' => $order->id,
+                        'reference_type' => get_class($order),
+                        'user_id' => Auth::id(),
+                    ]);
                 }
                 
                 $productNameSnapshot = $item['name'] ?? $product->name;

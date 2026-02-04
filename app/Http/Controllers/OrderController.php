@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\InventoryTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\OrderStatusUpdateNotification;
@@ -120,6 +121,18 @@ class OrderController extends Controller
                         } else {
                             Product::where('id', $oldItem->product_id)->increment('stock_quantity', $oldItem->quantity);
                         }
+
+                        // Log Inventory Transaction (Restore)
+                        InventoryTransaction::create([
+                            'product_id' => $oldItem->product_id,
+                            'product_variant_id' => $oldItem->product_variant_id,
+                            'type' => 'in',
+                            'quantity' => $oldItem->quantity,
+                            'description' => 'Order Update (Restore): ' . $order->invoice_no,
+                            'reference_id' => $order->id,
+                            'reference_type' => get_class($order),
+                            'user_id' => auth()->id(),
+                        ]);
                     }
                 }
 
@@ -183,6 +196,18 @@ class OrderController extends Controller
                                 $product->decrement('stock_quantity', $qty);
                             }
                         }
+
+                        // Log Inventory Transaction (Deduct)
+                        InventoryTransaction::create([
+                            'product_id' => $orderItem->product_id,
+                            'product_variant_id' => $orderItem->product_variant_id,
+                            'type' => 'out',
+                            'quantity' => $qty,
+                            'description' => 'Order Update (Deduct): ' . $order->invoice_no,
+                            'reference_id' => $order->id,
+                            'reference_type' => get_class($order),
+                            'user_id' => auth()->id(),
+                        ]);
                     }
 
                     $totalTax += $rowTaxAmount;
@@ -344,6 +369,18 @@ class OrderController extends Controller
                             $product->increment('stock_quantity', $item->quantity);
                         }
                     }
+
+                    // Log Inventory Transaction (Restore on Delete)
+                    InventoryTransaction::create([
+                        'product_id' => $item->product_id,
+                        'product_variant_id' => $item->product_variant_id,
+                        'type' => 'in',
+                        'quantity' => $item->quantity,
+                        'description' => 'Order Deletion: ' . $order->invoice_no,
+                        'reference_id' => $order->id,
+                        'reference_type' => get_class($order),
+                        'user_id' => auth()->id(),
+                    ]);
                 }
 
                 // 2. Delete Related Data (History/Logs)

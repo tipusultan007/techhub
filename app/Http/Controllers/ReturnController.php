@@ -8,6 +8,7 @@ use App\Models\ReturnItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductSerial;
+use App\Models\InventoryTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,32 @@ public function index()
         return view('admin.returns.create');
     }
 
+    public function searchOrders(Request $request)
+    {
+        $term = $request->term;
+        $orders = Order::select('id', 'invoice_no', 'customer_name', 'created_at', 'total')
+            ->where('status', '!=', 'cancelled')
+            ->where(function($q) use ($term) {
+                $q->where('invoice_no', 'LIKE', "%$term%")
+                  ->orWhere('customer_name', 'LIKE', "%$term%");
+            })
+            ->latest()
+            ->take(20)
+            ->get();
+
+        $results = $orders->map(function($order) {
+            return [
+                'id' => $order->invoice_no, // We use invoice_no as ID because the existing findOrder expects it
+                'text' => $order->invoice_no . ' (' . ($order->customer_name ?? 'Guest') . ')',
+                'customer' => $order->customer_name ?? 'Guest',
+                'date' => $order->created_at->format('d M Y'),
+                'total' => number_format($order->total, 2)
+            ];
+        });
+
+        return response()->json($results);
+    }
+
     // Find the order and show items available for return
     public function findOrder(Request $request) {
         $order = Order::with('items.product')->where('invoice_no', $request->invoice_no)->first();
@@ -48,38 +75,41 @@ public function index()
     {
         $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'items' => 'required|array|min:1',
-            'items.*.qty' => 'required|numeric|min:1',
+            'items' => 'required|array',
+            'items.*.qty' => 'required|numeric|min:0',
         ]);
 
         try {
             DB::beginTransaction();
 
             $order = Order::findOrFail($request->order_id);
-            $totalRefund = 0;
+            // $totalRefund = 0; // This line is removed as it's re-declared below
 
-            // 1. Create Return Header
+            // 3. Create Return records
             $return = ReturnOrder::create([
                 'order_id' => $order->id,
-                'credit_note_no' => 'CRN-' . time(), // Simple generator
-                'total_refund' => 0, // Calculated below
+                'user_id' => auth()->id(),
                 'reason' => $request->reason,
-                'user_id' => Auth::id()
+                'total_refund' => 0, // Will update below
+                'credit_note_no' => 'CN-' . time(), // Temporary logic, consider a better generator
             ]);
 
-            // 2. Process each returned item
+            $totalRefund = 0;
+            $returnedAny = false;
             foreach ($request->items as $orderItemId => $data) {
-                $originalItem = $order->items()->find($orderItemId);
+                if (($data['qty'] ?? 0) <= 0) continue;
+                $returnedAny = true;
+
+                $originalItem = $order->items()->findOrFail($orderItemId);
                 
                 // Security: ensure not returning more than purchased
-                if($data['qty'] > $originalItem->quantity) {
-                    throw new \Exception('Cannot return more items than were purchased.');
+                if ($data['qty'] > $originalItem->quantity) {
+                    throw new \Exception("Cannot return more than purchased for product: " . $originalItem->product_name);
                 }
-                
-                $subtotal = $data['qty'] * $originalItem->unit_price;
-                $totalRefund += $subtotal;
 
-                // Create Return Item record
+                $itemSubtotal = $originalItem->unit_price * $data['qty'];
+                $totalRefund += $itemSubtotal;
+
                 ReturnItem::create([
                     'return_id' => $return->id,
                     'order_item_id' => $originalItem->id,
@@ -87,11 +117,11 @@ public function index()
                     'product_variant_id' => $originalItem->product_variant_id,
                     'quantity' => $data['qty'],
                     'unit_price' => $originalItem->unit_price,
-                    'subtotal' => $subtotal,
-                    'restock_status' => $data['status']
+                    'subtotal' => $itemSubtotal,
+                    'restock_status' => $data['status'],
                 ]);
 
-                // 3. Update Inventory & Serials
+                // 3. Update Inventory (if restockable)
                 if ($data['status'] === 'restockable') {
                     // Add stock back
                     if ($originalItem->product_variant_id) {
@@ -99,6 +129,16 @@ public function index()
                     } else {
                         Product::find($originalItem->product_id)->increment('stock_quantity', $data['qty']);
                     }
+                    
+                    // Log transaction
+                    InventoryTransaction::create([
+                        'product_id' => $originalItem->product_id,
+                        'type' => 'in',
+                        'quantity' => $data['qty'],
+                        'description' => 'Return: ' . $return->credit_note_no,
+                        'reference_id' => $return->id,
+                        'reference_type' => get_class($return),
+                    ]);
                 }
                 
                 // If it was a serialized item, update its status
@@ -106,6 +146,10 @@ public function index()
                     ProductSerial::where('serial_number', $originalItem->serial_numbers)
                         ->update(['status' => $data['status'] === 'restockable' ? 'available' : 'defective']);
                 }
+            }
+
+            if (!$returnedAny) {
+                throw new \Exception('Please select at least one item to return by entering a quantity.');
             }
 
             // 4. Update Return total and Order status

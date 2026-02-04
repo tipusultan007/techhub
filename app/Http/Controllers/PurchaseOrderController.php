@@ -9,6 +9,7 @@ use App\Models\PurchaseReceptionItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Supplier;
+use App\Models\InventoryTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -110,6 +111,18 @@ class PurchaseOrderController extends Controller
                             $product->update(['cost_price' => $item['cost']]);
                         }
                     }
+
+                    // Log Inventory Transaction (Purchase In)
+                    InventoryTransaction::create([
+                        'product_id' => $item['product_id'],
+                        'product_variant_id' => $item['variant_id'] ?? null,
+                        'type' => 'in',
+                        'quantity' => $item['qty'],
+                        'description' => 'Purchase: ' . $po->reference_no,
+                        'reference_id' => $po->id,
+                        'reference_type' => get_class($po),
+                        'user_id' => Auth::id(),
+                    ]);
                 }
             }
 
@@ -305,6 +318,18 @@ class PurchaseOrderController extends Controller
                         $product->update(['cost_price' => $poItem->unit_cost]);
                     }
                 }
+
+                // Log Inventory Transaction (Reception In)
+                InventoryTransaction::create([
+                    'product_id' => $poItem->product_id,
+                    'product_variant_id' => $poItem->product_variant_id,
+                    'type' => 'in',
+                    'quantity' => $qty,
+                    'description' => 'Purchase Reception: ' . $reception->reception_no,
+                    'reference_id' => $reception->id,
+                    'reference_type' => get_class($reception),
+                    'user_id' => Auth::id(),
+                ]);
             }
 
             // Update PO Status
@@ -371,6 +396,18 @@ class PurchaseOrderController extends Controller
                             $product->update(['cost_price' => $item->unit_cost]);
                         }
                     }
+
+                    // Log Inventory Transaction (Completion In)
+                    InventoryTransaction::create([
+                        'product_id' => $item->product_id,
+                        'product_variant_id' => $item->product_variant_id,
+                        'type' => 'in',
+                        'quantity' => $remaining,
+                        'description' => 'Purchase Completion: ' . $po->reference_no,
+                        'reference_id' => $po->id,
+                        'reference_type' => get_class($po),
+                        'user_id' => Auth::id(),
+                    ]);
                 }
             }
 
@@ -538,6 +575,18 @@ class PurchaseOrderController extends Controller
                                 $product->decrement('stock_quantity', $item->received_quantity);
                             }
                         }
+
+                        // Log Inventory Transaction (Reversal Out)
+                        InventoryTransaction::create([
+                            'product_id' => $item->product_id,
+                            'product_variant_id' => $item->product_variant_id,
+                            'type' => 'out',
+                            'quantity' => $item->received_quantity,
+                            'description' => 'Purchase Deletion: ' . $purchase->reference_no,
+                            'reference_id' => $purchase->id,
+                            'reference_type' => get_class($purchase),
+                            'user_id' => auth()->id(),
+                        ]);
                     }
                 }
 

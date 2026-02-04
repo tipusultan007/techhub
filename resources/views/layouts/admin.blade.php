@@ -337,6 +337,11 @@
                     <i class="fas fa-cubes"></i> <span>Stock Evaluation</span>
                 </a>
 
+                <a href="{{ route('inventory.transactions') }}"
+                   class="sidebar-item {{ request()->routeIs('inventory.transactions') ? 'active' : '' }}">
+                    <i class="fas fa-history"></i> <span>Inventory History</span>
+                </a>
+
                 <a href="{{ route('reports.vat') }}"
                    class="sidebar-item {{ request()->routeIs('reports.vat') ? 'active' : '' }}">
                     <i class="fas fa-calculator"></i> <span>VAT & Tax Compliance</span>
