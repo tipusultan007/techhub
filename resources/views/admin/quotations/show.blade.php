@@ -51,7 +51,7 @@
                         <div class="shop-name">{{ settings('shop_name', 'Tech Hub Rak') }}</div>
                     @endif
                     <div class="mt-4 text-sm text-gray-600 space-y-0.5">
-                    <p class="whitespace-pre-line">{{ settings('shop_address', 'Computer Street, Bur Dubai, UAE') }}</p>
+                    <p class="whitespace-pre-line">{!! settings('shop_address', '') !!}</p>
                     <p>Phone: {{ settings('shop_phone', settings('contact_phone', '+971 4 000 0000')) }}</p>
                     <p>Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}</p>
                     <p>TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</p>
