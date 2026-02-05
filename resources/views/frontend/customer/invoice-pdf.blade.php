@@ -45,7 +45,7 @@
                         @else
                             <h1>{{ settings('shop_name', 'TECH HUB') }}</h1>
                         @endif
-                        <p>{{ settings('shop_address', 'Dubai, UAE') }}</p>
+                        <p>{!! settings('shop_address', '') !!}</p>
                         <span>Phone: {{ settings('shop_phone', settings('contact_phone', '+971 00 000 0000')) }}</span><br>
                         <span>Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}</span><br>
                         <p>TRN: {{ settings('shop_trn', '100200300400500') }}</p>

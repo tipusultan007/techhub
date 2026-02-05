@@ -94,11 +94,11 @@
                         <img src="{{ asset(settings('site_logo')) }}" alt="{{ settings('site_name') }}" style="max-height: 60px; margin-bottom: 8px;">
                     @endif
                     <div style="color: #64748b; line-height: 1.4; font-size: 11px;">
-                        <strong>{{ settings('shop_address', 'Dubai, UAE') }}</strong><br>
-                        <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
-                        <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
-                        <strong>Web:</strong> www.techhubrak.ae<br>
-                        <strong>TRN:</strong> {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
+                        {!! settings('shop_address', '') !!}<br>
+                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        Web: www.techhubrak.ae<br>
+                        TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
                     </div>
                 </td>
                 <td style="width: 50%; text-align: right; vertical-align: top;">
@@ -145,9 +145,9 @@
                     <div class="info-box">
                         <div style="font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 4px;">{{ settings('shop_name', 'TECH HUB') }}</div>
                         <div style="color: #64748b; font-size: 11px; line-height: 1.5;">
-                            <strong>{{ settings('shop_address', 'Dubai, United Arab Emirates') }}</strong><br>
-                            <strong>Phone:</strong> {{ settings('contact_phone', settings('shop_phone')) }}<br>
-                            <strong>Email:</strong> {{ settings('contact_email', 'info@techhubrak.ae') }}
+                            {!! settings('shop_address', '') !!}<br>
+                            Phone: {{ settings('contact_phone', settings('shop_phone')) }}<br>
+                            Email: {{ settings('contact_email', 'info@techhubrak.ae') }}
                         </div>
                     </div>
                 </td>

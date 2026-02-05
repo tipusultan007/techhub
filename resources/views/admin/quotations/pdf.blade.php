@@ -261,11 +261,11 @@
                     @endif
                     
                     <div style="font-size: 11px; color: #64748B; line-height: 1.4;">
-                        {{ settings('shop_address', 'Dubai, UAE') }}<br>
-                        <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
-                        <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
-                        <strong>Web:</strong> www.techhubrak.ae<br>
-                        <strong>TRN:</strong> {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
+                        {!! settings('shop_address', '') !!}<br>
+                        Phone: {{ settings('shop_phone', '+971 00 000 0000') }}<br>
+                        Email: {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
+                        Web: www.techhubrak.ae<br>
+                        TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
                     </div>
                 </td>
                 <td style="width: 50%; vertical-align: top; text-align: right;">
