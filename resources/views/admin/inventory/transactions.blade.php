@@ -1,7 +1,21 @@
 @extends('layouts.admin')
 
 @section('title', 'Inventory Transactions')
-
+@push('styles')
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding-top: 4px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+    </style>
+@endpush
 @section('content')
 <div class="content-header mb-6">
     <div class="flex items-center justify-between">
@@ -84,7 +98,7 @@
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex flex-col">
-                        <span class="text-slate-900 font-bold">{{ $transaction->product->name ?? 'N/A' }}</span>
+                        <span class="text-slate-900 font-medium">{{ $transaction->product->name ?? 'N/A' }}</span>
                         @if($transaction->variant)
                             <span class="text-[11px] text-slate-500 font-medium mt-0.5">Variant: {{ $transaction->variant->variant_name }}</span>
                         @endif
@@ -165,6 +179,8 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     $(document).ready(function() {
         $('.select2-basic').select2({
