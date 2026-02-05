@@ -119,7 +119,9 @@
                             <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold uppercase">Submitted</span>
                         @elseif($quo->status == 'converted')
                             <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-bold uppercase">Converted</span>
-                            <div class="text-[10px] text-gray-500 mt-1">Invoice: <a href="{{ route('orders.show', $quo->order_id) }}" class="text-blue-500 underline">{{ $quo->order?->invoice_no }}</a></div>
+                            @if($quo->order)
+                                <div class="text-[10px] text-gray-500 mt-1">Invoice: <a href="{{ route('orders.show', $quo->order_id) }}" class="text-blue-500 underline">{{ $quo->order?->invoice_no }}</a></div>
+                            @endif
                         @else
                             <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-bold uppercase">Cancelled</span>
                         @endif
