@@ -264,8 +264,8 @@
                         <strong>{{ settings('shop_address', 'Dubai, UAE') }}</strong><br>
                         <strong>Phone:</strong> {{ settings('shop_phone', '+971 00 000 0000') }}<br>
                         <strong>Email:</strong> {{ settings('contact_email', 'sales@techhubrak.ae') }}<br>
-                        <strong>Website:</strong> https://techhubrak.ae<br>
-                        <div style="font-weight: 800; color: #1e293b; margin-top: 8px; text-transform: uppercase; font-size: 12px;">TRN: {{ settings('shop_trn', '100XXXXXXXXXXXX') }}</div>
+                        <strong>Web:</strong> www.techhubrak.ae<br>
+                        <strong>TRN:</strong> {{ settings('shop_trn', '100XXXXXXXXXXXX') }}
                     </div>
                 </td>
                 <td style="width: 50%; text-align: right; vertical-align: top;">
