@@ -52,9 +52,13 @@
                         <a href="{{ route('purchases.show', $order->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View Details">
                             <i class="fas fa-eye"></i>
                         </a>
-                        <a href="{{ route('purchases.edit', $order->id) }}" class="text-blue-600 hover:text-blue-800 mr-3" title="Edit Order">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                        <a href="{{ route('orders.edit', $order) }}" class="text-emerald-600 hover:text-emerald-900 mr-3" title="Edit Order">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    
+                    <a href="{{ route('pos.duplicate', $order) }}" class="text-teal-500 hover:text-teal-700 mr-3" title="Duplicate Invoice">
+                        <i class="fas fa-copy"></i>
+                    </a>
                         <a href="{{ route('purchases.print', $order->id) }}" target="_blank" class="text-gray-500 hover:text-gray-900 mr-3" title="Print Invoice">
                             <i class="fas fa-print"></i>
                         </a>

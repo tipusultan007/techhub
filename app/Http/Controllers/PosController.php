@@ -105,6 +105,37 @@ class PosController extends Controller
         return view('admin.pos.index', compact('customers', 'categories', 'initialProducts'));
     }
 
+    public function duplicate(Order $order)
+    {
+        $order->load(['items.product', 'items.variant']);
+        $customers = Customer::select(['id', 'name', 'phone'])->latest('created_at')->get();
+        $categories = Category::select(['id', 'name'])->orderBy('name')->get();
+        $initialProducts = $this->getPosProducts('');
+
+        $duplicateData = [
+            'customer_id' => $order->customer_id,
+            'po_number' => $order->po_number,
+            'discount' => $order->discount,
+            'payment_method' => $order->payment_method,
+            'items' => $order->items->map(function($item) {
+                return [
+                    'id' => $item->product_id,
+                    'variant_id' => $item->product_variant_id,
+                    'name' => $item->product_name,
+                    'price' => $item->unit_price,
+                    'qty' => $item->quantity,
+                    'tax_rate' => $item->tax_rate,
+                    'is_service' => $item->is_service,
+                    'sku' => $item->product_id ? ($item->product->sku ?? 'N/A') : 'SERVICE',
+                    'stock' => $item->product_id ? ($item->variant_id ? ($item->variant->stock_quantity ?? 0) : ($item->product->stock_quantity ?? 0)) : 0,
+                    'type' => $item->product_id ? ($item->variant_id ? 'variable' : $item->product->type) : 'service'
+                ];
+            })
+        ];
+
+        return view('admin.pos.index', compact('customers', 'categories', 'initialProducts', 'duplicateData'));
+    }
+
     /**
      * AJAX Search (and Default Load)
      */

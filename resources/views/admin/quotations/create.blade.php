@@ -299,13 +299,21 @@
             });
         });
 
-        let cart = [];
-
+        let cart = @json($duplicateData['items'] ?? []);
+        
         $(document).ready(function() {
             $('#search').focus();
             setInterval(() => {
                 $('#clock').text(new Date().toLocaleTimeString());
             }, 1000);
+
+            // Pre-fill fields if duplicating
+            @isset($duplicateData)
+                $('#customer_id').val("{{ $duplicateData['customer_id'] }}").trigger('change');
+                $('#po_number').val("{{ $duplicateData['po_number'] }}");
+                $('#discount_input').val("{{ $duplicateData['discount'] }}");
+                renderCart();
+            @endisset
         });
 
         $('#search').on('keyup', function(e) {

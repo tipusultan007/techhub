@@ -132,6 +132,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::get('/pos/search', [PosController::class, 'search'])->name('pos.search');
         Route::get('/pos/check-serial', [PosController::class, 'checkSerial'])->name('pos.check-serial');
         Route::post('/pos/store', [PosController::class, 'store'])->name('pos.store');
+        Route::get('/pos/duplicate/{order}', [PosController::class, 'duplicate'])->name('pos.duplicate');
         Route::post('/pos/customer', [PosController::class, 'storeCustomer'])->name('pos.customer.store');
 
         Route::get('/orders/{order}/print', [OrderController::class, 'print'])->name('orders.print');
@@ -167,6 +168,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::get('/purchases/{id}/reception/{receptionId}/print', [PurchaseOrderController::class, 'printReception'])->name('purchases.reception.print');
         Route::get('/purchases/{id}/download-pdf', [PurchaseOrderController::class, 'downloadPdf'])->name('purchases.download_pdf');
         Route::post('/purchases/{id}/mark-completed', [PurchaseOrderController::class, 'markAsCompleted'])->name('purchases.mark_completed');
+        Route::get('/purchases/{id}/duplicate', [PurchaseOrderController::class, 'duplicate'])->name('purchases.duplicate');
         Route::resource('purchases', PurchaseOrderController::class);
         Route::resource('suppliers', SupplierController::class);
 
@@ -178,9 +180,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
 
         // Quotations
         Route::get('/quotations/search', [QuotationController::class, 'search'])->name('quotations.search');
+        Route::get('/quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
         Route::post('/quotations/{quotation}/convert', [QuotationController::class, 'convertToSale'])->name('quotations.convert');
         Route::get('/quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print');
-        Route::get('/quotations/{quotation}/download-pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.download-pdf');
         Route::get('/quotations/{quotation}/download-pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.download-pdf');
         
         // Delivery Challans
@@ -193,6 +195,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::get('/delivery-challans/{id}', [DeliveryChallanController::class, 'show'])->name('delivery-challans.show');
         Route::get('/delivery-challans/{id}/edit', [DeliveryChallanController::class, 'edit'])->name('delivery-challans.edit');
         Route::put('/delivery-challans/{id}', [DeliveryChallanController::class, 'update'])->name('delivery-challans.update');
+        Route::get('/delivery-challans/{id}/duplicate', [DeliveryChallanController::class, 'duplicate'])->name('delivery-challans.duplicate');
         Route::delete('/delivery-challans/{id}', [DeliveryChallanController::class, 'destroy'])->name('delivery-challans.destroy');
         Route::get('/delivery-challans/{id}/print', [DeliveryChallanController::class, 'print'])->name('delivery-challans.print');
         Route::get('/delivery-challans/{id}/pdf', [DeliveryChallanController::class, 'pdf'])->name('delivery-challans.pdf');

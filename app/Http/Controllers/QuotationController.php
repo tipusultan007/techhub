@@ -64,6 +64,34 @@ class QuotationController extends Controller
         return view('admin.quotations.create', compact('customers', 'categories', 'initialProducts'));
     }
 
+    public function duplicate(Quotation $quotation)
+    {
+        $quotation->load('items');
+        $customers = Customer::select(['id', 'name', 'phone'])->latest('created_at')->get();
+        $categories = Category::select(['id', 'name'])->orderBy('name')->get();
+        $initialProducts = $this->getPosProducts('');
+
+        $duplicateData = [
+            'customer_id' => $quotation->customer_id,
+            'po_number' => $quotation->po_number,
+            'discount' => $quotation->discount,
+            'items' => $quotation->items->map(function($item) {
+                return [
+                    'id' => $item->product_id,
+                    'variant_id' => $item->product_variant_id,
+                    'name' => $item->product_name,
+                    'price' => $item->unit_price,
+                    'qty' => $item->quantity,
+                    'tax_rate' => $item->tax_rate,
+                    'is_service' => $item->is_service,
+                    'sku' => $item->product_id ? ($item->product->sku ?? 'N/A') : 'SERVICE',
+                ];
+            })
+        ];
+
+        return view('admin.quotations.create', compact('customers', 'categories', 'initialProducts', 'duplicateData'));
+    }
+
     public function search(Request $request)
     {
         $products = $this->getPosProducts($request->term);

@@ -136,6 +136,9 @@
                             <a href="{{ route('quotations.download-pdf', $quo->id) }}" class="text-indigo-500 hover:text-indigo-700" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i>
                             </a>
+                            <a href="{{ route('quotations.duplicate', $quo->id) }}" class="text-teal-500 hover:text-teal-700" title="Duplicate Quotation">
+                                <i class="fas fa-copy"></i>
+                            </a>
                             @if($quo->status == 'submitted')
                             <a href="{{ route('quotations.edit', $quo->id) }}" class="text-orange-500 hover:text-orange-700" title="Edit">
                                 <i class="fas fa-edit"></i>

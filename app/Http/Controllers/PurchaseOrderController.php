@@ -39,6 +39,31 @@ class PurchaseOrderController extends Controller
         return view('admin.purchases.create', compact('suppliers', 'nextPoNumber'));
     }
 
+    public function duplicate($id)
+    {
+        $purchase = PurchaseOrder::with(['items.product', 'items.variant'])->findOrFail($id);
+        $suppliers = Supplier::all();
+        $nextPoNumber = PurchaseOrder::generateNextPONumber();
+
+        $duplicateData = [
+            'supplier_id' => $purchase->supplier_id,
+            'notes' => $purchase->notes,
+            'items' => $purchase->items->map(function($item) {
+                return [
+                    'product_id' => $item->product_id,
+                    'variant_id' => $item->product_variant_id,
+                    'name' => $item->product->name . ($item->variant ? ' - ' . $item->variant->variant_name : ''),
+                    'qty' => $item->quantity,
+                    'cost' => $item->unit_cost,
+                    'tax_rate' => $item->tax_rate,
+                    'label' => ($item->product->name ?? '') . ($item->variant ? ' - ' . $item->variant->variant_name : '') . ' (SKU: ' . ($item->variant ? $item->variant->sku : $item->product->sku) . ')'
+                ];
+            })
+        ];
+
+        return view('admin.purchases.create', compact('suppliers', 'nextPoNumber', 'duplicateData'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

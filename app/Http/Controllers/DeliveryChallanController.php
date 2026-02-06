@@ -61,6 +61,33 @@ class DeliveryChallanController extends Controller
         return view('admin.delivery_challans.manual_create', compact('customers', 'categories', 'initialProducts'));
     }
 
+    public function duplicate($id)
+    {
+        $challan = DeliveryChallan::with(['items.product', 'items.variant'])->findOrFail($id);
+        $customers = Customer::latest()->get();
+        $categories = Category::latest()->get();
+        $initialProducts = Product::published()->latest()->take(20)->get();
+
+        $duplicateData = [
+            'customer_id' => $challan->customer_id,
+            'po_number' => $challan->po_number,
+            'note' => $challan->note,
+            'items' => $challan->items->map(function($item) {
+                return [
+                    'product_id' => $item->product_variant_id ?: $item->product_id,
+                    'product_id_parent' => $item->product_id,
+                    'name' => $item->product_name,
+                    'qty' => $item->quantity,
+                    'type' => $item->product_variant_id ? 'variable' : 'simple',
+                    'sku' => $item->product_variant_id ? ($item->variant->sku ?? '') : ($item->product->sku ?? ''),
+                    'price' => $item->product_variant_id ? ($item->variant->selling_price ?? 0) : ($item->product->selling_price ?? 0),
+                ];
+            })
+        ];
+
+        return view('admin.delivery_challans.manual_create', compact('customers', 'categories', 'initialProducts', 'duplicateData'));
+    }
+
     public function searchProducts(Request $request)
     {
         $term = $request->term;

@@ -87,7 +87,7 @@
                                        value="{{ $item->remaining_qty }}" 
                                        min="0" 
                                        max="{{ $item->remaining_qty }}" 
-                                       class="w-full border rounded px-2 py-1 text-center font-bold outline-none focus:border-[#d97706] focus:ring-1 focus:ring-[#d97706]">
+                                       class="w-full border-none p-0 text-center font-bold bg-transparent outline-none">
                             </td>
                         </tr>
                         @endif

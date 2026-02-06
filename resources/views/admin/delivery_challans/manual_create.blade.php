@@ -146,11 +146,19 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    let cart = [];
+    let cart = @json($duplicateData['items'] ?? []);
     let currentCategoryId = '';
 
     $(document).ready(function() {
         $('.select2').select2();
+
+        // Pre-fill fields if duplicating
+        @isset($duplicateData)
+            $('#customer_id').val("{{ $duplicateData['customer_id'] }}").trigger('change');
+            $('#po_number').val("{{ $duplicateData['po_number'] }}");
+            $('#note').val("{{ $duplicateData['note'] }}");
+            renderCart();
+        @endisset
 
         // Product search with debounce
         let searchTimeout;
@@ -240,7 +248,7 @@
                                 <i class="fas fa-minus text-[10px]"></i>
                             </button>
                             <input type="number" value="${item.qty}" onchange="cart[${index}].qty = parseInt(this.value); renderCart();"
-                                class="w-10 text-center bg-transparent font-black text-slate-700 text-sm focus:outline-none pointer-events-none">
+                                class="w-10 text-center bg-transparent font-black text-slate-700 text-sm focus:outline-none border-none p-0 pointer-events-none">
                             <button onclick="updateQty(${index}, 1)" class="w-7 h-7 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#d97706] transition-all">
                                 <i class="fas fa-plus text-[10px]"></i>
                             </button>

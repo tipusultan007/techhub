@@ -423,7 +423,7 @@
    
     <script>
         // --- GLOBAL VARIABLES ---
-        let cart = [];
+        let cart = @json($duplicateData['items'] ?? []);
         let pendingProduct = null;
        
         $(document).ready(function() {
@@ -438,6 +438,14 @@
                 allowClear: true,
                 width: '100%'
             });
+
+            // Pre-fill fields if duplicating
+            @isset($duplicateData)
+                $('#customer_id').val("{{ $duplicateData['customer_id'] }}").trigger('change');
+                $('input[name="po_number"]').val("{{ $duplicateData['po_number'] ?? '' }}");
+                $('#discount-input').val("{{ $duplicateData['discount'] }}");
+                renderCart();
+            @endisset
         });
 
         // --- CUSTOMER MODAL LOGIC ---

@@ -59,6 +59,7 @@
                 <td class="px-6 py-4 text-right space-x-2">
                         <a href="{{ route('delivery-challans.show', $challan->id) }}" class="text-blue-600 hover:text-blue-800" title="View"><i class="fas fa-eye"></i></a>
                         <a href="{{ route('delivery-challans.edit', $challan->id) }}" class="text-yellow-600 hover:text-yellow-800" title="Edit"><i class="fas fa-edit"></i></a>
+                        <a href="{{ route('delivery-challans.duplicate', $challan->id) }}" class="text-teal-600 hover:text-teal-800" title="Duplicate"><i class="fas fa-copy"></i></a>
                         @if(auth()->user()->hasRole('Super Admin'))
                         <button type="button" onclick="deleteChallan({{ $challan->id }})" class="text-red-600 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></button>
                         @endif

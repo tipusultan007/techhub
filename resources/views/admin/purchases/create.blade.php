@@ -101,6 +101,15 @@
     $(document).ready(function() {
         let rowIdx = 0;
 
+        // Pre-fill fields if duplicating
+        @isset($duplicateData)
+            $('select[name="supplier_id"]').val("{{ $duplicateData['supplier_id'] }}");
+            $('textarea[name="notes"]').val("{{ $duplicateData['notes'] }}");
+            @foreach($duplicateData['items'] as $item)
+                addItem(@json($item));
+            @endforeach
+        @endisset
+
         // 1. Live Search Logic
         $('#product_search').on('keyup', function() {
             let term = $(this).val();
