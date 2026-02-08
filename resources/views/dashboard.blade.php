@@ -53,6 +53,42 @@
         </div>
     </div>
 
+    <!-- === SECONDARY STATS === -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Low Stock Alert -->
+        <a href="{{ route('reports.low-stock') }}" class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center gap-5 hover:border-red-300 transition-all group">
+            <div class="w-14 h-14 {{ $lowStockCount > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600' }} rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Low Stock Alerts</p>
+                <h4 class="text-2xl font-black text-gray-900 leading-none">{{ number_format($lowStockCount) }} Items</h4>
+            </div>
+        </a>
+
+        <!-- Pending Quotations -->
+        <a href="{{ route('quotations.index', ['status' => 'submitted']) }}" class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center gap-5 hover:border-blue-300 transition-all group">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Pending Quotations</p>
+                <h4 class="text-2xl font-black text-gray-900 leading-none">{{ number_format($pendingQuotationsCount) }}</h4>
+            </div>
+        </a>
+
+        <!-- Top Selling SKU -->
+        <a href="{{ $topSellingSku != 'N/A' ? route('products.index', ['search' => $topSellingSku]) : '#' }}" class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center gap-5 hover:border-amber-300 transition-all group">
+            <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Top SKU (Last 7D)</p>
+                <h4 class="text-lg font-black text-gray-900 leading-none truncate max-w-[150px]">{{ $topSellingSku }}</h4>
+            </div>
+        </a>
+    </div>
+
     <!-- === MAIN CHARTS SECTION === -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Revenue Trend Chart -->

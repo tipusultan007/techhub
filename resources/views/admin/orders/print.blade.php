@@ -358,10 +358,10 @@
                         @endif
                     </td>
                     <td align="center" style="font-weight: 700;">{{ $item->quantity + 0 }}</td>
-                    <td align="right" style="color: #475569;">AED {{ number_format($item->unit_price, 2) }}</td>
+                    <td align="right" style="color: #475569;"> {{ number_format($item->unit_price, 2) }}</td>
                     <td align="center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
                     <td align="right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
-                    <td align="right" style="font-weight: 700; color: #0f172a;">AED {{ number_format($item->subtotal, 2) }}</td>
+                    <td align="right" style="font-weight: 700; color: #0f172a;"> {{ number_format($item->subtotal, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -373,17 +373,17 @@
                 <table style="width: 100%;">
                     <tr>
                         <td class="total-label">Subtotal</td>
-                        <td class="total-value">AED {{ number_format($order->total + $order->discount, 2) }}</td>
+                        <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->total + $order->discount, 2) }}</td>
                     </tr>
                     @if($order->discount > 0)
                     <tr>
                         <td class="total-label" style="color: #e11d48;">Discount</td>
-                        <td class="total-value" style="color: #e11d48;">- AED {{ number_format($order->discount, 2) }}</td>
+                        <td class="total-value" style="color: #e11d48;">- <img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->discount, 2) }}</td>
                     </tr>
                     @endif
                     <tr class="total-row">
                         <td class="total-label">Net Amount</td>
-                        <td class="total-value">AED {{ number_format($order->subtotal, 2) }}</td>
+                        <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->subtotal, 2) }}</td>
                     </tr>
                     @php
                         $groupedTaxes = $order->items->groupBy('tax_rate');
@@ -396,12 +396,12 @@
                         @endphp
                         <tr>
                             <td class="total-label">{{ $label }}</td>
-                            <td class="total-value">AED {{ number_format($taxAmount, 2) }}</td>
+                            <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($taxAmount, 2) }}</td>
                         </tr>
                     @endforeach
                     <tr class="grand-total">
                         <td class="grand-total-label">Total</td>
-                        <td class="grand-total-value">AED {{ number_format($order->total, 2) }}</td>
+                        <td class="grand-total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->total, 2) }}</td>
                     </tr>
                 </table>
             </div>
