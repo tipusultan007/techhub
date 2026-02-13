@@ -1,4 +1,4 @@
-@props(['product'])
+    @props(['product'])
 
 @php
     // 1. Image
@@ -96,11 +96,12 @@
         <div class="p-price">
             {{-- Main Price --}}
             <span class="currency-symbol">{{ $currency }}</span> {{ $priceDisplay }}
+            <span style="font-size: 10px; color: #64748b; margin-left: 2px;">+ 5% VAT</span>
 
             {{-- Crossed Out Price (Only for Simple Products usually, ranges get messy) --}}
-            @if($oldPriceDisplay)
+            {{-- @if($oldPriceDisplay)
                 <span class="p-old">{{ $currency }} {{ $oldPriceDisplay }}</span>
-            @endif
+            @endif --}}
         </div>
 
         {{-- ACTIONS --}}

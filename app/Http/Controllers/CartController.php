@@ -39,7 +39,7 @@ class CartController extends Controller
         $vat = $taxableAmount * 0.05;
         $total = $taxableAmount + $vat;
 
-        $crossSellProducts = \App\Models\Product::physical()->inRandomOrder(now()->timestamp)->take(4)->with('media')->get();
+        $crossSellProducts = \App\Models\Product::published()->physical()->inStock()->inRandomOrder(now()->timestamp)->take(4)->with('media')->get();
 
         return view('frontend.cart', compact('cart', 'subtotal', 'vat', 'total', 'crossSellProducts', 'discount', 'coupon'));
     }
@@ -185,8 +185,11 @@ class CartController extends Controller
         $subtotal = 0;
         foreach($cart as $item) $subtotal += $item['price'] * $item['quantity'];
 
+        $vat = $subtotal * 0.05;
+        $total = $subtotal + $vat;
+
         // Return a partial view
-        return view('frontend.partials.mini-cart', compact('cart', 'subtotal'));
+        return view('frontend.partials.mini-cart', compact('cart', 'subtotal', 'vat', 'total'));
     }
 
     public function remove(Request $request)

@@ -255,6 +255,19 @@
                             <img src="{{ $logoBase64 }}" alt="Logo" style="max-height: 60px; margin-bottom: 10px; display: block;">
                         @endif
                     @endif
+
+                    @php
+                        $currencyBase64 = '';
+                        try {
+                            $currencyPath = public_path('images/aed.png');
+                            if (file_exists($currencyPath)) {
+                                $type = pathinfo($currencyPath, PATHINFO_EXTENSION);
+                                $data = file_get_contents($currencyPath);
+                                $mime = 'image/' . $type;
+                                $currencyBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+                            }
+                        } catch (\Exception $e) {}
+                    @endphp
                     
                     <div style="font-size: 11px; color: #64748B; line-height: 1.4;">
                         {!! settings('shop_address', '') !!}<br>
@@ -358,17 +371,17 @@
                 <table style="width: 100%;">
                     <tr class="total-row">
                         <td class="total-label">Subtotal</td>
-                        <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->subtotal + $order->discount, 2) }}</td>
+                        <td class="total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->subtotal + $order->discount, 2) }}</td>
                     </tr>
                     @if($order->discount > 0)
                     <tr class="total-row">
                         <td class="total-label" style="color: #E11D48;">Discount</td>
-                        <td class="total-value" style="color: #E11D48;">- <img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->discount, 2) }}</td>
+                        <td class="total-value" style="color: #E11D48;">- <img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->discount, 2) }}</td>
                     </tr>
                     @endif
                     <tr class="total-row">
                         <td class="total-label" style="color: #64748B;">Net Amount</td>
-                        <td class="total-value" style="color: #64748B;"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->subtotal, 2) }}</td>
+                        <td class="total-value" style="color: #64748B;"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->subtotal, 2) }}</td>
                     </tr>
                     
                     @php
@@ -382,13 +395,13 @@
                         @endphp
                         <tr class="total-row">
                             <td class="total-label">{{ $label }}</td>
-                            <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($taxAmount, 2) }}</td>
+                            <td class="total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($taxAmount, 2) }}</td>
                         </tr>
                     @endforeach
                     
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
-                        <td class="grand-total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->total, 2) }}</td>
+                        <td class="grand-total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->total, 2) }}</td>
                     </tr>
                 </table>
             </div>

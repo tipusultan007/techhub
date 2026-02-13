@@ -15,7 +15,7 @@
             </div>
             <div>
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Daily Revenue</p>
-                <h4 class="text-2xl font-black text-gray-900 leading-none">AED {{ number_format($dailySales, 2) }}</h4>
+                <h4 class="text-2xl font-black text-gray-900 leading-none"> {{ number_format($dailySales, 2) }}</h4>
             </div>
         </div>
 
@@ -26,7 +26,7 @@
             </div>
             <div>
                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Monthly Goal</p>
-                <h4 class="text-2xl font-black text-gray-900 leading-none">AED {{ number_format($monthlySales, 2) }}</h4>
+                <h4 class="text-2xl font-black text-gray-900 leading-none"> {{ number_format($monthlySales, 2) }}</h4>
             </div>
         </div>
 

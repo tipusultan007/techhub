@@ -365,8 +365,107 @@
         </div> --}}
 
 
-         <!-- EXPERT IT SOLUTIONS -->
+         <!-- FEATURED BRANDS -->
+        @if(isset($featuredBrands) && $featuredBrands->count() > 0)
         <div class="section-wrapper">
+            <div class="section-center-header">
+                <h3 style="color: var(--brand-magenta); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 8px;">Top Quality</h3>
+                <h2 style="font-size: 28px; font-weight: 800; color: #0f172a;">Our Brands</h2>
+                <p style="color: #64748b; margin-top: 10px;">We partner with world-leading technology brands to bring you the best.</p>
+            </div>
+
+            <style>
+                .brands-grid {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 20px;
+                    margin-top: 30px;
+                }
+                .brand-card {
+                    width: 180px;
+                    background: white;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 25px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s ease;
+                    height: 120px;
+                }
+                .brand-card:hover {
+                    border-color: var(--brand-magenta);
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+                    transform: translateY(-5px);
+                }
+                .brand-card img {
+                    max-width: 100%;
+                    max-height: 70px;
+                    object-fit: contain;
+                    filter: grayscale(100%);
+                    opacity: 0.7;
+                    transition: all 0.3s ease;
+                }
+                .brand-card:hover img {
+                    filter: grayscale(0%);
+                    opacity: 1;
+                }
+                 @media (max-width: 768px) {
+                    .brands-grid {
+                        gap: 15px;
+                    }
+                    .brand-card {
+                        width: 140px;
+                        padding: 15px;
+                        height: 100px;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .brand-card {
+                        width: 130px;
+                    }
+                }
+            </style>
+
+            <div class="brands-grid">
+                @foreach($featuredBrands as $brand)
+                    <a href="{{ route('shop.index', ['brands' => [$brand->id]]) }}" class="brand-card" title="{{ $brand->name }}">
+                        @if($brand->hasMedia('brand_image'))
+                            <img src="{{ $brand->getFirstMediaUrl('brand_image') }}" alt="{{ $brand->name }}">
+                        @else
+                            <span style="font-weight: 700; color: #64748b; font-size: 18px;">{{ $brand->name }}</span>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <!-- FLASH DEALS -->
+        <div class="section-wrapper">
+            <div class="section-header">
+                <div class="sec-title">
+                    <i class="ri-flashlight-fill" style="color: #ef4444;"></i> Featured Products
+                </div>
+                <a href="{{ route('shop.index') }}" class="view-all">More Products <i class="ri-arrow-right-s-line"></i></a>
+            </div>
+
+            <div class="grid-5">
+                @forelse($products as $product)
+                    <x-product-card :product="$product" />
+                @empty
+                    <div class="col-span-full text-center p-10">
+                        <p>No products found.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+       
+
+         <!-- EXPERT IT SOLUTIONS -->
+        <div class="section-wrapper mt-12">
             <div class="section-center-header">
                 <h3 style="color: var(--brand-magenta); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 8px;">Professional Services</h3>
                 <h2 style="font-size: 28px; font-weight: 800; color: #0f172a;">Expert IT Solutions</h2>
@@ -395,27 +494,6 @@
                 <a href="{{ route('solutions.index') }}" class="btn btn-brand" style="padding: 12px 35px; border-radius: 30px; font-weight: 700;">View All Solutions</a>
             </div>
         </div>
-
-        <!-- FLASH DEALS -->
-        <div class="section-wrapper">
-            <div class="section-header">
-                <div class="sec-title">
-                    <i class="ri-flashlight-fill" style="color: #ef4444;"></i> Featured Products
-                </div>
-                <a href="{{ route('shop.index') }}" class="view-all">More Products <i class="ri-arrow-right-s-line"></i></a>
-            </div>
-
-            <div class="grid-5">
-                @forelse($products as $product)
-                    <x-product-card :product="$product" />
-                @empty
-                    <div class="col-span-full text-center p-10">
-                        <p>No products found.</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
        
         <div class="mid-banner">
             <div class="mb-text">

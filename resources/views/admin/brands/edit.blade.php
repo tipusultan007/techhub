@@ -39,6 +39,12 @@
             <p class="text-xs text-gray-500 mt-1">Leave empty to keep current logo.</p>
         </div>
 
+        <!-- Featured Toggle -->
+        <div class="flex items-center">
+            <input type="checkbox" name="is_featured" id="is_featured" {{ $brand->is_featured ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="is_featured" class="ml-2 block text-sm text-gray-900">Show on Home Page</label>
+        </div>
+
         <!-- Buttons -->
         <div class="flex justify-end space-x-3">
             <a href="{{ route('brands.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Cancel</a>

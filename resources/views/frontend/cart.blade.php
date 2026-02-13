@@ -156,6 +156,7 @@
                                 {{ number_format($item['price'] * $item['quantity']) }}
                             </span>
                                     <span style="font-size: 0.6em;">AED</span>
+                                    <span style="font-size: 0.5em; color: #64748b; margin-left: 2px;">+ 5% VAT</span>
                                 </div>
 
                                 <form action="{{ route('cart.remove') }}" method="POST">

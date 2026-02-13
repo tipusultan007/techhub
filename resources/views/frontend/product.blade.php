@@ -111,6 +111,47 @@
             50% { transform: scale(1.3); }
             100% { transform: scale(1); }
         }
+
+        /* Mobile specific overrides for single product */
+        @media (max-width: 576px) {
+            .product-title { font-size: 20px; }
+            .info-section { padding: 20px; }
+            .gallery-section { padding: 20px; }
+            .main-swiper { height: 300px; }
+            
+            .action-box {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+                margin-top: 20px !important;
+            }
+            .qty-wrapper {
+                width: 110px !important;
+                flex-shrink: 0 !important;
+                margin-right: 0 !important;
+                height: 52px !important;
+                background: #f8fafc;
+            }
+            .qty-btn { width: 35px; height: 52px; }
+            .qty-input { width: 40px; height: 52px; background: transparent; }
+            
+            .btn-main {
+                flex: 1 !important;
+                height: 52px !important;
+                padding: 0 10px !important;
+                font-size: 14px !important;
+                white-space: nowrap !important;
+                box-shadow: var(--shadow);
+            }
+            
+            .btn-wish { 
+                width: 52px !important; 
+                height: 52px !important; 
+                flex-shrink: 0 !important;
+                font-size: 20px !important;
+            }
+        }
     </style>
 
     <style>
@@ -265,12 +306,12 @@
                     <div class="current-price">
                         <span x-text="formatPrice(currentPrice)"></span>
                         <span style="font-size: 0.6em; margin-left:5px" x-text="currency"></span>
+                        <span style="font-size: 14px; color: #64748b; margin-left: 5px; font-weight: 500;">+ 5% VAT</span>
 
                         <span class="old-price" x-show="isOnSale">
                         <span x-text="formatPrice(currentOldPrice)"></span> <span x-text="currency"></span>
                     </span>
                     </div>
-                    <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 5px;">Inclusive of VAT</span>
                 </div>
 
                 <!-- Variants -->

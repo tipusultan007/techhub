@@ -216,7 +216,7 @@
                         <tr class="grand-total">
                             <td style="font-weight: bold; color: #2DAE9A; text-transform: uppercase;">Grand Total</td>
                             <td class="text-right" style="color: #2DAE9A;">
-                                <span style="font-size: 9px; color: #94a3b8; margin-right: 3px;">AED</span>
+                                <span style="font-size: 9px; color: #94a3b8; margin-right: 3px;"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"></span>
                                 <span style="font-size: 18px; font-weight: bold;">{{ number_format($purchase->total_cost, 2) }}</span>
                             </td>
                         </tr>

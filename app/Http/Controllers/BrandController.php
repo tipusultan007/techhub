@@ -22,7 +22,10 @@ class BrandController extends Controller
 
     public function store(StoreBrandRequest $request)
     {
-        $brand = Brand::create(['name' => $request->name]);
+        $brand = Brand::create([
+            'name'        => $request->name,
+            'is_featured' => $request->has('is_featured')
+        ]);
 
         if ($request->hasFile('image')) {
             $brand->addMediaFromRequest('image')->toMediaCollection('brand_image');
@@ -38,7 +41,10 @@ class BrandController extends Controller
 
     public function update(UpdateBrandRequest $request, Brand $brand)
     {
-        $brand->update(['name' => $request->name]);
+        $brand->update([
+            'name'        => $request->name,
+            'is_featured' => $request->has('is_featured')
+        ]);
 
         if ($request->hasFile('image')) {
             // 'singleFile()' in model ensures old image is auto-deleted
@@ -55,5 +61,16 @@ class BrandController extends Controller
 
         $brand->delete(); // Spatie automatically cleans up files
         return redirect()->route('brands.index')->with('success', 'Brand deleted. Related products are now unbranded.');
+    }
+
+    public function toggleFeatured(Brand $brand)
+    {
+        $brand->update(['is_featured' => !$brand->is_featured]);
+
+        return response()->json([
+            'success'     => true,
+            'is_featured' => $brand->is_featured,
+            'message'     => 'Brand featured status updated successfully.'
+        ]);
     }
 }

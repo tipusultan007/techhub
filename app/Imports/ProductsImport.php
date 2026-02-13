@@ -5,63 +5,85 @@ namespace App\Imports;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Illuminate\Support\Facades\Log;
 
 class ProductsImport implements ToModel, WithHeadingRow
 {
-    protected $category;
+    protected $uncategorized;
+
     protected $brand;
 
     public function __construct()
     {
-        // Find the target category
-        $this->category = Category::where('name', 'Computers & Laptops')->first() 
-            ?? Category::create(['name' => 'Computers & Laptops', 'slug' => 'computers-laptops']);
-        
-        // Use a default brand (e.g., 'Dell' from seeder, or generic)
+        // Find or create the "Uncategorized" category
+        $this->uncategorized = Category::where('name', 'Uncategorized')->first()
+            ?? Category::create(['name' => 'Uncategorized', 'slug' => 'uncategorized']);
+
+        // Use a default brand
         $this->brand = Brand::firstOrCreate(['name' => 'Generic']);
     }
 
     public function model(array $row)
     {
-        // Expected columns: Title, Price, Old Price, Image URL
-        // Map keys are strictly lowercase/slugged by default in Maatwebsite?
-        // Usually 'Title' -> 'title', 'Old Price' -> 'old_price'
-        
-        $title = $row['title'] ?? null;
-        if (!$title) return null;
+        /**
+         * Expected columns from user request:
+         * PNO, Title, Cost Price, Selling Price, Sale Price, Stock, category, Image
+         *
+         * Maatwebsite WithHeadingRow usually slugs the headers:
+         * 'pno', 'title', 'cost_price', 'selling_price', 'sale_price', 'stock', 'category', 'image'
+         */
+        $name = $row['title'] ?? null;
+        if (! $name) {
+            return null;
+        }
 
-        $price = $this->parsePrice($row['price'] ?? 0);
-        $oldPrice = $this->parsePrice($row['old_price'] ?? 0);
+        // Prevent duplicates based on title
+        if (Product::where('name', $name)->exists()) {
+            return null;
+        }
+
+        // Required prices with defaults (0)
+        $costPrice = $this->parsePrice($row['cost_price'] ?? 0);
+        $sellingPrice = $this->parsePrice($row['selling_price'] ?? 0);
+
+        // Sale price can be null
+        $salePrice = isset($row['sale_price']) ? $this->parsePrice($row['sale_price']) : null;
+
+        $pno = $row['pno'] ?? null;
+        $stock = $row['stock'] ?? 0;
         $imageUrl = $row['image'] ?? null;
+        $categoryName = $row['category'] ?? null;
 
-        // Pricing Logic
-        if ($oldPrice > $price) {
-            $sellingPrice = $oldPrice;
-            $salePrice = $price;
-        } else {
-            $sellingPrice = $price;
-            $salePrice = null;
+        // Category lookup
+        $category = null;
+        if ($categoryName) {
+            $category = Category::where('name', 'like', $categoryName)->first();
+        }
+
+        if (! $category) {
+            $category = $this->uncategorized;
         }
 
         // Create Product
         $product = Product::create([
-            'name'           => $title,
-            'slug'           => Str::slug($title) . '-' . Str::random(5), // Ensure unique slug
-            'brand_id'       => $this->brand->id,
-            'category_id'    => $this->category->id,
-            'description'    => '<p>' . $title . '</p>',
-            'type'           => 'simple',
-            'sku'            => 'IMP-' . strtoupper(Str::random(8)),
-            'cost_price'     => $sellingPrice * 0.7, // Estimate cost
-            'selling_price'  => $sellingPrice,
-            'sale_price'     => $salePrice,
-            'stock_quantity' => 10,
+            'name' => $name,
+            'slug' => Str::slug($name).'-'.Str::random(5),
+            'pno' => $pno,
+            'brand_id' => $this->brand->id,
+            'category_id' => $category->id,
+            'description' => '<p>'.$name.'</p>',
+            'type' => 'simple',
+            'sku' => $pno ?: 'IMP-'.strtoupper(Str::random(8)), // Use PNO as SKU if available
+            'cost_price' => $costPrice,
+            'selling_price' => $sellingPrice,
+            'sale_price' => $salePrice,
+            'stock_quantity' => $stock,
             'alert_quantity' => 2,
-            'tax_method'     => 'inclusive',
+            'tax_method' => 'inclusive',
+            'status' => 'published',
         ]);
 
         // Attach Image
@@ -69,7 +91,7 @@ class ProductsImport implements ToModel, WithHeadingRow
             try {
                 $product->addMediaFromUrl($imageUrl)->toMediaCollection('product_image');
             } catch (\Exception $e) {
-                Log::warning("Failed to download image for product {$title}: " . $e->getMessage());
+                Log::warning("Failed to download image for product {$name}: ".$e->getMessage());
             }
         }
 
@@ -78,6 +100,10 @@ class ProductsImport implements ToModel, WithHeadingRow
 
     private function parsePrice($value)
     {
+        if (empty($value)) {
+            return 0;
+        }
+
         // dynamic cleaning of price string (e.g. "$1,200.00" -> 1200.00)
         return (float) preg_replace('/[^0-9.]/', '', (string) $value);
     }

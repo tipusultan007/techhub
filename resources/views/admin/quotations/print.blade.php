@@ -362,12 +362,12 @@
                 <table style="width: 100%;">
                     <tr>
                         <td class="total-label">Subtotal</td>
-                        <td class="total-value">AED {{ number_format($quotation->subtotal, 2) }}</td>
+                        <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->subtotal, 2) }}</td>
                     </tr>
                     @if($quotation->discount > 0)
                     <tr>
                         <td class="total-label" style="color: #e11d48;">Discount</td>
-                        <td class="total-value" style="color: #e11d48;">- AED {{ number_format($quotation->discount, 2) }}</td>
+                        <td class="total-value" style="color: #e11d48;">- <img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->discount, 2) }}</td>
                     </tr>
                     @endif
                     @php
@@ -381,12 +381,12 @@
                         @endphp
                         <tr>
                             <td class="total-label">{{ $label }}</td>
-                            <td class="total-value">AED {{ number_format($taxAmount, 2) }}</td>
+                            <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($taxAmount, 2) }}</td>
                         </tr>
                     @endforeach
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
-                        <td class="grand-total-value" style="color: #2DAE9A;">AED {{ number_format($quotation->total, 2) }}</td>
+                        <td class="grand-total-value" style="color: #2DAE9A;"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->total, 2) }}</td>
                     </tr>
                 </table>
             </div>

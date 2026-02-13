@@ -22,8 +22,9 @@
                     {{ $item['quantity'] }} x {{ number_format($item['price'], 2) }}
                 </div>
                 <span class="mini-price">
-                {{ number_format($item['price'] * $item['quantity']) }} {{ settings('currency_symbol', 'AED') }}
-            </span>
+                    {{ number_format($item['price'] * $item['quantity']) }} {{ settings('currency_symbol', 'AED') }}
+                    <span style="font-size: 0.7em; color: #64748b; margin-left: 2px;">+ 5% VAT</span>
+                </span>
             </div>
 
             <!-- Remove Button (AJAX) -->
@@ -40,6 +41,14 @@
     <div class="mini-total">
         <span>Subtotal:</span>
         <span>{{ number_format($subtotal, 2) }} {{ settings('currency_symbol', 'AED') }}</span>
+    </div>
+    <div class="mini-total" style="border-top: none; padding-top: 0; margin-top: -10px; font-size: 0.9em; color: #64748b;">
+        <span>VAT (5%):</span>
+        <span>{{ number_format($vat, 2) }} {{ settings('currency_symbol', 'AED') }}</span>
+    </div>
+    <div class="mini-total" style="border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 5px; font-weight: 800; color: #0038A8;">
+        <span>Total:</span>
+        <span>{{ number_format($total, 2) }} {{ settings('currency_symbol', 'AED') }}</span>
     </div>
 @else
     <div class="mini-empty-cart">

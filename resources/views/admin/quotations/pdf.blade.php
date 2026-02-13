@@ -327,7 +327,18 @@
                 </td>
             </tr>
         </table>
-
+@php
+                        $currencyBase64 = '';
+                        try {
+                            $currencyPath = public_path('images/aed.png');
+                            if (file_exists($currencyPath)) {
+                                $type = pathinfo($currencyPath, PATHINFO_EXTENSION);
+                                $data = file_get_contents($currencyPath);
+                                $mime = 'image/' . $type;
+                                $currencyBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+                            }
+                        } catch (\Exception $e) {}
+                    @endphp
         <!-- Items -->
         <table class="items-table">
             <thead>
@@ -367,12 +378,12 @@
                 <table style="width: 100%;">
                     <tr class="total-row">
                         <td class="total-label">Subtotal</td>
-                        <td class="total-value">AED {{ number_format($quotation->subtotal, 2) }}</td>
+                        <td class="total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->subtotal, 2) }}</td>
                     </tr>
                     @if($quotation->discount > 0)
                     <tr class="total-row">
                         <td class="total-label" style="color: #E11D48;">Discount</td>
-                        <td class="total-value" style="color: #E11D48;">- AED {{ number_format($quotation->discount, 2) }}</td>
+                        <td class="total-value" style="color: #E11D48;">- <img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->discount, 2) }}</td>
                     </tr>
                     @endif
                     
@@ -387,13 +398,13 @@
                         @endphp
                         <tr class="total-row">
                             <td class="total-label">{{ $label }}</td>
-                            <td class="total-value">AED {{ number_format($taxAmount, 2) }}</td>
+                            <td class="total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($taxAmount, 2) }}</td>
                         </tr>
                     @endforeach
                     
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
-                        <td class="grand-total-value">AED {{ number_format($quotation->total, 2) }}</td>
+                        <td class="grand-total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->total, 2) }}</td>
                     </tr>
                 </table>
             </div>

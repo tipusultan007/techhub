@@ -293,6 +293,18 @@
                     <div style="font-size: 8px; color: #94a3b8; margin-top: 2px; font-weight: bold;">PROCUREMENT DEPARTMENT • TECH HUB GROUP</div>
                 </div>
             </div>
+            @php
+                        $currencyBase64 = '';
+                        try {
+                            $currencyPath = public_path('images/aed.png');
+                            if (file_exists($currencyPath)) {
+                                $type = pathinfo($currencyPath, PATHINFO_EXTENSION);
+                                $data = file_get_contents($currencyPath);
+                                $mime = 'image/' . $type;
+                                $currencyBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+                            }
+                        } catch (\Exception $e) {}
+                    @endphp
             <div class="footer-right">
                 <div class="totals-box">
                     <table class="w-full">
@@ -307,7 +319,7 @@
                         <tr class="grand-total">
                             <td style="font-weight: bold; color: #161616; text-transform: uppercase;">Grand Total</td>
                             <td class="text-right" style="color: #2DAE9A;">
-                                <span style="font-size: 9px; color: #94a3b8; margin-right: 3px;">AED</span>
+                                <span style="font-size: 9px; color: #94a3b8; margin-right: 3px;"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"></span>
                                 <span style="font-size: 18px; font-weight: bold;">{{ number_format($purchase->total_cost, 2) }}</span>
                             </td>
                         </tr>

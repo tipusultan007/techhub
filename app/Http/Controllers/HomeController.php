@@ -18,7 +18,7 @@ class HomeController extends Controller
             ->take(16)
             ->get();
 
-        $products = Product::published()->physical()
+        $products = Product::published()->physical()->inStock()
             ->with(['category', 'variants', 'media'])
             ->latest()
             ->take(10)
@@ -29,6 +29,7 @@ class HomeController extends Controller
             'sideTop'      => Banner::where('position', '=', 'side_top')->where('is_active', '=', true)->first(),
             'sideBottom'   => Banner::where('position', '=', 'side_bottom')->where('is_active', '=', true)->first(),
             'featuredCategories' => $featuredCategories,
+            'featuredBrands'     => \App\Models\Brand::where('is_featured', true)->get(),
             'products'      => $products,
         ]);
     }
@@ -40,7 +41,7 @@ class HomeController extends Controller
             ->firstOrFail();
 
         // Get Related Products (Same category, excluding current)
-        $relatedProducts = Product::published()->physical()
+        $relatedProducts = Product::published()->physical()->inStock()
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->with('media')

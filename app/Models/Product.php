@@ -11,6 +11,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Product extends Model implements HasMedia
 {
     use InteractsWithMedia;
+
     protected $guarded = [];
 
     public function registerMediaCollections(): void
@@ -19,7 +20,7 @@ class Product extends Model implements HasMedia
         $this->addMediaCollection('product_gallery');
     }
 
-    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    public function registerMediaConversions(?\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
     {
         $this->addMediaConversion('thumb')
             ->width(200)
@@ -34,17 +35,17 @@ class Product extends Model implements HasMedia
             ->nonQueued();
     }
 
-     protected $fillable = [
+    protected $fillable = [
         'name', 'slug', 'brand_id', 'category_id', 'description',
         'tax_method', 'tax_rate',
         'type', 'status', 'specifications',
-        'sku', 'barcode', 'cost_price', 'selling_price','sale_price', 'stock_quantity', 'alert_quantity'
+        'sku', 'pno', 'barcode', 'cost_price', 'selling_price', 'sale_price', 'stock_quantity', 'alert_quantity',
     ];
 
     public function scopeSearch($query, $term)
     {
         return $query->where('name', 'like', "%{$term}%")
-                     ->orWhere('description', 'like', "%{$term}%");
+            ->orWhere('description', 'like', "%{$term}%");
     }
 
     /**
@@ -58,6 +59,26 @@ class Product extends Model implements HasMedia
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    /**
+     * Scope to only include in-stock products
+     */
+    public function scopeInStock($query)
+    {
+        return $query->where(function ($q) {
+            $q->where(function ($sq) {
+                // Simple products with stock > 0
+                $sq->where('type', '!=', 'variable')
+                    ->where('stock_quantity', '>', 0);
+            })->orWhere(function ($vq) {
+                // Variable products with at least one in-stock variant
+                $vq->where('type', 'variable')
+                    ->whereHas('variants', function ($vsq) {
+                        $vsq->where('stock_quantity', '>', 0);
+                    });
+            });
+        });
     }
 
     public function brand(): BelongsTo
@@ -110,11 +131,12 @@ class Product extends Model implements HasMedia
             if ($this->sale_price && $this->sale_price < $this->selling_price) {
                 return $this->sale_price;
             }
+
             return $this->selling_price;
         }
 
         // For Variable, return the lowest available price
-        return $this->variants->map(function($variant) {
+        return $this->variants->map(function ($variant) {
             return $variant->active_price;
         })->min();
     }

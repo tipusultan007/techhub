@@ -193,8 +193,9 @@
                                     <div class="item-name">{{ $item['name'] }}</div>
                                     <div style="font-size:0.8rem; color:#64748b;">Qty: {{ $item['quantity'] }}</div>
                                 </div>
-                                <div style="font-weight:700; font-size:0.95rem;">
-                                    {{ number_format($item['price'] * $item['quantity']) }}
+                                <div style="font-weight:700; font-size:0.95rem; display: flex; flex-direction: column; align-items: flex-end;">
+                                    <span>{{ number_format($item['price'] * $item['quantity']) }}</span>
+                                    <span style="font-size: 0.7em; color: #64748b; font-weight: 400;">+ 5% VAT</span>
                                 </div>
                             </div>
                         @endforeach
