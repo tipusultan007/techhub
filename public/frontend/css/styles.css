@@ -647,6 +647,15 @@ header.scrolled .logo-img {
     transition: 0.3s;
 }
 
+.btn-primary {
+    background: var(--brand-gradient);
+    color: white;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
 .btn-brand {
     background: white;
     color: var(--brand-navy);
