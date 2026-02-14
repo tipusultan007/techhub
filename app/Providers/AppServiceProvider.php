@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.frontend', function ($view) {
             // Get only Top Level categories (Parent is null)
             $categories = Category::whereNull('parent_id')
+                ->with('children')
                 ->orderBy('priority', 'asc')
                 ->orderBy('name', 'asc')
                 ->get();

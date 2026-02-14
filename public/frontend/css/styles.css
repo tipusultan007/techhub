@@ -305,22 +305,48 @@ header.scrolled .logo-img {
 .nav-bar {
     background: var(--brand-gradient);
     border-bottom: 1px solid var(--brand-teal-deep);
+    overflow: visible !important;
+}
+
+.nav-bar .container {
+    overflow: visible !important;
 }
 
 .nav-list {
     display: flex;
+    flex-wrap: wrap;
     gap: 30px;
     font-weight: 600;
     font-size: 0.95rem;
-    overflow-x: auto;
-    white-space: nowrap;
+    overflow: visible !important;
+}
+
+.nav-list li {
+    position: relative;
 }
 
 .nav-list li a {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 5px;
     padding: 15px 0;
     color: rgba(255, 255, 255, 0.9);
     position: relative;
+    transition: 0.3s;
+    white-space: nowrap;
+}
+
+.nav-list li a i {
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.nav-list li a:hover {
+    color: white;
+}
+
+.nav-list li:hover>a i {
+    transform: rotate(180deg);
 }
 
 .nav-list li a::after {
@@ -334,11 +360,8 @@ header.scrolled .logo-img {
     transition: 0.3s;
 }
 
-.nav-list li a:hover {
-    color: white;
-}
-
-.nav-list li a:hover::after {
+.nav-list li a:hover::after,
+.nav-list li:hover>a::after {
     width: 100%;
 }
 
@@ -348,6 +371,104 @@ header.scrolled .logo-img {
 
 .nav-list li.active a::after {
     width: 100%;
+}
+
+/* Dropdown Menu Desktop */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 220px;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 8px 8px;
+    padding: 10px 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 1100;
+}
+
+.nav-list li:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu li {
+    width: 100%;
+}
+
+.dropdown-menu li a {
+    padding: 10px 20px !important;
+    color: var(--text-main) !important;
+    font-size: 14px;
+    font-weight: 500;
+    display: block !important;
+    transition: 0.2s;
+}
+
+.dropdown-menu li a:after {
+    display: none;
+}
+
+.dropdown-menu li a:hover {
+    background: #f8fafc;
+    color: var(--brand-emerald) !important;
+    padding-left: 25px !important;
+}
+
+/* Mobile Sidebar Submenu */
+.mobile-nav-list li {
+    width: 100%;
+}
+
+.mobile-nav-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mobile-nav-item a {
+    flex: 1;
+    padding: 12px 0;
+    border-bottom: none !important;
+}
+
+.submenu-toggle {
+    width: 40px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.submenu-toggle i {
+    transition: 0.3s;
+}
+
+.submenu-active .submenu-toggle i {
+    transform: rotate(180deg);
+}
+
+.mobile-submenu {
+    padding-left: 20px;
+    background: #f8fafc;
+    display: none;
+}
+
+.mobile-submenu.open {
+    display: block;
+}
+
+.mobile-submenu li a {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
 }
 
 /* --- OFFCANVAS NAV --- */
@@ -1314,7 +1435,7 @@ footer {
     }
 
     .logo-img {
-        max-height: 45px;
+        max-height: 50px;
         filter: brightness(0) invert(1);
         /* Ensure logos are visible on brand bg */
     }
@@ -1400,11 +1521,11 @@ footer {
     }
 
     .logo-img {
-        max-height: 40px;
+        max-height: 50px;
     }
 
     header.scrolled .logo-img {
-        max-height: 40px;
+        max-height: 50px;
     }
 
     .services-row {

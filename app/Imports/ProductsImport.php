@@ -74,15 +74,15 @@ class ProductsImport implements ToModel, WithHeadingRow
             'pno' => $pno,
             'brand_id' => $this->brand->id,
             'category_id' => $category->id,
-            'description' => '<p>'.$name.'</p>',
+            'description' => '<div>'.$name.'</div>',
             'type' => 'simple',
-            'sku' => $pno ?: 'IMP-'.strtoupper(Str::random(8)), // Use PNO as SKU if available
+            'sku' => $pno ?: 'TH-'.strtoupper(Str::random(8)), // Use PNO as SKU if available
             'cost_price' => $costPrice,
             'selling_price' => $sellingPrice,
             'sale_price' => $salePrice,
             'stock_quantity' => $stock,
             'alert_quantity' => 2,
-            'tax_method' => 'inclusive',
+            'tax_method' => 'exclusive',
             'status' => 'published',
         ]);
 
