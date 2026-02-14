@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ settings('site_name', 'Tech Hub') }} Admin</title>
+    <title>@hasSection('title') @yield('title') @else @yield('header', 'Admin Dashboard') @endif | {{ settings('site_name', 'Tech Hub') }} Admin</title>
 
     <!-- Tailwind CSS & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

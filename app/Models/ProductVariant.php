@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ProductVariant extends Model
 {
     protected $guarded = [];
+
     protected $fillable = [
         'product_id',
         'variant_name',
@@ -19,7 +20,7 @@ class ProductVariant extends Model
         'sale_price',
         'stock_quantity',
         'alert_quantity',
-        'options'
+        'options',
     ];
 
     protected $casts = [
@@ -58,6 +59,7 @@ class ProductVariant extends Model
         if ($this->sale_price && $this->sale_price < $this->selling_price) {
             return $this->sale_price;
         }
+
         return $this->selling_price;
     }
 }

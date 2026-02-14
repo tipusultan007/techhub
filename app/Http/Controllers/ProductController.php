@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ProductsImport;
 use App\Models\Attribute;
-use App\Models\Product;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Picqer\Barcode\BarcodeGeneratorHTML;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\ProductsImport;
-
-use App\Traits\LogsActivity;
+use Picqer\Barcode\BarcodeGeneratorHTML;
 
 class ProductController extends Controller
 {
     use LogsActivity;
+
     public function index(Request $request)
     {
         $query = Product::with(['brand', 'category', 'variants']);
@@ -27,9 +27,9 @@ class ProductController extends Controller
         // Filter by Search (Name or SKU)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'LIKE', '%' . $search . '%')
-                  ->orWhere('sku', 'LIKE', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', '%'.$search.'%')
+                    ->orWhere('sku', 'LIKE', '%'.$search.'%');
             });
         }
 
@@ -55,7 +55,7 @@ class ProductController extends Controller
 
         $perPage = $request->get('per_page', 15);
         $products = $query->latest()->paginate($perPage)->withQueryString();
-        
+
         $categories = Category::select('id', 'name')->orderBy('name')->get();
         $brands = Brand::select('id', 'name')->orderBy('name')->get();
 
@@ -97,7 +97,7 @@ class ProductController extends Controller
             $rules['variants.*.sku'] = 'required|distinct|unique:product_variants,sku';
             $rules['variants.*.sale_price'] = 'nullable|numeric|lt:variants.*.price';
         }
-        
+
         $rules['image'] = 'nullable|image|max:2048';
         $rules['gallery'] = 'nullable|array';
         $rules['gallery.*'] = 'image|max:2048';
@@ -131,12 +131,12 @@ class ProductController extends Controller
             }
 
             $product = Product::create($data);
-            
+
             // Handle Main Image
             if ($request->hasFile('image')) {
                 $product->addMediaFromRequest('image')->toMediaCollection('product_image');
             }
-            
+
             // Handle Gallery Images
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $file) {
@@ -166,7 +166,7 @@ class ProductController extends Controller
                             DB::table('product_variant_attribute_values')->insert([
                                 'product_variant_id' => $variant->id,
                                 'attribute_id' => $attributeId,
-                                'attribute_value_id' => $valueId
+                                'attribute_value_id' => $valueId,
                             ]);
                         }
                     }
@@ -200,7 +200,7 @@ class ProductController extends Controller
 
         // Fetch Stock-In History (Last 20)
         // Linking through PurchaseOrderItem to get PurchaseReceptionItem
-        $stockHistory = \App\Models\PurchaseReceptionItem::whereHas('poItem', function($q) use ($product) {
+        $stockHistory = \App\Models\PurchaseReceptionItem::whereHas('poItem', function ($q) use ($product) {
             $q->where('product_id', $product->id);
         })->with(['reception.purchaseOrder.supplier', 'poItem.variant'])->latest()->take(20)->get();
 
@@ -217,7 +217,7 @@ class ProductController extends Controller
         $product->load('variants'); // Load variants if they exist
         $attributes = Attribute::with('values')->get();
 
-        return view('admin.products.edit', compact('product', 'brands', 'categories','attributes'));
+        return view('admin.products.edit', compact('product', 'brands', 'categories', 'attributes'));
     }
 
     /**
@@ -258,7 +258,6 @@ class ProductController extends Controller
             ]);
         }
 
-
         DB::transaction(function () use ($request, $product) {
             // 3. Update General Info
             $data = [
@@ -291,7 +290,7 @@ class ProductController extends Controller
                 $product->clearMediaCollection('product_image');
                 $product->addMediaFromRequest('image')->toMediaCollection('product_image');
             }
-            
+
             // 6. Handle Gallery Update (Append new images)
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $file) {
@@ -300,28 +299,28 @@ class ProductController extends Controller
             }
 
             // 6. Update Variable Product Logic
-//            if ($product->type === 'variable') {
-//                // A. Get IDs of variants present in the form
-//                $submittedIds = array_filter(array_column($request->variants ?? [], 'id'));
-//
-//                // B. Delete variants that were removed in the form
-//                $product->variants()->whereNotIn('id', $submittedIds)->delete();
-//
-//                // C. Update or Create variants
-//                foreach ($request->variants as $v) {
-//                    ProductVariant::updateOrCreate(
-//                        ['id' => $v['id'] ?? null, 'product_id' => $product->id],
-//                        [
-//                            'variant_name' => $v['name'],
-//                            'sku' => $v['sku'],
-//                            'barcode' => $v['barcode'],
-//                            'cost_price' => $v['cost'],
-//                            'selling_price' => $v['price'],
-//                            'stock_quantity' => $v['stock']
-//                        ]
-//                    );
-//                }
-//            }
+            //            if ($product->type === 'variable') {
+            //                // A. Get IDs of variants present in the form
+            //                $submittedIds = array_filter(array_column($request->variants ?? [], 'id'));
+            //
+            //                // B. Delete variants that were removed in the form
+            //                $product->variants()->whereNotIn('id', $submittedIds)->delete();
+            //
+            //                // C. Update or Create variants
+            //                foreach ($request->variants as $v) {
+            //                    ProductVariant::updateOrCreate(
+            //                        ['id' => $v['id'] ?? null, 'product_id' => $product->id],
+            //                        [
+            //                            'variant_name' => $v['name'],
+            //                            'sku' => $v['sku'],
+            //                            'barcode' => $v['barcode'],
+            //                            'cost_price' => $v['cost'],
+            //                            'selling_price' => $v['price'],
+            //                            'stock_quantity' => $v['stock']
+            //                        ]
+            //                    );
+            //                }
+            //            }
             if ($product->type === 'variable') {
 
                 // Get all attributes to look up names
@@ -338,7 +337,7 @@ class ProductController extends Controller
 
                     // --- LOGIC TO GENERATE NAME ---
                     // If 'specs' array exists (attribute values), generate name like "Red / XL"
-                    $generatedName = 'Variant ' . ($key + 1);
+                    $generatedName = 'Variant '.($key + 1);
 
                     if (isset($v['specs']) && is_array($v['specs'])) {
                         $names = [];
@@ -350,7 +349,7 @@ class ProductController extends Controller
                                 $names[] = $val->value;
                             }
                         }
-                        if (!empty($names)) {
+                        if (! empty($names)) {
                             $generatedName = implode(' / ', $names);
                         }
                     } elseif (isset($v['name'])) {
@@ -362,14 +361,14 @@ class ProductController extends Controller
                     $variant = ProductVariant::updateOrCreate(
                         ['id' => $v['id'] ?? null, 'product_id' => $product->id],
                         [
-                            'variant_name'   => $generatedName, // Use the generated name
-                            'sku'            => $v['sku'],
-                            'barcode'        => $v['barcode'],
-                            'cost_price'     => $v['cost'],
-                            'selling_price'  => $v['price'],
-                            'sale_price'     => $v['sale_price'],
+                            'variant_name' => $generatedName, // Use the generated name
+                            'sku' => $v['sku'],
+                            'barcode' => $v['barcode'],
+                            'cost_price' => $v['cost'],
+                            'selling_price' => $v['price'],
+                            'sale_price' => $v['sale_price'],
                             'stock_quantity' => $v['stock'],
-                            'alert_quantity' => $v['alert_quantity'] ?? 5
+                            'alert_quantity' => $v['alert_quantity'] ?? 5,
                         ]
                     );
 
@@ -391,57 +390,56 @@ class ProductController extends Controller
     }
 
     /**
-     * Remove the specified product from storage.
+     * Remove the specified product from storage (including its historical transactions).
      */
     public function destroy(Product $product)
     {
-        if ($product->type === 'variable') {
-            $product->variants()->delete();
-        }
+        // Wipe all historical transactions associated with this product
+        $product->cleanupHistory();
 
         // Explicitly clear media to ensure storage files are removed
         $product->clearMediaCollection('product_image');
         $product->clearMediaCollection('product_gallery');
 
-        $this->logActivity('Product', 'Delete', "Deleted Product: {$product->name}", [
+        $this->logActivity('Product', 'Delete', "Force Deleted Product: {$product->name} (including all history)", [
             'sku' => $product->sku,
         ]);
 
         $product->delete();
 
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+        return redirect()->route('products.index')->with('success', 'Product and all related historical data deleted successfully.');
     }
 
     public function printBarcode(Request $request)
-{
-    $request->validate(['ids' => 'required|array']);
+    {
+        $request->validate(['ids' => 'required|array']);
 
-    $products = Product::with('variants')->whereIn('id', $request->ids)->get();
-    $printQueue = collect();
+        $products = Product::with('variants')->whereIn('id', $request->ids)->get();
+        $printQueue = collect();
 
-    foreach ($products as $product) {
-        if ($product->type === 'simple') {
-            $printQueue->push((object)[
-                'name' => $product->name,
-                'price' => $product->selling_price,
-                'barcode_value' => $product->barcode ?? $product->sku,
-            ]);
-        } elseif ($product->type === 'variable') {
-            foreach ($product->variants as $variant) {
-                $printQueue->push((object)[
-                    'name' => $product->name . ' (' . $variant->variant_name . ')',
-                    'price' => $variant->selling_price,
-                    'barcode_value' => $variant->barcode ?? $variant->sku,
+        foreach ($products as $product) {
+            if ($product->type === 'simple') {
+                $printQueue->push((object) [
+                    'name' => $product->name,
+                    'price' => $product->selling_price,
+                    'barcode_value' => $product->barcode ?? $product->sku,
                 ]);
+            } elseif ($product->type === 'variable') {
+                foreach ($product->variants as $variant) {
+                    $printQueue->push((object) [
+                        'name' => $product->name.' ('.$variant->variant_name.')',
+                        'price' => $variant->selling_price,
+                        'barcode_value' => $variant->barcode ?? $variant->sku,
+                    ]);
+                }
             }
         }
+
+        // This object is what creates the HTML
+        $generator = new BarcodeGeneratorHTML;
+
+        return view('admin.products.barcode', compact('printQueue', 'generator'));
     }
-
-    // This object is what creates the HTML
-    $generator = new BarcodeGeneratorHTML();
-
-    return view('admin.products.barcode', compact('printQueue', 'generator'));
-}
 
     /**
      * Show the import form.
@@ -462,9 +460,10 @@ class ProductController extends Controller
 
         try {
             Excel::import(new ProductsImport, $request->file('file'));
+
             return redirect()->route('products.index')->with('success', 'Products imported successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error importing products: ' . $e->getMessage());
+            return back()->with('error', 'Error importing products: '.$e->getMessage());
         }
     }
 
@@ -472,40 +471,33 @@ class ProductController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'exists:products,id'
+            'ids.*' => 'exists:products,id',
         ]);
 
-        $products = Product::withCount(['orderItems', 'purchaseOrderItems', 'returnItems', 'quotationItems', 'deliveryChallanItems'])
-            ->whereIn('id', $request->ids)
-            ->get();
+        $products = Product::whereIn('id', $request->ids)->get();
 
         $deletedCount = 0;
         $skipped = [];
-        $toDeleteIds = [];
 
         foreach ($products as $product) {
-            if (
-                $product->order_items_count > 0 || 
-                $product->purchase_order_items_count > 0 ||
-                $product->return_items_count > 0 ||
-                $product->quotation_items_count > 0 ||
-                $product->delivery_challan_items_count > 0
-            ) {
-                $skipped[] = $product->name;
-                continue;
-            }
-            $toDeleteIds[] = $product->id;
-        }
+            // Wipe all historical transactions associated with this product
+            $product->cleanupHistory();
 
-        if (!empty($toDeleteIds)) {
-            Product::whereIn('id', $toDeleteIds)->delete();
-            $deletedCount = count($toDeleteIds);
+            $product->clearMediaCollection('product_image');
+            $product->clearMediaCollection('product_gallery');
+
+            $this->logActivity('Product', 'Delete', "Bulk Force Deleted Product: {$product->name} (including all history)", [
+                'sku' => $product->sku,
+            ]);
+
+            $product->delete();
+            $deletedCount++;
         }
 
         return response()->json([
-            'success' => true, 
-            'message' => "Successfully deleted $deletedCount products.",
-            'skipped' => $skipped
+            'success' => true,
+            'message' => "Successfully deleted $deletedCount products and their history.",
+            'skipped' => $skipped,
         ]);
     }
 
@@ -514,7 +506,7 @@ class ProductController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:products,id',
-            'status' => 'required|in:draft,published'
+            'status' => 'required|in:draft,published',
         ]);
 
         Product::whereIn('id', $request->ids)->update(['status' => $request->status]);

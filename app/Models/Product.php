@@ -124,6 +124,11 @@ class Product extends Model implements HasMedia
         return $this->hasMany(DeliveryChallanItem::class);
     }
 
+    public function inventoryTransactions(): HasMany
+    {
+        return $this->hasMany(InventoryTransaction::class);
+    }
+
     public function getActivePriceAttribute()
     {
         if ($this->type === 'simple') {
@@ -142,7 +147,7 @@ class Product extends Model implements HasMedia
     }
 
     /**
-     * Check if product is currently on sale
+     * Check if the product is currently on sale
      */
     public function getIsOnSaleAttribute()
     {
@@ -154,5 +159,39 @@ class Product extends Model implements HasMedia
         return $this->variants->contains(function ($variant) {
             return $variant->sale_price && $variant->sale_price < $variant->selling_price;
         });
+    }
+
+    /**
+     * Check if the product can be safely deleted without breaking historical data.
+     */
+    public function isDeletable(): bool
+    {
+        return $this->orderItems()->count() === 0 &&
+               $this->purchaseOrderItems()->count() === 0 &&
+               $this->returnItems()->count() === 0 &&
+               $this->quotationItems()->count() === 0 &&
+               $this->deliveryChallanItems()->count() === 0;
+    }
+
+    /**
+     * Wipe all historical transactions for this product.
+     * CAUTION: This is destructive to historical business data.
+     */
+    public function cleanupHistory(): void
+    {
+        // Delete related items in all historical tables
+        $this->orderItems()->delete();
+        $this->purchaseOrderItems()->delete();
+        $this->returnItems()->delete();
+        $this->quotationItems()->delete();
+        $this->deliveryChallanItems()->delete();
+        $this->inventoryTransactions()->delete();
+
+        if ($this->type === 'variable') {
+            foreach ($this->variants as $variant) {
+                $variant->inventoryTransactions()->delete();
+                $variant->delete();
+            }
+        }
     }
 }
