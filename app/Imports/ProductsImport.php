@@ -14,28 +14,33 @@ class ProductsImport implements ToModel, WithHeadingRow
 {
     protected $uncategorized;
 
-    protected $brand;
+    protected $defaultBrand;
 
     public function __construct()
     {
         // Find or create the "Uncategorized" category
-        $this->uncategorized = Category::where('name', 'Uncategorized')->first()
-            ?? Category::create(['name' => 'Uncategorized', 'slug' => 'uncategorized']);
+        $this->uncategorized = Category::firstOrCreate(
+            ['name' => 'Uncategorized'],
+            ['slug' => 'uncategorized']
+        );
 
-        // Use a default brand
-        $this->brand = Brand::firstOrCreate(['name' => 'Generic']);
+        // Default brand for when it's missing or empty
+        $this->defaultBrand = Brand::firstOrCreate(['name' => 'Generic']);
     }
 
     public function model(array $row)
     {
         /**
          * Expected columns from user request:
-         * PNO, Title, Cost Price, Selling Price, Sale Price, Stock, category, Image
+         * PNO, Title, Cost Price, Selling Price, Sale Price, Stock, category, Image, Brand
          *
          * Maatwebsite WithHeadingRow usually slugs the headers:
-         * 'pno', 'title', 'cost_price', 'selling_price', 'sale_price', 'stock', 'category', 'image'
+         * 'pno', 'title', 'cost_price', 'selling_price', 'sale_price', 'stock', 'category', 'image', 'brand'
          */
         $name = $row['title'] ?? null;
+        $brandName = $row['brand'] ?? null;
+
+        // Skip if title is empty
         if (! $name) {
             return null;
         }
@@ -44,6 +49,11 @@ class ProductsImport implements ToModel, WithHeadingRow
         if (Product::where('name', $name)->exists()) {
             return null;
         }
+
+        // Brand lookup or creation (fallback to default)
+        $brand = $brandName
+            ? Brand::firstOrCreate(['name' => $brandName])
+            : $this->defaultBrand;
 
         // Required prices with defaults (0)
         $costPrice = $this->parsePrice($row['cost_price'] ?? 0);
@@ -72,7 +82,7 @@ class ProductsImport implements ToModel, WithHeadingRow
             'name' => $name,
             'slug' => Str::slug($name).'-'.Str::random(5),
             'pno' => $pno,
-            'brand_id' => $this->brand->id,
+            'brand_id' => $brand->id,
             'category_id' => $category->id,
             'description' => '<div>'.$name.'</div>',
             'type' => 'simple',
