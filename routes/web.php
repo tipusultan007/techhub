@@ -1,38 +1,40 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\AmcController;
+use App\Http\Controllers\AmcTemplateController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\Auth\CustomerLoginController;
 use App\Http\Controllers\Auth\CustomerPasswordResetController;
 use App\Http\Controllers\Auth\CustomerRegisterController;
-use App\Http\Controllers\BannerController;
+use App\Http\Controllers\BannerController; // Assuming you have this
 use App\Http\Controllers\BrandController;
-use App\Http\Controllers\CartController; // Assuming you have this
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerAddressController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryChallanController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductSerialController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReturnController;
-use App\Http\Controllers\DeliveryChallanController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TrackOrderController;
-use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
-use App\Http\Controllers\Admin\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,12 +45,18 @@ use Illuminate\Support\Facades\Route;
 
 // Maintenance & Coming Soon Routes
 Route::get('/maintenance', function () {
-    if (!settings('maintenance_mode')) return redirect('/');
+    if (! settings('maintenance_mode')) {
+        return redirect('/');
+    }
+
     return view('errors.maintenance');
 })->name('maintenance');
 
 Route::get('/coming-soon', function () {
-    if (!settings('coming_soon_mode')) return redirect('/');
+    if (! settings('coming_soon_mode')) {
+        return redirect('/');
+    }
+
     return view('errors.coming-soon');
 })->name('coming-soon');
 
@@ -143,7 +151,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
 
         // Products & Catalog
         Route::post('/products/print-barcodes', [ProductController::class, 'printBarcode'])->name('products.print_barcodes');
-        
+
         // Import Products Routes
         Route::get('/products/import', [ProductController::class, 'importForm'])->name('products.import.form');
         Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
@@ -185,7 +193,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::post('/quotations/{quotation}/convert', [QuotationController::class, 'convertToSale'])->name('quotations.convert');
         Route::get('/quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print');
         Route::get('/quotations/{quotation}/download-pdf', [QuotationController::class, 'downloadPdf'])->name('quotations.download-pdf');
-        
+
         // Delivery Challans
         Route::get('/delivery-challans', [DeliveryChallanController::class, 'index'])->name('delivery-challans.index');
         Route::get('/delivery-challans/create', [DeliveryChallanController::class, 'manualCreate'])->name('delivery-challans.create');
@@ -202,6 +210,13 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::get('/delivery-challans/{id}/pdf', [DeliveryChallanController::class, 'pdf'])->name('delivery-challans.pdf');
 
         Route::resource('quotations', QuotationController::class);
+
+        // AMC Management
+        Route::get('amcs/{amc}/agreement', [AmcController::class, 'generateAgreement'])->name('amcs.agreement');
+        Route::get('amcs/{amc}/agreement/pdf', [AmcController::class, 'downloadAgreement'])->name('amcs.pdf');
+        Route::post('amcs/{amc}/generate-schedule', [AmcController::class, 'generateSchedule'])->name('amcs.generate-schedule');
+        Route::resource('amcs', AmcController::class);
+        Route::resource('amc-templates', AmcTemplateController::class);
     });
 
     // --- FINANCIALS & EXPENSES ---
@@ -274,8 +289,6 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
             'destroy' => 'solutions.admin.destroy',
         ]);
 
-
-
         // Dynamic Pages Management
         Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->names([
             'index' => 'pages.admin.index',
@@ -303,13 +316,20 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
 
         // Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+        // Menu Builder
+        Route::resource('menus', MenuController::class);
+        Route::get('/menus/{menu}/builder', [MenuController::class, 'builder'])->name('menus.builder');
+        Route::post('/menus/{menu}/items', [MenuController::class, 'addItem'])->name('menus.items.store');
+        Route::delete('/menu-items/{item}', [MenuController::class, 'deleteItem'])->name('menus.items.destroy');
+        Route::put('/menu-items/{item}', [MenuController::class, 'updateItem'])->name('menus.items.update');
+        Route::post('/menus/update-order', [MenuController::class, 'updateOrder'])->name('menus.update-order');
     });
 
 });
 
 // Authentication Routes (Login, Register, Password Reset)
-require __DIR__ . '/auth.php';
-
+require __DIR__.'/auth.php';
 
 // Guest Routes
 Route::prefix('account')->name('customer.')->group(function () {
@@ -356,7 +376,6 @@ Route::prefix('account')->name('customer.')->group(function () {
         Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
         Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
 
-
         Route::get('addresses', [CustomerAddressController::class, 'index'])->name('addresses');
         Route::post('addresses', [CustomerAddressController::class, 'store'])->name('addresses.store');
         Route::put('addresses/{id}', [CustomerAddressController::class, 'update'])->name('addresses.update');
@@ -366,6 +385,3 @@ Route::prefix('account')->name('customer.')->group(function () {
     });
 
 });
-
-
-

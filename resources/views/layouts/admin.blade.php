@@ -230,6 +230,16 @@
                     <i class="fas fa-user-friends"></i> <span>Customer CRM</span>
                 </a>
 
+                <div class="sidebar-header">Technical Services</div>
+                <a href="{{ route('amcs.index') }}"
+                   class="sidebar-item {{ request()->routeIs('amcs*') ? 'active' : '' }}">
+                    <i class="fas fa-file-contract"></i> <span>AMC Management</span>
+                </a>
+                <a href="{{ route('amc-templates.index') }}"
+                   class="sidebar-item {{ request()->routeIs('amc-templates*') ? 'active' : '' }}">
+                    <i class="fas fa-scroll"></i> <span>Agreement Templates</span>
+                </a>
+
                 
                 
                 <!-- CATALOG & INVENTORY -->
@@ -254,6 +264,13 @@
                     <i class="fas fa-award"></i> <span>Brand Registry</span>
                 </a>
                 @endcan
+
+                @if(auth()->user()->hasAnyRole(['Admin','Super Admin']))
+                <a href="{{ route('menus.index') }}"
+                   class="sidebar-item {{ request()->routeIs('menus*') ? 'active' : '' }}">
+                    <i class="ri-navigation-line"></i> <span>Menu Builder</span>
+                </a>
+                @endif
 
                 <!-- FINANCIALS -->
                 <div class="sidebar-header">Financial Resources</div>

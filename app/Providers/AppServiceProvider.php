@@ -60,9 +60,19 @@ class AppServiceProvider extends ServiceProvider
             $footerPages = \App\Models\Page::where('is_active', true)
                 ->get();
 
+            $headerMenu = \App\Models\Menu::where('location', 'header')
+                ->orWhere('slug', 'main-header')
+                ->with(['menuItems' => function($q) {
+                    $q->whereNull('parent_id')->orderBy('order');
+                }, 'menuItems.children' => function($q) {
+                    $q->orderBy('order');
+                }])
+                ->first();
+
             $view->with('headerCategories', $categories)
                  ->with('footerCategories', $footerCategories)
-                 ->with('footerPages', $footerPages);
+                 ->with('footerPages', $footerPages)
+                 ->with('headerMenu', $headerMenu);
         });
         View::composer('layouts.frontend', function ($view) {
             $wishlistCount = 0;

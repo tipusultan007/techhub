@@ -195,6 +195,13 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command->info('Variable Product Created: iPhone 15 with 3 variants');
+
+        // 7. AMC SEEDERS
+        $this->call([
+            AmcTemplateSeeder::class,
+            AmcSeeder::class,
+        ]);
+
         $this->command->info('Seed Complete!');
     }
 }

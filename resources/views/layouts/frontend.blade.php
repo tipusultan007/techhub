@@ -320,33 +320,58 @@
 <div class="nav-bar">
     <div class="container">
         <ul class="nav-list">
-            <li class="{{ request()->is('/') ? 'active' : '' }}">
-                <a href="{{ url('/') }}">Home</a>
-            </li>
-             <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
-                <a href="{{ route('solutions.index') }}">IT Solutions</a>
-            </li>
-            @foreach($headerCategories as $category)
-                <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}">
-                    <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
-                        {{ $category->name }}
-                        @if($category->children->count() > 0)
-                            <i class="ri-arrow-down-s-line"></i>
+            @if($headerMenu && $headerMenu->menuItems->count() > 0)
+                @foreach($headerMenu->menuItems as $item)
+                    <li class="{{ request()->url() == $item->url ? 'active' : '' }} {{ $item->children->count() > 0 ? 'has-dropdown' : '' }}">
+                        <a href="{{ $item->url }}" target="{{ $item->target }}">
+                            {{ $item->label }}
+                            @if($item->children->count() > 0)
+                                <i class="ri-arrow-down-s-line"></i>
+                            @endif
+                        </a>
+                        @if($item->children->count() > 0)
+                            <ul class="dropdown-menu">
+                                @foreach($item->children as $child)
+                                    <li>
+                                        <a href="{{ $child->url }}" target="{{ $child->target }}">
+                                            {{ $child->label }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
                         @endif
-                    </a>
-                    @if($category->children->count() > 0)
-                        <ul class="dropdown-menu">
-                            @foreach($category->children as $child)
-                                <li>
-                                    <a href="{{ route('category.show', ['slug' => $child->slug]) }}">
-                                        {{ $child->name }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
+                    </li>
+                @endforeach
+            @else
+                {{-- Fallback to default menu if no dynamic menu is set --}}
+                <li class="{{ request()->is('/') ? 'active' : '' }}">
+                    <a href="{{ url('/') }}">Home</a>
                 </li>
-            @endforeach
+                <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
+                    <a href="{{ route('solutions.index') }}">IT Solutions</a>
+                </li>
+                @foreach($headerCategories as $category)
+                    <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}">
+                        <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
+                            {{ $category->name }}
+                            @if($category->children->count() > 0)
+                                <i class="ri-arrow-down-s-line"></i>
+                            @endif
+                        </a>
+                        @if($category->children->count() > 0)
+                            <ul class="dropdown-menu">
+                                @foreach($category->children as $child)
+                                    <li>
+                                        <a href="{{ route('category.show', ['slug' => $child->slug]) }}">
+                                            {{ $child->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
+                @endforeach
+            @endif
         </ul>
     </div>
 </div>
@@ -402,44 +427,70 @@
 
     <div class="nav-sidebar-body">
         <ul class="mobile-nav-list">
-            <li class="{{ request()->is('/') ? 'active' : '' }}">
-                <a href="{{ url('/') }}">Home</a>
-            </li>
-            <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
-                <a href="{{ route('solutions.index') }}">IT Solutions</a>
-            </li>
-            @foreach($headerCategories as $category)
-                <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}" x-data="{ open: false }">
-                    <div class="mobile-nav-item" :class="{ 'submenu-active': open }">
-                        <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
-                            {{ $category->name }}
-                        </a>
-                        @if($category->children->count() > 0)
-                            <div class="submenu-toggle" @click="open = !open">
-                                <i class="ri-arrow-down-s-line"></i>
-                            </div>
+            @if($headerMenu && $headerMenu->menuItems->count() > 0)
+                @foreach($headerMenu->menuItems as $item)
+                    <li class="{{ request()->url() == $item->url ? 'active' : '' }}" x-data="{ open: false }">
+                        <div class="mobile-nav-item" :class="{ 'submenu-active': open }">
+                            <a href="{{ $item->url }}" target="{{ $item->target }}">
+                                {{ $item->label }}
+                            </a>
+                            @if($item->children->count() > 0)
+                                <div class="submenu-toggle" @click="open = !open">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </div>
+                            @endif
+                        </div>
+                        @if($item->children->count() > 0)
+                            <ul class="mobile-submenu" :class="{ 'open': open }" x-show="open" x-collapse>
+                                @foreach($item->children as $child)
+                                    <li>
+                                        <a href="{{ $child->url }}" target="{{ $child->target }}">
+                                            {{ $child->label }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
                         @endif
-                    </div>
-                    @if($category->children->count() > 0)
-                        <ul class="mobile-submenu" :class="{ 'open': open }" x-show="open" x-collapse>
-                            @foreach($category->children as $child)
-                                <li>
-                                    <a href="{{ route('category.show', ['slug' => $child->slug]) }}">
-                                        {{ $child->name }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
+                    </li>
+                @endforeach
+            @else
+                <li class="{{ request()->is('/') ? 'active' : '' }}">
+                    <a href="{{ url('/') }}">Home</a>
                 </li>
-            @endforeach
-
-            
+                <li class="{{ request()->is('solutions*') ? 'active' : '' }}">
+                    <a href="{{ route('solutions.index') }}">IT Solutions</a>
+                </li>
+                @foreach($headerCategories as $category)
+                    <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}" x-data="{ open: false }">
+                        <div class="mobile-nav-item" :class="{ 'submenu-active': open }">
+                            <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
+                                {{ $category->name }}
+                            </a>
+                            @if($category->children->count() > 0)
+                                <div class="submenu-toggle" @click="open = !open">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </div>
+                            @endif
+                        </div>
+                        @if($category->children->count() > 0)
+                            <ul class="mobile-submenu" :class="{ 'open': open }" x-show="open" x-collapse>
+                                @foreach($category->children as $child)
+                                    <li>
+                                        <a href="{{ route('category.show', ['slug' => $child->slug]) }}">
+                                            {{ $child->name }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </li>
+                @endforeach
+            @endif
         </ul>
         
         <div class="mobile-nav-contact" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
             <a href="tel:{{ $settings['contact_phone'] ?? '+971 4 000 0000' }}" style="display: block; margin-bottom: 10px;"><i class="ri-phone-line"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a>
-            <a href="mailto:{{ $settings['contact_email'] ?? 'sales@techhub.ae' }}" style="display: block;"><i class="ri-mail-line"></i> {{ $settings['contact_email'] ?? 'sales@techhub.ae' }}</a>
+            <a href="mailto:{{ $settings['contact_email'] ?? 'sales@techhubrak.ae' }}" style="display: block;"><i class="ri-mail-line"></i> {{ $settings['contact_email'] ?? 'sales@techhubrak.ae' }}</a>
         </div>
     </div>
 </div>

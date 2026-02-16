@@ -36,7 +36,7 @@
 
         <div class="inline-flex items-center gap-3 px-6 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm text-sm font-bold text-gray-400">
             <i class="fas fa-envelope text-[#2dae9a]"></i>
-            Questions? Contact us at <span class="text-[#024959]">{{ settings('website_email', 'support@techhub.com') }}</span>
+            Questions? Contact us at <span class="text-[#024959]">{{ settings('website_email', 'support@techhubrak.ae') }}</span>
         </div>
 
         <div class="mt-12 pt-8 border-t border-gray-100">
