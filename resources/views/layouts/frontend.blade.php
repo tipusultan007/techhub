@@ -557,7 +557,7 @@
                 <h4>Contact</h4>
                 <ul>
                     <li><a href="#"><i class="ri-map-pin-line"></i> {{ $settings['contact_address'] ?? 'Computer Street, Bur Dubai, UAE' }}</a></li>
-                    <li><a href="tel:{{ $settings['contact_phone'] ?? '+971 4 000 0000' }}"><i class="ri-phone-fill"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a></li>
+                    <li><a href="tel:{{ $settings['contact_phone'] ?? '' }}"><i class="ri-phone-fill"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a></li>
                     <li><a href="mailto:{{ $settings['contact_email'] ?? 'support@tech  hubrak.ae' }}"><i class="ri-mail-fill"></i> {{ $settings['contact_email'] ?? 'support@techhubrak.ae' }}</a></li>
                 </ul>
                 <div class="payment-icons">

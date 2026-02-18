@@ -27,13 +27,13 @@
     </div>
     
     <!-- AMC CTA -->
-    <div class="mt-20 rounded-3xl p-10 md:p-16 relative overflow-hidden text-white flex flex-col md:flex-row items-center justify-between" style="background: var(--brand-navy);">
+    <div class="mt-20 mb-20 rounded-3xl p-10 md:p-16 relative overflow-hidden text-white flex flex-col md:flex-row items-center justify-between" style="background: var(--brand-navy);">
         <div class="relative z-10 max-w-xl text-center md:text-left">
             <h2 class="text-3xl font-extrabold mb-4">Dedicated Support for Your Business</h2>
             <p style="color: rgba(255,255,255,0.7);">Looking for a reliable IT partner? Our Annual Maintenance Contracts (AMC) ensure your business stays online 24/7 with expert support.</p>
         </div>
         <div class="relative z-10 mt-8 md:mt-0">
-            <a href="tel:+97140000000" class="btn btn-brand !px-10 !py-4 text-lg">Contact Us Now</a>
+            <a href="tel:+{{ $settings['contact_phone'] }}" class="btn btn-brand !px-10 !py-4 text-lg">Contact Us Now</a>
         </div>
         <!-- Abstract BG Elements -->
         <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl" style="background: rgba(45, 174, 154, 0.2);"></div>

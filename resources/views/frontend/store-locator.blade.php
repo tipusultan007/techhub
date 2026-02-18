@@ -140,7 +140,7 @@
                 <i class="ri-phone-fill"></i>
                 <div>
                     <h4>Phone</h4>
-                    <p>{{ settings('contact_phone', '+971 4 000 0000') }}</p>
+                    <p><a href="tel:+{{ settings('contact_phone', '+971 4 000 0000') }}">{{ settings('contact_phone', '+971 4 000 0000') }}</a></p>
                 </div>
             </div>
 
@@ -149,7 +149,7 @@
                 <i class="ri-whatsapp-fill" style="color: #25D366;"></i>
                 <div>
                     <h4>WhatsApp</h4>
-                    <p>{{ settings('contact_whatsapp') }}</p>
+                    <p><a href="tel:+{{ settings('contact_whatsapp', '') }}">{{ settings('contact_whatsapp', '+971 4 000 0000') }}</a></p>
                 </div>
             </div>
             @endif
@@ -158,7 +158,7 @@
                 <i class="ri-mail-fill"></i>
                 <div>
                     <h4>Email</h4>
-                    <p>{{ settings('contact_email', 'sales@techhub.ae') }}</p>
+                    <p><a href="mailto:{{ settings('contact_email', 'sales@techhub.ae') }}">{{ settings('contact_email', 'sales@techhub.ae') }}</a></p>
                 </div>
             </div>
 

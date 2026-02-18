@@ -500,7 +500,7 @@
                 <h3>Upgrade Your Office</h3>
                 <p>Exclusive corporate deals on Workstations, Servers, and Networking Gear.</p>
             </div>
-            <button class="mb-btn">Request Quote</button>
+            <a href="mailto:sales@techhubrak.ae" class="mb-btn">Request Quote</a>
         </div>
 
     </div>

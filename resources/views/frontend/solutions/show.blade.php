@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="container py-16">
-    <div class="flex flex-col lg:flex-row gap-12">
+    <div class="flex flex-col lg:flex-row gap-12 my-20">
         <!-- Sidebar Navigation -->
         <aside class="w-full lg:w-1/4">
             <div class="bg-slate-50 rounded-2xl p-6 sticky top-24">
@@ -27,7 +27,7 @@
                 <div class="mt-10 rounded-2xl p-6 text-white text-center" style="background: var(--brand-navy);">
                     <h5 class="font-bold mb-2">Need a Quote?</h5>
                     <p class="text-xs mb-6" style="color: rgba(255,255,255,0.7);">Get a professional consultation for your business IT needs.</p>
-                    <a href="tel:+97140000000" class="inline-block bg-white font-bold px-6 py-2.5 rounded-lg text-sm hover:bg-slate-50 transition-colors" style="color: var(--brand-navy);">Call Experts</a>
+                    <a href="tel:{{ $settings['contact_phone']??'' }}" class="inline-block bg-white font-bold px-6 py-2.5 rounded-lg text-sm hover:bg-slate-50 transition-colors" style="color: var(--brand-navy);">Call Experts</a>
                 </div>
             </div>
         </aside>
