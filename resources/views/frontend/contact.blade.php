@@ -34,8 +34,8 @@
                         <i class="ri-phone-fill text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">Phone Number</h3>
-                    <p class="text-slate-600 mb-1">Sales: {{ settings('contact_phone', '+971 4 XXX XXXX') }}</p>
-                    <p class="text-slate-600">Support: {{ settings('support_phone', '+971 4 XXX XXXX') }}</p>
+                    <p class="text-slate-600 mb-1">Sales: {{ settings('contact_phone') }}</p>
+                    <p class="text-slate-600">Support: {{ settings('support_phone') }}</p>
                 </div>
 
                 <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
@@ -43,8 +43,8 @@
                         <i class="ri-mail-fill text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-2">Email Address</h3>
-                    <p class="text-slate-600 mb-1">{{ settings('contact_email', 'sales@techhub.ae') }}</p>
-                    <p class="text-slate-600">{{ settings('support_email', 'support@techhub.ae') }}</p>
+                    <p class="text-slate-600 mb-1">{{ settings('contact_email') }}</p>
+                    <p class="text-slate-600">{{ settings('support_email') }}</p>
                 </div>
 
             </div>
