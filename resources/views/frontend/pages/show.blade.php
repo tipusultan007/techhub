@@ -28,17 +28,17 @@
 </article>
 
 <!-- Call to Action (Optional, matches solutions style) -->
-<section class="py-20 bg-slate-900 overflow-hidden relative">
+<section class="py-20 bg-brand-navy overflow-hidden relative">
     <div class="absolute inset-0 opacity-10 pointer-events-none">
-        <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-500 rounded-full blur-[120px]"></div>
-        <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500 rounded-full blur-[120px]"></div>
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-brand-teal rounded-full blur-[120px]"></div>
+        <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-brand-teal rounded-full blur-[120px]"></div>
     </div>
     
     <div class="container mx-auto px-4 lg:px-20 relative z-10 text-center">
         <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6">Need expert assistance?</h2>
         <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">Our team of specialists is ready to help you navigate your IT challenges and deliver scalable solutions.</p>
         <div class="flex flex-wrap items-center justify-center gap-4">
-            <a href="#" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all hover:scale-105 shadow-xl shadow-blue-500/20">Contact Our Team</a>
+            <a href="tel:{{ settings('contact_phone') }}" class="px-8 py-4 bg-brand-emerald hover:bg-brand-teal text-white font-bold rounded-2xl transition-all hover:scale-105 shadow-xl shadow-brand-emerald/20">Contact Our Team</a>
             <a href="{{ route('solutions.index') }}" class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition-all backdrop-blur-sm">Browse Solutions</a>
         </div>
     </div>
