@@ -148,8 +148,8 @@
             <div class="info-item">
                 <i class="ri-whatsapp-fill" style="color: #25D366;"></i>
                 <div>
-                    <h4>WhatsApp</h4>
-                    <p><a href="tel:+{{ settings('contact_whatsapp', '') }}">{{ settings('contact_whatsapp', '+971 4 000 0000') }}</a></p>
+                    <h4>Whatsapp</h4>
+                    <p><a href="https://wa.me/{{ settings('contact_whatsapp', '') }}">{{ settings('contact_whatsapp', '+971 4 000 0000') }}</a></p>
                 </div>
             </div>
             @endif
@@ -158,7 +158,7 @@
                 <i class="ri-mail-fill"></i>
                 <div>
                     <h4>Email</h4>
-                    <p><a href="mailto:{{ settings('contact_email', 'sales@techhub.ae') }}">{{ settings('contact_email', 'sales@techhub.ae') }}</a></p>
+                    <p><a href="mailto:{{ settings('contact_email') }}">{{ settings('contact_email') }}</a></p>
                 </div>
             </div>
 
