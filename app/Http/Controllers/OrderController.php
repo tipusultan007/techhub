@@ -109,7 +109,7 @@ class OrderController extends Controller
             'items.*.tax_rate' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,card,transfer,advance,custom',
             'discount' => 'nullable|numeric|min:0',
-            'attachment' => 'nullable|file|max:10240',
+            'attachment.*' => 'nullable|file|max:102400',
         ]);
 
         try {
@@ -256,7 +256,9 @@ class OrderController extends Controller
                 // Handle Attachment (Replace existing)
                 if ($request->hasFile('attachment')) {
                     $order->clearMediaCollection('attachments');
-                    $order->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+                    foreach ($request->file('attachment') as $file) {
+                        $order->addMedia($file)->toMediaCollection('attachments');
+                    }
                 }
             });
 

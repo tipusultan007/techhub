@@ -45,10 +45,16 @@
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">Attachment</label>
-                <input type="file" name="attachment" class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                <input type="file" name="attachment[]" multiple class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                 @if($order->hasMedia('attachments'))
-                    <div class="mt-1 text-xs text-blue-600 font-bold">
-                        <i class="fas fa-paperclip mr-1"></i> Has existing attachment
+                    <div class="mt-2 space-y-2">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-tighter">Existing Attachments:</p>
+                        @foreach($order->getMedia('attachments') as $media)
+                            <div class="flex items-center justify-between p-2 bg-slate-50 border rounded-lg">
+                                <span class="text-xs text-slate-600 truncate max-w-[150px]">{{ $media->file_name }}</span>
+                                <a href="{{ $media->getUrl() }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs font-bold">View</a>
+                            </div>
+                        @endforeach
                     </div>
                 @endif
             </div>

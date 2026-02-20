@@ -246,7 +246,7 @@
 
                     <div class="space-y-2">
                         <label class="text-xs font-black text-gray-400 uppercase tracking-widest block">Contract Attachment</label>
-                        <input type="file" name="attachment" class="w-full border rounded-xl p-2 mt-1 bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        <input type="file" name="attachment[]" multiple class="w-full border rounded-xl p-2 mt-1 bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
                     </div>
 
                     <div class="space-y-2">

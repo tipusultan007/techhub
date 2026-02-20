@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Amc;
-use App\Models\AmcItem;
 use App\Models\AmcIncludedService;
+use App\Models\AmcItem;
 use App\Models\AmcService;
 use App\Models\AmcTemplate;
 use App\Models\Customer;
 use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class AmcController extends Controller
 {
@@ -21,7 +21,7 @@ class AmcController extends Controller
         $query = Amc::with('customer');
 
         if ($request->filled('search')) {
-            $query->where('contract_number', 'like', '%' . $request->search . '%');
+            $query->where('contract_number', 'like', '%'.$request->search.'%');
         }
 
         if ($request->filled('customer_id')) {
@@ -51,6 +51,7 @@ class AmcController extends Controller
         $customers = Customer::orderBy('name')->get();
         $products = Product::orderBy('name')->get();
         $templates = AmcTemplate::orderBy('name')->get();
+
         return view('admin.amcs.create', compact('customers', 'products', 'templates'));
     }
 
@@ -72,7 +73,7 @@ class AmcController extends Controller
 
         $amc = Amc::create([
             'customer_id' => $request->customer_id,
-            'contract_number' => 'AMC-' . strtoupper(Str::random(8)),
+            'contract_number' => 'AMC-'.strtoupper(Str::random(8)),
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'amount' => $request->amount,
@@ -83,7 +84,9 @@ class AmcController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            $amc->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+            foreach ($request->file('attachment') as $file) {
+                $amc->addMedia($file)->toMediaCollection('attachments');
+            }
         }
 
         foreach ($request->items as $item) {
@@ -102,6 +105,7 @@ class AmcController extends Controller
     public function show(Amc $amc)
     {
         $amc->load(['customer', 'items.product', 'services.technician']);
+
         return view('admin.amcs.show', compact('amc'));
     }
 
@@ -111,6 +115,7 @@ class AmcController extends Controller
         $products = Product::orderBy('name')->get();
         $templates = AmcTemplate::orderBy('name')->get();
         $amc->load('items');
+
         return view('admin.amcs.edit', compact('amc', 'customers', 'products', 'templates'));
     }
 
@@ -126,7 +131,7 @@ class AmcController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,id',
             'items.*.description' => 'required|string',
-            'attachment' => 'nullable|file|max:10240',
+            'attachment.*' => 'nullable|file|max:102400',
         ]);
 
         $amc->update([
@@ -142,7 +147,9 @@ class AmcController extends Controller
 
         if ($request->hasFile('attachment')) {
             $amc->clearMediaCollection('attachments');
-            $amc->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+            foreach ($request->file('attachment') as $file) {
+                $amc->addMedia($file)->toMediaCollection('attachments');
+            }
         }
 
         // Sync items (simple approach: delete and recreate)
@@ -158,7 +165,7 @@ class AmcController extends Controller
         $amc->includedServices()->delete();
         if ($request->has('included_services')) {
             foreach ($request->included_services as $service) {
-                if (!empty($service['service_name'])) {
+                if (! empty($service['service_name'])) {
                     AmcIncludedService::create([
                         'amc_id' => $amc->id,
                         'service_name' => $service['service_name'],
@@ -171,12 +178,12 @@ class AmcController extends Controller
         return redirect()->route('amcs.index')->with('success', 'AMC updated successfully.');
     }
 
-
     public function generateSchedule(Amc $amc)
     {
         // Clear existing scheduled services if any (be careful not to delete completed ones if updating)
         $amc->services()->where('status', 'scheduled')->delete();
         $this->generateScheduleLogic($amc);
+
         return back()->with('success', 'Service schedule regenerated.');
     }
 
@@ -209,15 +216,16 @@ class AmcController extends Controller
     {
         if ($amc->custom_agreement_content) {
             $content = $this->parseTemplate($amc->custom_agreement_content, $amc);
+
             return view('admin.amcs.agreement', compact('amc', 'content'));
         }
 
         $templateId = $request->template_id;
-        $template = $templateId 
-            ? AmcTemplate::find($templateId) 
+        $template = $templateId
+            ? AmcTemplate::find($templateId)
             : AmcTemplate::where('is_default', true)->first() ?? AmcTemplate::first();
 
-        if (!$template) {
+        if (! $template) {
             return back()->with('error', 'No agreement template found. Please create one first.');
         }
 
@@ -232,14 +240,15 @@ class AmcController extends Controller
             $content = $this->parseTemplate($amc->custom_agreement_content, $amc);
         } else {
             $templateId = $request->template_id;
-            $template = $templateId 
-                ? AmcTemplate::find($templateId) 
+            $template = $templateId
+                ? AmcTemplate::find($templateId)
                 : AmcTemplate::where('is_default', true)->first() ?? AmcTemplate::first();
 
             $content = $this->parseTemplate($template->content ?? '', $amc);
         }
 
         $pdf = Pdf::loadView('admin.amcs.pdf', compact('amc', 'content'));
+
         return $pdf->download("AMC_Agreement_{$amc->contract_number}.pdf");
     }
 
@@ -261,7 +270,7 @@ class AmcController extends Controller
 
         $includedServicesHtml = '<ul style="margin: 0; padding-left: 20px;">';
         foreach ($amc->includedServices as $service) {
-            $includedServicesHtml .= "<li><strong>{$service->service_name}</strong>" . ($service->description ? ": {$service->description}" : "") . "</li>";
+            $includedServicesHtml .= "<li><strong>{$service->service_name}</strong>".($service->description ? ": {$service->description}" : '').'</li>';
         }
         $includedServicesHtml .= '</ul>';
 

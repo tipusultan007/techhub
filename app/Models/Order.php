@@ -11,6 +11,11 @@ class Order extends Model implements HasMedia
     use InteractsWithMedia;
     protected $guarded = [];
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments');
+    }
+
     protected $casts = [
         'total' => 'decimal:2',
         'vat_amount' => 'decimal:2',

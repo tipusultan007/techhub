@@ -145,12 +145,55 @@
                 </div>
 
                 @if($amc->hasMedia('attachments'))
-                <div>
-                    <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Contract Attachment</h3>
-                    <a href="{{ $amc->getFirstMediaUrl('attachments') }}" target="_blank" 
-                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-all border border-gray-200">
-                        <i class="fas fa-paperclip"></i> View Attached File
-                    </a>
+                <div class="no-print">
+                    <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Attachments</h3>
+                    <button onclick="openAttachmentModal()" 
+                            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5 text-sm uppercase tracking-widest">
+                        <i class="fas fa-paperclip"></i> View Attachments ({{ $amc->getMedia('attachments')->count() }})
+                    </button>
+                    
+                    <!-- Attachment Modal -->
+                    <div id="attachmentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[100] p-4 no-print text-left">
+                        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
+                            <div class="px-8 py-6 border-b bg-gray-50 flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 tracking-tight text-left">Contract Attachments</h3>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 text-left">Total Files: {{ $amc->getMedia('attachments')->count() }}</p>
+                                </div>
+                                <button onclick="closeAttachmentModal()" class="w-10 h-10 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors shadow-sm">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="p-8 max-h-[60vh] overflow-y-auto space-y-3">
+                                @foreach($amc->getMedia('attachments') as $media)
+                                    <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 group hover:border-emerald-200 transition-colors">
+                                        <div class="flex items-center gap-4 truncate">
+                                            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </div>
+                                            <div class="truncate">
+                                                <p class="text-xs font-bold text-gray-700 truncate text-left">{{ $media->file_name }}</p>
+                                                <p class="text-[10px] text-gray-400 font-bold uppercase mt-0.5 text-left">{{ number_format($media->size / 1024, 0) }} KB</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ $media->getUrl() }}" target="_blank" class="w-8 h-8 rounded-lg bg-white border border-gray-200 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                                                <i class="fas fa-eye text-[10px]"></i>
+                                            </a>
+                                            <a href="{{ $media->getUrl() }}" download class="w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-800 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                                                <i class="fas fa-download text-[10px]"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="px-8 py-6 bg-gray-50 border-t flex justify-end">
+                                <button onclick="closeAttachmentModal()" class="px-6 py-2.5 rounded-xl bg-gray-800 text-white font-bold text-xs hover:bg-gray-900 transition-all shadow-lg active:scale-95 uppercase tracking-widest">
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 @endif
 
@@ -164,4 +207,27 @@
         </div>
     </div>
 </div>
+@section('scripts')
+<script>
+    function openAttachmentModal() {
+        $('#attachmentModal').removeClass('hidden').addClass('flex');
+        $('body').addClass('overflow-hidden');
+    }
+
+    function closeAttachmentModal() {
+        $('#attachmentModal').addClass('hidden').removeClass('flex');
+        $('body').removeClass('overflow-hidden');
+    }
+
+    // Close on escape
+    $(document).keyup(function(e) {
+        if (e.key === "Escape") closeAttachmentModal();
+    });
+    
+    // Close on click outside
+    $('#attachmentModal').click(function(e) {
+        if (e.target === this) closeAttachmentModal();
+    });
+</script>
+@endsection
 @endsection

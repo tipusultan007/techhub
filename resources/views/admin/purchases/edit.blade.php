@@ -120,7 +120,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
                 <label class="block text-sm font-bold text-gray-700">Attachment</label>
-                <input type="file" name="attachment" class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                <input type="file" name="attachment[]" multiple class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                 @if($purchase->hasMedia('attachments'))
                     <div class="mt-1 text-xs text-blue-600 font-bold">
                         <i class="fas fa-paperclip mr-1"></i> Has existing attachment

@@ -38,13 +38,53 @@
                     <p>Date: {{ $order->created_at->format('d M Y, h:i A') }}</p>
                     <p>Status: <span class="px-2 py-0.5 rounded text-xs font-bold uppercase {{ $order->status == 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">{{ $order->status }}</span></p>
                     @if($order->hasMedia('attachments'))
-                        <div class="mt-2 p-2 bg-blue-50 rounded border border-blue-100 flex items-center justify-between">
-                            <div class="flex items-center text-blue-700 font-bold">
-                                <i class="fas fa-paperclip mr-2"></i> Attachment
-                            </div>
-                            <div class="flex gap-2">
-                                <a href="{{ $order->getFirstMediaUrl('attachments') }}" target="_blank" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">View</a>
-                                <a href="{{ $order->getFirstMediaUrl('attachments') }}" download class="text-xs bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-800">Download</a>
+                        <div class="mt-4 no-print">
+                            <button onclick="openAttachmentModal()" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-100 shadow-sm font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all transform active:scale-95">
+                                <i class="fas fa-paperclip mr-2"></i> View Attachments ({{ $order->getMedia('attachments')->count() }})
+                            </button>
+                        </div>
+
+                        <!-- Attachment Modal -->
+                        <div id="attachmentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[100] p-4 no-print text-left">
+                            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
+                                <div class="px-8 py-6 border-b bg-gray-50 flex justify-between items-center">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800 tracking-tight">Invoice Attachments</h3>
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Total Files: {{ $order->getMedia('attachments')->count() }}</p>
+                                    </div>
+                                    <button onclick="closeAttachmentModal()" class="w-10 h-10 rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors shadow-sm">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="p-8 max-h-[60vh] overflow-y-auto space-y-3">
+                                    @foreach($order->getMedia('attachments') as $media)
+                                        <div class="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 group hover:border-blue-200 transition-colors">
+                                            <div class="flex items-center gap-4 truncate text-left">
+                                                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                                                    <i class="fas fa-file-invoice"></i>
+                                                </div>
+                                                <div class="truncate">
+                                                    <p class="text-xs font-bold text-gray-700 truncate text-left">{{ $media->file_name }}</p>
+                                                    <p class="text-[10px] text-gray-400 font-bold uppercase mt-0.5 text-left">{{ number_format($media->size / 1024, 0) }} KB</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ $media->getUrl() }}" target="_blank" class="w-8 h-8 rounded-lg bg-white border border-gray-200 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                                                    <i class="fas fa-eye text-[10px]"></i>
+                                                </a>
+                                                <a href="{{ $media->getUrl() }}" download class="w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-800 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                                                    <i class="fas fa-download text-[10px]"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="px-8 py-6 bg-gray-50 border-t flex justify-end">
+                                    <button onclick="closeAttachmentModal()" class="px-6 py-2.5 rounded-xl bg-gray-800 text-white font-bold text-xs hover:bg-gray-900 transition-all shadow-lg active:scale-95 uppercase tracking-widest">
+                                        Done
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -192,4 +232,28 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    function openAttachmentModal() {
+        $('#attachmentModal').removeClass('hidden').addClass('flex');
+        $('body').addClass('overflow-hidden');
+    }
+
+    function closeAttachmentModal() {
+        $('#attachmentModal').addClass('hidden').removeClass('flex');
+        $('body').removeClass('overflow-hidden');
+    }
+
+    // Close on escape
+    $(document).keyup(function(e) {
+        if (e.key === "Escape") closeAttachmentModal();
+    });
+    
+    // Close on click outside
+    $('#attachmentModal').click(function(e) {
+        if (e.target === this) closeAttachmentModal();
+    });
+</script>
 @endsection

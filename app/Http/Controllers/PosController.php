@@ -234,7 +234,7 @@ class PosController extends Controller
         'discount' => 'nullable|numeric|min:0',
         'payment_method' => 'required|string',
         'customer_id' => 'nullable|exists:customers,id',
-        'attachment' => 'nullable|file|max:10240', // Max 10MB
+        'attachment.*' => 'nullable|file|max:102400', // Max 100MB
     ]);
 
     try {
@@ -297,9 +297,11 @@ class PosController extends Controller
         ]);
 
         // Handle Attachment
-        if ($request->hasFile('attachment')) {
-            $order->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+    if ($request->hasFile('attachment')) {
+        foreach ($request->file('attachment') as $file) {
+            $order->addMedia($file)->toMediaCollection('attachments');
         }
+    }
 
         // Notify Admin about new POS order
         User::role('Admin')->get()->each->notify(new NewOrderNotification($order));

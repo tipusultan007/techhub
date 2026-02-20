@@ -277,10 +277,16 @@
 
                     <div class="space-y-2">
                         <label class="text-xs font-black text-gray-400 uppercase tracking-widest block">Contract Attachment</label>
-                        <input type="file" name="attachment" class="w-full border rounded-xl p-2 mt-1 bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        <input type="file" name="attachment[]" multiple class="w-full border rounded-xl p-2 mt-1 bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
                         @if($amc->hasMedia('attachments'))
-                            <div class="mt-1 text-xs text-blue-600 font-bold flex items-center gap-1">
-                                <i class="fas fa-paperclip"></i> Current attachment exists
+                            <div class="mt-2 space-y-1">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Attachments:</p>
+                                @foreach($amc->getMedia('attachments') as $media)
+                                    <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-100 rounded-lg">
+                                        <span class="text-xs text-slate-600 truncate max-w-[150px] font-bold">{{ $media->file_name }}</span>
+                                        <a href="{{ $media->getUrl() }}" target="_blank" class="text-emerald-600 hover:text-emerald-700 text-xs font-black">View</a>
+                                    </div>
+                                @endforeach
                             </div>
                         @endif
                     </div>

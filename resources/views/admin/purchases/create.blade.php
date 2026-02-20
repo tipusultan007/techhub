@@ -84,7 +84,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
                 <label class="block text-sm font-bold text-gray-700">Attachment</label>
-                <input type="file" name="attachment" class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                <input type="file" name="attachment[]" multiple class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700">Notes (Optional)</label>
@@ -107,14 +107,6 @@
     $(document).ready(function() {
         let rowIdx = 0;
 
-        // Pre-fill fields if duplicating
-        @isset($duplicateData)
-            $('select[name="supplier_id"]').val("{{ $duplicateData['supplier_id'] }}");
-            $('textarea[name="notes"]').val("{{ $duplicateData['notes'] }}");
-            @foreach($duplicateData['items'] as $item)
-                addItem(@json($item));
-            @endforeach
-        @endisset
 
         // 1. Live Search Logic
         $('#product_search').on('keyup', function() {
@@ -241,6 +233,15 @@
             $('#row_' + id).remove();
             calculateTotal();
         };
+
+        // 5. Pre-fill fields if duplicating (Move here so addItem is defined)
+        @isset($duplicateData)
+            $('select[name="supplier_id"]').val("{{ $duplicateData['supplier_id'] }}");
+            $('textarea[name="notes"]').val("{{ $duplicateData['notes'] }}");
+            @foreach($duplicateData['items'] as $item)
+                addItem(@json($item));
+            @endforeach
+        @endisset
     });
 </script>
 @endsection

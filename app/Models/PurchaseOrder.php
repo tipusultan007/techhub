@@ -12,6 +12,11 @@ class PurchaseOrder extends Model implements HasMedia
 
     protected $guarded = [];
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments');
+    }
+
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);

@@ -75,7 +75,7 @@ class PurchaseOrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.qty' => 'required|numeric|min:1',
             'items.*.cost' => 'required|numeric|min:0',
-            'attachment' => 'nullable|file|max:10240',
+            'attachment.*' => 'nullable|file|max:102400',
         ]);
 
         try {
@@ -157,7 +157,9 @@ class PurchaseOrderController extends Controller
 
             // Handle Attachment
             if ($request->hasFile('attachment')) {
-                $po->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+                foreach ($request->file('attachment') as $file) {
+                    $po->addMedia($file)->toMediaCollection('attachments');
+                }
             }
 
             $this->logActivity('Purchase', 'Create', "Created Purchase Order #{$po->reference_no}", [
@@ -276,7 +278,9 @@ class PurchaseOrderController extends Controller
             // Handle Attachment
             if ($request->hasFile('attachment')) {
                 $po->clearMediaCollection('attachments');
-                $po->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+                foreach ($request->file('attachment') as $file) {
+                    $po->addMedia($file)->toMediaCollection('attachments');
+                }
             }
 
             $this->logActivity('Purchase', 'Edit', "Updated Purchase Order #{$po->reference_no}", [

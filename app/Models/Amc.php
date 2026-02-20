@@ -27,6 +27,11 @@ class Amc extends Model implements HasMedia
         'custom_agreement_content',
     ];
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments');
+    }
+
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',

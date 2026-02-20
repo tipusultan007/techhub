@@ -290,7 +290,7 @@
                     <!-- Attachment Upload -->
                     <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Attachment</label>
-                        <input type="file" id="attachment" 
+                        <input type="file" id="attachment" multiple
                             class="w-full border border-gray-300 rounded p-1.5 text-[10px] bg-white focus:ring-2 focus:ring-[#2dae9a] outline-none h-[44px]">
                     </div>
 
@@ -875,10 +875,12 @@
         }
     });
 
-    // Handle File Attachment
+    // Handle File Attachment (Multiple)
     let fileInput = $('#attachment')[0];
     if (fileInput.files.length > 0) {
-        formData.append('attachment', fileInput.files[0]);
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append('attachment[]', fileInput.files[i]);
+        }
     }
 
     $.ajax({
