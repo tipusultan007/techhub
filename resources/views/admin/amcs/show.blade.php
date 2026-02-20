@@ -144,6 +144,16 @@
                     </div>
                 </div>
 
+                @if($amc->hasMedia('attachments'))
+                <div>
+                    <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Contract Attachment</h3>
+                    <a href="{{ $amc->getFirstMediaUrl('attachments') }}" target="_blank" 
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-all border border-gray-200">
+                        <i class="fas fa-paperclip"></i> View Attached File
+                    </a>
+                </div>
+                @endif
+
                 @if($amc->notes)
                 <div>
                     <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Internal Notes</h3>

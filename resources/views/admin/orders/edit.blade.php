@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto bg-white rounded-lg shadow p-6">
-    <form action="{{ route('orders.update', $order->id) }}" method="POST" id="order-form">
+    <form action="{{ route('orders.update', $order->id) }}" method="POST" id="order-form" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         
@@ -42,6 +42,15 @@
             <div>
                 <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">PO # (Optional)</label>
                 <input type="text" name="po_number" value="{{ $order->po_number }}" class="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="PO Number">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">Attachment</label>
+                <input type="file" name="attachment" class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                @if($order->hasMedia('attachments'))
+                    <div class="mt-1 text-xs text-blue-600 font-bold">
+                        <i class="fas fa-paperclip mr-1"></i> Has existing attachment
+                    </div>
+                @endif
             </div>
         </div>
 

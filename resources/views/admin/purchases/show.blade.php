@@ -76,6 +76,15 @@
                                     <i class="fas fa-clock mr-2"></i> PENDING
                                 </span>
                             @endif
+
+                            @if($purchase->hasMedia('attachments'))
+                                <div class="mt-4 flex gap-2 justify-end">
+                                    <a href="{{ $purchase->getFirstMediaUrl('attachments') }}" target="_blank" 
+                                       class="bg-blue-600 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] hover:bg-blue-700 flex items-center shadow-sm transition-all">
+                                        <i class="fas fa-paperclip mr-2"></i> VIEW ATTACHMENT
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
 

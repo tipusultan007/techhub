@@ -37,6 +37,17 @@
                     @endif
                     <p>Date: {{ $order->created_at->format('d M Y, h:i A') }}</p>
                     <p>Status: <span class="px-2 py-0.5 rounded text-xs font-bold uppercase {{ $order->status == 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">{{ $order->status }}</span></p>
+                    @if($order->hasMedia('attachments'))
+                        <div class="mt-2 p-2 bg-blue-50 rounded border border-blue-100 flex items-center justify-between">
+                            <div class="flex items-center text-blue-700 font-bold">
+                                <i class="fas fa-paperclip mr-2"></i> Attachment
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="{{ $order->getFirstMediaUrl('attachments') }}" target="_blank" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">View</a>
+                                <a href="{{ $order->getFirstMediaUrl('attachments') }}" download class="text-xs bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-800">Download</a>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="text-right">

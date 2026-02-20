@@ -6,8 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Amc extends Model
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+
+class Amc extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     protected $fillable = [
         'customer_id',
         'site_name',

@@ -287,11 +287,18 @@
                         </select>
                     </div>
 
+                    <!-- Attachment Upload -->
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Attachment</label>
+                        <input type="file" id="attachment" 
+                            class="w-full border border-gray-300 rounded p-1.5 text-[10px] bg-white focus:ring-2 focus:ring-[#2dae9a] outline-none h-[44px]">
+                    </div>
+
                     <!-- Pay Button -->
                     <button
-                        class="col-span-2 bg-green-600 text-white font-bold rounded hover:bg-green-700 shadow-lg transform active:scale-95 transition flex items-center justify-center gap-2 h-[44px] mt-[18px]"
+                        class="col-span-1 bg-green-600 text-white font-bold rounded hover:bg-green-700 shadow-lg transform active:scale-95 transition flex items-center justify-center gap-2 h-[44px] mt-[18px]"
                         onclick="processSale()">
-                        <i class="fas fa-money-bill-wave"></i> COMPLETE SALE
+                        <i class="fas fa-money-bill-wave"></i> COMPLETE
                     </button>
                 </div>
             </div>
@@ -851,23 +858,35 @@
     // Show Loader
     $('#processingOverlay').removeClass('hidden').addClass('flex');
 
-    let data = {
-        items: cart,
-        customer_id: $('#customer_id').val(),
-        payment_method: method,
-        discount: discount,
-        po_number: $('#po_number').val(),
-        
-        // --- FIX: Map the calculated total to 'amount_paid' ---
-        amount_paid: finalPayable, 
-        
-        _token: $('meta[name="csrf-token"]').attr('content')
-    };
+    let formData = new FormData();
+    formData.append('customer_id', $('#customer_id').val() || '');
+    formData.append('payment_method', method);
+    formData.append('discount', discount);
+    formData.append('po_number', $('#po_number').val() || '');
+    formData.append('amount_paid', finalPayable);
+    formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
+
+    // Append items as JSON (or loop through them if backend expects array)
+    // The previous implementation sent 'items' as an array in a nested object.
+    // FormData handles arrays differently. We can append them as items[]
+    cart.forEach((item, index) => {
+        for (let key in item) {
+            formData.append(`items[${index}][${key}]`, item[key] !== null ? item[key] : '');
+        }
+    });
+
+    // Handle File Attachment
+    let fileInput = $('#attachment')[0];
+    if (fileInput.files.length > 0) {
+        formData.append('attachment', fileInput.files[0]);
+    }
 
     $.ajax({
         url: "{{ route('pos.store') }}",
         method: 'POST',
-        data: data,
+        data: formData,
+        processData: false, // Important for FormData
+        contentType: false, // Important for FormData
         success: function(response) {
             // Success Logic
             let printUrl = '/backend/orders/' + response.order_id + '/print';
@@ -881,6 +900,7 @@
                 $('#customer_id').val('').trigger('change'); 
                 $('#payment_method').val('cash');
                 $('#po_number').val('');
+                $('#attachment').val(''); // Reset file input
                 renderCart();
                 
                 $('#processingOverlay').addClass('hidden').removeClass('flex');

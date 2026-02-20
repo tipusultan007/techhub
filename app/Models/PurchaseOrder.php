@@ -1,20 +1,29 @@
 <?php
 
 namespace App\Models;
-use Illuminate\Database\Eloquent\Model;
 
-class PurchaseOrder extends Model {
+use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+
+class PurchaseOrder extends Model implements HasMedia
+{
+    use InteractsWithMedia;
+
     protected $guarded = [];
 
-    public function supplier() {
+    public function supplier()
+    {
         return $this->belongsTo(Supplier::class);
     }
 
-    public function items() {
+    public function items()
+    {
         return $this->hasMany(PurchaseOrderItem::class);
     }
 
-    public function receptions() {
+    public function receptions()
+    {
         return $this->hasMany(PurchaseReception::class);
     }
 
@@ -28,7 +37,7 @@ class PurchaseOrder extends Model {
             ->orderBy('id', 'desc')
             ->first();
 
-        if (!$lastOrder) {
+        if (! $lastOrder) {
             return 'PO-000001';
         }
 
@@ -36,6 +45,6 @@ class PurchaseOrder extends Model {
         $lastNumber = intval(str_replace('PO-', '', $lastOrder->reference_no));
         $nextNumber = $lastNumber + 1;
 
-        return 'PO-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        return 'PO-'.str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
     }
 }

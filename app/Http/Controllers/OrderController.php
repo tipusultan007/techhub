@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InventoryTransaction;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\InventoryTransaction;
+use App\Notifications\OrderStatusUpdateNotification;
+use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Notifications\OrderStatusUpdateNotification;
 use Illuminate\Support\Facades\Notification;
-
-use App\Traits\LogsActivity;
 
 class OrderController extends Controller
 {
     use LogsActivity;
+
     /**
      * Display a listing of sales orders.
      */
@@ -25,7 +25,7 @@ class OrderController extends Controller
 
         // Filter by Invoice No
         if ($request->filled('invoice_no')) {
-            $query->where('invoice_no', 'LIKE', '%' . $request->invoice_no . '%');
+            $query->where('invoice_no', 'LIKE', '%'.$request->invoice_no.'%');
         }
 
         // Filter by Customer
@@ -57,7 +57,7 @@ class OrderController extends Controller
         }
 
         $orders = $query->latest()->paginate(15)->withQueryString();
-        
+
         $customers = \App\Models\Customer::select('id', 'name')->orderBy('name')->get();
 
         return view('admin.orders.index', compact('orders', 'customers'));
@@ -88,7 +88,7 @@ class OrderController extends Controller
     {
         $order->load(['items.product', 'items.variant', 'customer']);
         $customers = \App\Models\Customer::orderBy('name')->get();
-        
+
         return view('admin.orders.edit', compact('order', 'customers'));
     }
 
@@ -109,6 +109,7 @@ class OrderController extends Controller
             'items.*.tax_rate' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,card,transfer,advance,custom',
             'discount' => 'nullable|numeric|min:0',
+            'attachment' => 'nullable|file|max:10240',
         ]);
 
         try {
@@ -128,7 +129,7 @@ class OrderController extends Controller
                             'product_variant_id' => $oldItem->product_variant_id,
                             'type' => 'in',
                             'quantity' => $oldItem->quantity,
-                            'description' => 'Order Update (Restore): ' . $order->invoice_no,
+                            'description' => 'Order Update (Restore): '.$order->invoice_no,
                             'reference_id' => $order->id,
                             'reference_type' => get_class($order),
                             'user_id' => auth()->id(),
@@ -163,8 +164,10 @@ class OrderController extends Controller
                         $p = Product::find($itemData['product_id']);
                         $productName = $p->name;
                         if ($itemData['variant_id']) {
-                             $v = ProductVariant::find($itemData['variant_id']);
-                             if ($v) $productName .= ' - ' . $v->variant_name;
+                            $v = ProductVariant::find($itemData['variant_id']);
+                            if ($v) {
+                                $productName .= ' - '.$v->variant_name;
+                            }
                         }
                     }
 
@@ -184,14 +187,16 @@ class OrderController extends Controller
                         if ($orderItem->product_variant_id) {
                             $variant = ProductVariant::find($orderItem->product_variant_id);
                             if ($variant && $variant->stock_quantity < $qty) {
-                                throw new \Exception("Insufficient stock for " . $orderItem->product_name);
+                                throw new \Exception('Insufficient stock for '.$orderItem->product_name);
                             }
-                            if ($variant) $variant->decrement('stock_quantity', $qty);
+                            if ($variant) {
+                                $variant->decrement('stock_quantity', $qty);
+                            }
                         } else {
                             $product = Product::find($orderItem->product_id);
                             if ($product && $product->type !== 'service') {
                                 if ($product->stock_quantity < $qty) {
-                                    throw new \Exception("Insufficient stock for " . $orderItem->product_name);
+                                    throw new \Exception('Insufficient stock for '.$orderItem->product_name);
                                 }
                                 $product->decrement('stock_quantity', $qty);
                             }
@@ -203,7 +208,7 @@ class OrderController extends Controller
                             'product_variant_id' => $orderItem->product_variant_id,
                             'type' => 'out',
                             'quantity' => $qty,
-                            'description' => 'Order Update (Deduct): ' . $order->invoice_no,
+                            'description' => 'Order Update (Deduct): '.$order->invoice_no,
                             'reference_id' => $order->id,
                             'reference_type' => get_class($order),
                             'user_id' => auth()->id(),
@@ -238,7 +243,7 @@ class OrderController extends Controller
                 // 6. Log History
                 $order->history()->create([
                     'status' => $order->status,
-                    'comment' => 'Order details updated by ' . auth()->user()->name,
+                    'comment' => 'Order details updated by '.auth()->user()->name,
                     'user_id' => auth()->id(),
                 ]);
 
@@ -247,13 +252,20 @@ class OrderController extends Controller
                     'invoice_no' => $order->invoice_no,
                     'grand_total' => $finalGrand,
                 ]);
+
+                // Handle Attachment (Replace existing)
+                if ($request->hasFile('attachment')) {
+                    $order->clearMediaCollection('attachments');
+                    $order->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+                }
             });
 
             return redirect()->route('orders.show', $order)->with('success', 'Order updated successfully.');
 
         } catch (\Exception $e) {
-            \Log::error("Error updating order #{$order->id}: " . $e->getMessage());
-            return back()->with('error', 'Update failed: ' . $e->getMessage())->withInput();
+            \Log::error("Error updating order #{$order->id}: ".$e->getMessage());
+
+            return back()->with('error', 'Update failed: '.$e->getMessage())->withInput();
         }
     }
 
@@ -264,6 +276,7 @@ class OrderController extends Controller
     public function print(Order $order)
     {
         $order->load(['items']);
+
         return view('admin.orders.print', compact('order'));
     }
 
@@ -274,7 +287,8 @@ class OrderController extends Controller
     {
         $order->load(['items']);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.orders.pdf', compact('order'));
-        return $pdf->download('Invoice-' . $order->invoice_no . '.pdf');
+
+        return $pdf->download('Invoice-'.$order->invoice_no.'.pdf');
     }
 
     // App\Http\Controllers\OrderController.php
@@ -291,7 +305,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,completed,cancelled,returned',
-            'comment' => 'nullable|string'
+            'comment' => 'nullable|string',
         ]);
 
         // Update Order Status
@@ -308,7 +322,7 @@ class OrderController extends Controller
         // Log Activity
         $history = $order->history()->create([
             'status' => $request->status,
-            'comment' => $request->comment ?? 'Status updated to ' . ucfirst($request->status),
+            'comment' => $request->comment ?? 'Status updated to '.ucfirst($request->status),
             'user_id' => auth()->id(),
         ]);
 
@@ -325,14 +339,14 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         // 1. Authorization: Only Super Admin can delete
-        if (!auth()->user()->hasRole('Super Admin')) {
+        if (! auth()->user()->hasRole('Super Admin')) {
             return back()->with('error', 'Only Super Admin can delete sales orders.');
         }
 
         // 2. Bypass restriction for Super Admin
         // Prevent accidental deletion of completed orders for others
-        if ($order->status === 'completed' && !auth()->user()->hasRole('Super Admin')) {
-             return back()->with('error', 'Cannot delete a completed order. Please mark as returned instead.');
+        if ($order->status === 'completed' && ! auth()->user()->hasRole('Super Admin')) {
+            return back()->with('error', 'Cannot delete a completed order. Please mark as returned instead.');
         }
 
         try {
@@ -344,10 +358,14 @@ class OrderController extends Controller
                         if ($rItem->restock_status === 'restockable') {
                             if ($rItem->product_variant_id) {
                                 $variant = \App\Models\ProductVariant::find($rItem->product_variant_id);
-                                if ($variant) $variant->decrement('stock_quantity', $rItem->quantity);
+                                if ($variant) {
+                                    $variant->decrement('stock_quantity', $rItem->quantity);
+                                }
                             } else {
                                 $product = \App\Models\Product::find($rItem->product_id);
-                                if ($product) $product->decrement('stock_quantity', $rItem->quantity);
+                                if ($product) {
+                                    $product->decrement('stock_quantity', $rItem->quantity);
+                                }
                             }
                         }
                     }
@@ -376,7 +394,7 @@ class OrderController extends Controller
                         'product_variant_id' => $item->product_variant_id,
                         'type' => 'in',
                         'quantity' => $item->quantity,
-                        'description' => 'Order Deletion: ' . $order->invoice_no,
+                        'description' => 'Order Deletion: '.$order->invoice_no,
                         'reference_id' => $order->id,
                         'reference_type' => get_class($order),
                         'user_id' => auth()->id(),
@@ -405,7 +423,7 @@ class OrderController extends Controller
 
         } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error("Error deleting order #{$order->id}: " . $e->getMessage());
+            \Log::error("Error deleting order #{$order->id}: ".$e->getMessage());
 
             return back()->with('error', 'Something went wrong while deleting the order.');
         }

@@ -67,6 +67,7 @@ class AmcController extends Controller
             'items.*.description' => 'required|string',
             'included_services' => 'nullable|array',
             'included_services.*.service_name' => 'required_with:included_services|string',
+            'attachment' => 'nullable|file|max:10240',
         ]);
 
         $amc = Amc::create([
@@ -80,6 +81,10 @@ class AmcController extends Controller
             'notes' => $request->notes,
             'custom_agreement_content' => $request->agreement_type === 'custom' ? $request->custom_agreement_content : null,
         ]);
+
+        if ($request->hasFile('attachment')) {
+            $amc->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+        }
 
         foreach ($request->items as $item) {
             AmcItem::create([
@@ -121,6 +126,7 @@ class AmcController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'nullable|exists:products,id',
             'items.*.description' => 'required|string',
+            'attachment' => 'nullable|file|max:10240',
         ]);
 
         $amc->update([
@@ -133,6 +139,11 @@ class AmcController extends Controller
             'notes' => $request->notes,
             'custom_agreement_content' => $request->agreement_type === 'custom' ? $request->custom_agreement_content : null,
         ]);
+
+        if ($request->hasFile('attachment')) {
+            $amc->clearMediaCollection('attachments');
+            $amc->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+        }
 
         // Sync items (simple approach: delete and recreate)
         $amc->items()->delete();

@@ -69,7 +69,7 @@
         <h2 class="text-2xl font-bold text-gray-800">Create New AMC</h2>
     </div>
 
-    <form action="{{ route('amcs.store') }}" method="POST" id="amc-form" class="space-y-6">
+    <form action="{{ route('amcs.store') }}" method="POST" id="amc-form" class="space-y-6" enctype="multipart/form-data">
         @csrf
         
         <!-- Toggle Agreement Content Area -->
@@ -242,6 +242,11 @@
                                 <i class="fas fa-edit mr-1"></i> Edit Content
                             </button>
                         </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-black text-gray-400 uppercase tracking-widest block">Contract Attachment</label>
+                        <input type="file" name="attachment" class="w-full border rounded-xl p-2 mt-1 bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
                     </div>
 
                     <div class="space-y-2">

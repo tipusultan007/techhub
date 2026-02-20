@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InventoryTransaction;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseReception;
 use App\Models\PurchaseReceptionItem;
-use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\Supplier;
-use App\Models\InventoryTransaction;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-
 use App\Traits\LogsActivity;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
     use LogsActivity;
+
     /**
      * Display a listing of Purchase Orders.
      */
@@ -35,6 +35,7 @@ class PurchaseOrderController extends Controller
     {
         $suppliers = Supplier::all();
         $nextPoNumber = PurchaseOrder::generateNextPONumber();
+
         // We will fetch products via AJAX to keep page load fast
         return view('admin.purchases.create', compact('suppliers', 'nextPoNumber'));
     }
@@ -48,17 +49,17 @@ class PurchaseOrderController extends Controller
         $duplicateData = [
             'supplier_id' => $purchase->supplier_id,
             'notes' => $purchase->notes,
-            'items' => $purchase->items->map(function($item) {
+            'items' => $purchase->items->map(function ($item) {
                 return [
                     'product_id' => $item->product_id,
                     'variant_id' => $item->product_variant_id,
-                    'name' => $item->product->name . ($item->variant ? ' - ' . $item->variant->variant_name : ''),
+                    'name' => $item->product->name.($item->variant ? ' - '.$item->variant->variant_name : ''),
                     'qty' => $item->quantity,
                     'cost' => $item->unit_cost,
                     'tax_rate' => $item->tax_rate,
-                    'label' => ($item->product->name ?? '') . ($item->variant ? ' - ' . $item->variant->variant_name : '') . ' (SKU: ' . ($item->variant ? $item->variant->sku : $item->product->sku) . ')'
+                    'label' => ($item->product->name ?? '').($item->variant ? ' - '.$item->variant->variant_name : '').' (SKU: '.($item->variant ? $item->variant->sku : $item->product->sku).')',
                 ];
-            })
+            }),
         ];
 
         return view('admin.purchases.create', compact('suppliers', 'nextPoNumber', 'duplicateData'));
@@ -74,6 +75,7 @@ class PurchaseOrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.qty' => 'required|numeric|min:1',
             'items.*.cost' => 'required|numeric|min:0',
+            'attachment' => 'nullable|file|max:10240',
         ]);
 
         try {
@@ -85,7 +87,7 @@ class PurchaseOrderController extends Controller
             foreach ($request->items as $item) {
                 $lineNet = ($item['qty'] * $item['cost']);
                 $netTotal += $lineNet;
-                
+
                 // Use tax rate from request
                 $rate = $item['tax_rate'] ?? 0;
                 $taxAmount += ($lineNet * ($rate / 100));
@@ -101,7 +103,7 @@ class PurchaseOrderController extends Controller
                 'status' => $request->status,
                 'notes' => $request->notes,
                 'total_cost' => $grandTotal,
-                'tax_amount' => $taxAmount
+                'tax_amount' => $taxAmount,
             ]);
 
             // 3. Process Items
@@ -118,12 +120,12 @@ class PurchaseOrderController extends Controller
                     'unit_cost' => $item['cost'],
                     'tax_rate' => $item['tax_rate'] ?? 0,
                     'tax_amount' => $itemTax,
-                    'subtotal' => $itemSubtotal
+                    'subtotal' => $itemSubtotal,
                 ]);
 
                 // 4. Update Stock & Cost Price ONLY if Status is 'completed'
                 if ($request->status === 'completed') {
-                    if (!empty($item['variant_id'])) {
+                    if (! empty($item['variant_id'])) {
                         $variant = ProductVariant::find($item['variant_id']);
                         if ($variant) {
                             $variant->increment('stock_quantity', $item['qty']);
@@ -143,7 +145,7 @@ class PurchaseOrderController extends Controller
                         'product_variant_id' => $item['variant_id'] ?? null,
                         'type' => 'in',
                         'quantity' => $item['qty'],
-                        'description' => 'Purchase: ' . $po->reference_no,
+                        'description' => 'Purchase: '.$po->reference_no,
                         'reference_id' => $po->id,
                         'reference_type' => get_class($po),
                         'user_id' => Auth::id(),
@@ -153,6 +155,11 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
+            // Handle Attachment
+            if ($request->hasFile('attachment')) {
+                $po->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+            }
+
             $this->logActivity('Purchase', 'Create', "Created Purchase Order #{$po->reference_no}", [
                 'purchase_order_id' => $po->id,
                 'reference_no' => $po->reference_no,
@@ -161,15 +168,16 @@ class PurchaseOrderController extends Controller
             return redirect()->route('purchases.index')->with('success', 'Purchase Order saved successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error saving purchase: ' . $e->getMessage());
+
+            return back()->with('error', 'Error saving purchase: '.$e->getMessage());
         }
     }
-
 
     public function edit($id)
     {
         $purchase = PurchaseOrder::with(['items.product', 'items.variant'])->findOrFail($id);
         $suppliers = Supplier::all();
+
         return view('admin.purchases.edit', compact('purchase', 'suppliers'));
     }
 
@@ -208,7 +216,7 @@ class PurchaseOrderController extends Controller
                 'date' => $request->date,
                 'notes' => $request->notes,
                 'total_cost' => $grandTotal,
-                'tax_amount' => $taxAmount
+                'tax_amount' => $taxAmount,
             ]);
 
             // 3. Sync Items (Robust sync to preserve reception history)
@@ -234,7 +242,7 @@ class PurchaseOrderController extends Controller
                         'tax_amount' => $itemTax,
                         'subtotal' => $itemSubtotal,
                         // Update received_quantity if status is completed
-                        'received_quantity' => $po->status === 'completed' ? $itemData['qty'] : $poItem->received_quantity
+                        'received_quantity' => $po->status === 'completed' ? $itemData['qty'] : $poItem->received_quantity,
                     ]);
                     $updatedItemIds[] = $poItem->id;
                 } else {
@@ -248,7 +256,7 @@ class PurchaseOrderController extends Controller
                         'unit_cost' => $itemData['cost'],
                         'tax_rate' => $itemData['tax_rate'] ?? 0,
                         'tax_amount' => $itemTax,
-                        'subtotal' => $itemSubtotal
+                        'subtotal' => $itemSubtotal,
                     ]);
                     $updatedItemIds[] = $newItem->id;
                 }
@@ -265,6 +273,12 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
+            // Handle Attachment
+            if ($request->hasFile('attachment')) {
+                $po->clearMediaCollection('attachments');
+                $po->addMediaFromRequest('attachment')->toMediaCollection('attachments');
+            }
+
             $this->logActivity('Purchase', 'Edit', "Updated Purchase Order #{$po->reference_no}", [
                 'purchase_order_id' => $po->id,
                 'reference_no' => $po->reference_no,
@@ -273,7 +287,8 @@ class PurchaseOrderController extends Controller
             return redirect()->route('purchases.index')->with('success', 'Purchase Order updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error updating purchase: ' . $e->getMessage());
+
+            return back()->with('error', 'Error updating purchase: '.$e->getMessage());
         }
     }
 
@@ -292,9 +307,9 @@ class PurchaseOrderController extends Controller
             DB::beginTransaction();
 
             $po = PurchaseOrder::findOrFail($id);
-            
+
             // Filter items that have a received quantity > 0
-            $receivedItems = array_filter($request->items, function($item) {
+            $receivedItems = array_filter($request->items, function ($item) {
                 return isset($item['received_qty']) && $item['received_qty'] > 0;
             });
 
@@ -305,7 +320,7 @@ class PurchaseOrderController extends Controller
             // Create Reception Header
             $reception = PurchaseReception::create([
                 'purchase_order_id' => $po->id,
-                'reception_no' => 'REC-' . strtoupper(uniqid()),
+                'reception_no' => 'REC-'.strtoupper(uniqid()),
                 'date' => now(),
                 'received_by' => Auth::user()->name,
                 'notes' => $request->notes,
@@ -350,7 +365,7 @@ class PurchaseOrderController extends Controller
                     'product_variant_id' => $poItem->product_variant_id,
                     'type' => 'in',
                     'quantity' => $qty,
-                    'description' => 'Purchase Reception: ' . $reception->reception_no,
+                    'description' => 'Purchase Reception: '.$reception->reception_no,
                     'reference_id' => $reception->id,
                     'reference_type' => get_class($reception),
                     'user_id' => Auth::id(),
@@ -370,6 +385,7 @@ class PurchaseOrderController extends Controller
             return back()->with('success', 'Reception recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -385,12 +401,12 @@ class PurchaseOrderController extends Controller
             $po = PurchaseOrder::with('items')->findOrFail($id);
 
             $reception = null;
-            $itemsToReceive = $po->items->filter(fn($i) => $i->remaining_quantity() > 0);
+            $itemsToReceive = $po->items->filter(fn ($i) => $i->remaining_quantity() > 0);
 
             if ($itemsToReceive->isNotEmpty()) {
                 $reception = PurchaseReception::create([
                     'purchase_order_id' => $po->id,
-                    'reception_no' => 'REC-' . strtoupper(uniqid()),
+                    'reception_no' => 'REC-'.strtoupper(uniqid()),
                     'date' => now(),
                     'received_by' => Auth::user()->name,
                     'notes' => 'Bulk completion',
@@ -398,7 +414,7 @@ class PurchaseOrderController extends Controller
 
                 foreach ($itemsToReceive as $item) {
                     $remaining = $item->remaining_quantity();
-                    
+
                     PurchaseReceptionItem::create([
                         'purchase_reception_id' => $reception->id,
                         'purchase_order_item_id' => $item->id,
@@ -428,7 +444,7 @@ class PurchaseOrderController extends Controller
                         'product_variant_id' => $item->product_variant_id,
                         'type' => 'in',
                         'quantity' => $remaining,
-                        'description' => 'Purchase Completion: ' . $po->reference_no,
+                        'description' => 'Purchase Completion: '.$po->reference_no,
                         'reference_id' => $po->id,
                         'reference_type' => get_class($po),
                         'user_id' => Auth::id(),
@@ -447,6 +463,7 @@ class PurchaseOrderController extends Controller
             return back()->with('success', 'Purchase Order marked as completed.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -458,7 +475,7 @@ class PurchaseOrderController extends Controller
         $anyReceived = false;
 
         foreach ($po->items as $item) {
-            if (!$item->is_fully_received()) {
+            if (! $item->is_fully_received()) {
                 $allProcessed = false;
             }
             if ($item->received_quantity > 0) {
@@ -493,8 +510,9 @@ class PurchaseOrderController extends Controller
     public function downloadPdf($id)
     {
         $purchase = PurchaseOrder::with(['supplier', 'items.product', 'items.variant'])->findOrFail($id);
-        
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.purchases.pdf', compact('purchase'));
+
         return $pdf->download("PO-{$purchase->reference_no}.pdf");
     }
 
@@ -516,10 +534,10 @@ class PurchaseOrderController extends Controller
                 return [
                     'id' => $p->id,
                     'variant_id' => null,
-                    'label' => $p->name . " (Simple) - SKU: " . $p->sku,
+                    'label' => $p->name.' (Simple) - SKU: '.$p->sku,
                     'cost' => $p->cost_price,
                     'tax_rate' => $p->tax_rate,
-                    'tax_method' => $p->tax_method
+                    'tax_method' => $p->tax_method,
                 ];
             });
 
@@ -534,14 +552,14 @@ class PurchaseOrderController extends Controller
                 return [
                     'id' => $v->product_id,
                     'variant_id' => $v->id,
-                    'label' => $v->product->name . " - " . $v->variant_name . " (SKU: $v->sku)",
+                    'label' => $v->product->name.' - '.$v->variant_name." (SKU: $v->sku)",
                     'cost' => $v->cost_price,
                     'tax_rate' => $v->product->tax_rate,
-                    'tax_method' => $v->product->tax_method
+                    'tax_method' => $v->product->tax_method,
                 ];
             });
 
-        //return response()->json($simple->merge($variable));
+        // return response()->json($simple->merge($variable));
         return response()->json($simple->toBase()->merge($variable));
     }
 
@@ -564,23 +582,27 @@ class PurchaseOrderController extends Controller
     public function printInvoice($id)
     {
         $purchase = PurchaseOrder::with(['supplier', 'items.product', 'items.variant'])->findOrFail($id);
+
         return view('admin.purchases.print', compact('purchase'));
     }
+
     public function print($id)
     {
         $purchase = PurchaseOrder::with(['supplier', 'items.product', 'items.variant'])->findOrFail($id);
+
         return view('admin.purchases.print', compact('purchase'));
     }
+
     public function destroy($id)
     {
         $purchase = PurchaseOrder::with('items')->findOrFail($id);
 
-        if (!auth()->user()->hasRole('Super Admin')) {
+        if (! auth()->user()->hasRole('Super Admin')) {
             return back()->with('error', 'Only Super Admin can delete purchase orders.');
         }
 
         // Restriction: Cannot delete if items were received or status is completed (Unless Super Admin)
-        if (($purchase->status === 'completed' || $purchase->items->sum('received_quantity') > 0) && !auth()->user()->hasRole('Super Admin')) {
+        if (($purchase->status === 'completed' || $purchase->items->sum('received_quantity') > 0) && ! auth()->user()->hasRole('Super Admin')) {
             return back()->with('error', 'Cannot delete this purchase order because items have already been received or the order is marked as completed.');
         }
 
@@ -607,7 +629,7 @@ class PurchaseOrderController extends Controller
                             'product_variant_id' => $item->product_variant_id,
                             'type' => 'out',
                             'quantity' => $item->received_quantity,
-                            'description' => 'Purchase Deletion: ' . $purchase->reference_no,
+                            'description' => 'Purchase Deletion: '.$purchase->reference_no,
                             'reference_id' => $purchase->id,
                             'reference_type' => get_class($purchase),
                             'user_id' => auth()->id(),
@@ -631,7 +653,7 @@ class PurchaseOrderController extends Controller
 
             return back()->with('success', 'Purchase order deleted successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Something went wrong: ' . $e->getMessage());
+            return back()->with('error', 'Something went wrong: '.$e->getMessage());
         }
     }
 }
