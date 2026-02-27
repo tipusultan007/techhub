@@ -119,11 +119,17 @@ Route::group(['middleware' => ['maintenance']], function () {
 // ====================================================
 
 // We apply 'auth' middleware AND the 'backend' prefix here
-Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
+Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], function () {
 
     // --- COMMON BACKEND ROUTES ---
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/inventory/transactions', [InventoryController::class, 'transactions'])->name('inventory.transactions');
+
+    // Two-Factor Authentication Setup
+    Route::get('/two-factor-setup', [\App\Http\Controllers\Admin\TwoFactorSetupController::class, 'show'])->name('two-factor.setup');
+    Route::post('/two-factor/totp', [\App\Http\Controllers\Admin\TwoFactorSetupController::class, 'enableTotp'])->name('two-factor.totp.enable');
+    Route::post('/two-factor/email', [\App\Http\Controllers\Admin\TwoFactorSetupController::class, 'enableEmail'])->name('two-factor.email.enable');
+    Route::post('/two-factor/disable', [\App\Http\Controllers\Admin\TwoFactorSetupController::class, 'disable'])->name('two-factor.disable');
 
     // Notifications
     Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
@@ -132,6 +138,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
     Route::delete('/notifications/clear', [\App\Http\Controllers\Admin\NotificationController::class, 'clear'])->name('notifications.clear');
 
     // Profile Management
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // --- POS TERMINAL (Authorized access) ---
     // URL: /backend/pos
@@ -256,6 +265,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'backend'], function () {
         Route::post('/settings/storage-link', [SettingController::class, 'linkStorage'])->name('settings.storage-link');
 
         // User Management
+        Route::post('/users/{user}/reset-2fa', [UserController::class, 'resetTwoFactor'])->name('users.reset-2fa');
         Route::resource('users', UserController::class);
 
         // Role Management

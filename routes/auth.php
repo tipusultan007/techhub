@@ -55,6 +55,13 @@ Route::prefix('em-secure-portal')->group(function () {
 
         Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
+        // Two-Factor Authentication Verification
+        Route::get('two-factor-verify', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'index'])->name('two-factor.verify');
+        Route::post('two-factor-verify', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'store'])->name('two-factor.verify.store');
+        Route::get('two-factor-select', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'select'])->name('two-factor.select');
+        Route::post('two-factor-change-method', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'changeMethod'])->name('two-factor.change-method');
+        Route::post('two-factor-resend', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'resend'])->name('two-factor.resend');
+
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
             ->name('logout');
     });

@@ -501,8 +501,41 @@
                         </div>
                     </div>
 
-                    <div class="text-sm text-gray-500 font-medium">
+                    <div class="text-sm text-gray-500 font-medium hidden lg:block">
                         {{ now()->format('l, d F Y') }}
+                    </div>
+
+                    <!-- User Dropdown -->
+                    <div class="relative" id="user-dropdown-wrapper">
+                        <button id="user-dropdown-btn" class="flex items-center gap-3 p-1 rounded-xl hover:bg-gray-50 transition-all focus:outline-none">
+                            <div class="w-8 h-8 rounded-lg bg-[#2dae9a] flex items-center justify-center font-bold text-white shadow-sm">
+                                {{ substr(Auth::user()->name, 0, 1) }}
+                            </div>
+                            <div class="hidden lg:block text-left">
+                                <p class="text-xs font-bold text-gray-900 leading-none">{{ Auth::user()->name }}</p>
+                                <p class="text-[0.6rem] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{{ Auth::user()->getRoleNames()->first() ?? 'Staff' }}</p>
+                            </div>
+                            <i class="fas fa-chevron-down text-[0.6rem] text-gray-400 ml-1"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="user-menu" class="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 hidden opacity-0 transform scale-95 transition-all duration-200 origin-top-right">
+                            <div class="p-2">
+                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 hover:text-[#2dae9a] transition-all">
+                                    <i class="fas fa-user-circle text-base"></i> My Profile
+                                </a>
+                                <a href="{{ route('settings.edit') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 hover:text-[#2dae9a] transition-all">
+                                    <i class="fas fa-cog text-base"></i> Settings
+                                </a>
+                                <div class="h-px bg-gray-50 my-1"></div>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 transition-all text-left">
+                                        <i class="fas fa-power-off text-base"></i> Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -651,6 +684,27 @@
                 }
             }).catch(err => console.error('Error marking notification as read:', err));
         }
+
+        // User Dropdown Logic
+        const userBtn = document.getElementById('user-dropdown-btn');
+        const userMenu = document.getElementById('user-menu');
+        const userWrapper = document.getElementById('user-dropdown-wrapper');
+
+        userBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenu.classList.toggle('hidden');
+            setTimeout(() => {
+                userMenu.classList.toggle('opacity-0');
+                userMenu.classList.toggle('scale-95');
+            }, 10);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!userWrapper?.contains(e.target)) {
+                userMenu?.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => userMenu?.classList.add('hidden'), 200);
+            }
+        });
     </script>
 
     @stack('scripts')

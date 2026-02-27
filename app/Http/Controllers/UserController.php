@@ -79,11 +79,13 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
             'role' => ['required', 'exists:roles,name'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'two_factor_type' => ['nullable', 'in:totp,email'],
         ]);
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
+            'two_factor_type' => $request->two_factor_type,
         ];
 
         // Only update password if provided
@@ -97,6 +99,19 @@ class UserController extends Controller
         $user->syncRoles($request->role);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
+    }
+
+    public function resetTwoFactor(User $user)
+    {
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+            'two_factor_otp' => null,
+            'two_factor_otp_expires_at' => null,
+        ])->save();
+
+        return back()->with('success', "2FA has been reset for {$user->name}.");
     }
 
     /**

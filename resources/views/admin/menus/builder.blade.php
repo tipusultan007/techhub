@@ -7,8 +7,14 @@
 <style>
     .menu-item-handle { cursor: move; }
     .nested-sortable {
-        min-height: 10px;
-        padding-top: 10px;
+        min-height: 20px;
+        padding: 5px;
+        transition: all 0.2s;
+    }
+    .nested-sortable:empty {
+        background: rgba(229, 231, 235, 0.2);
+        border: 1px dashed #e5e7eb;
+        border-radius: 0.75rem;
     }
     .nested-sortable .menu-item-row {
         margin-bottom: 10px;
@@ -35,6 +41,21 @@
     }
     .accordion-btn.active i { transform: rotate(180deg); }
     .accordion-content.hidden { display: none; }
+    
+    /* Drag & Drop Feedback */
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #ecfdf5 !important;
+        border: 2px dashed #2dae9a !important;
+    }
+    .sortable-chosen {
+        background: #f9fafb;
+    }
+    .sortable-drag {
+        opacity: 1 !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        background: white !important;
+    }
 </style>
 @endpush
 
@@ -70,15 +91,12 @@
                             <form action="{{ route('menus.items.store', $menu) }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="type" value="category">
-                                <div class="max-h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                                <div class="max-h-64 overflow-y-auto space-y-1 pr-2 custom-scrollbar">
                                     @foreach($categories as $category)
-                                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                            <input type="checkbox" name="ids[]" value="{{ $category->id }}" class="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500">
-                                            <span class="text-sm text-gray-700 font-medium">{{ $category->name }}</span>
-                                        </label>
+                                        @include('admin.menus.partials.category-checkbox', ['category' => $category, 'level' => 0])
                                     @endforeach
                                 </div>
-                                <button type="submit" class="w-full mt-4 py-2.5 bg-gray-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all">Add to Menu</button>
+                                <button type="submit" class="w-full mt-4 py-2.5 bg-emerald-500 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20">Add to Menu</button>
                             </form>
                         </div>
                     </div>
@@ -287,9 +305,9 @@ $(document).ready(function() {
             fallbackOnBody: true,
             swapThreshold: 0.65,
             handle: '.menu-item-handle',
-            ghostClass: 'bg-emerald-50',
-            chosenClass: 'scale-[1.02]',
-            dragClass: 'opacity-0',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
             onEnd: function() {
                 // Reordering logic if needed on end (optional, we use save button)
             }

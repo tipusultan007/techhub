@@ -16,8 +16,24 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+        $google2fa = app('pragmarx.google2fa');
+        
+        if (! $user->two_factor_secret) {
+            $user->two_factor_secret = $google2fa->generateSecretKey();
+            $user->save();
+        }
+
+        $qrCodeSvg = $google2fa->getQRCodeInline(
+            config('app.name'),
+            $user->email,
+            $user->two_factor_secret
+        );
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'qrCodeSvg' => $qrCodeSvg,
+            'secret' => $user->two_factor_secret,
         ]);
     }
 

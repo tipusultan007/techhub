@@ -26,6 +26,14 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        if ($user->hasTwoFactorEnabled()) {
+            // We clear the session but keep the user authenticated (or we could use a temporary session flag)
+            // For Breeze, we'll keep them logged in but the middleware will block them
+            return redirect()->route('two-factor.verify');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
