@@ -4,72 +4,120 @@
     <meta charset="UTF-8">
     <title>Print Product Barcodes</title>
     <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f0f0f0;
         }
         
         /* The A4 page container */
         .page {
-            width: 210mm; /* A4 Width */
-            padding: 5mm;
-            margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-            align-content: flex-start;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 10mm 5mm; /* Balanced vertical and horizontal padding */
+            margin: 10mm auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columns */
+            justify-items: center; /* Center stickers within grid cells */
+            align-content: start;
+            gap: 0;
+            box-sizing: border-box;
+            page-break-after: always;
         }
 
-        /* --- Individual Sticker Styling --- */
+        /* Individual Sticker Styling */
         .sticker {
-            width: 60mm;  /* Adjust to your label paper width */
-            height: 40mm; /* Adjust to your label paper height */
-            border: 1px dotted #ccc; /* Guide for cutting, hidden on print */
-            margin: 5mm;
-            padding: 4mm;
+            /* border: 1px dotted #eee; */ /* Removed global border to avoid placeholder borders */
             box-sizing: border-box;
-            page-break-inside: avoid; /* Prevents a sticker from breaking across pages */
             overflow: hidden;
-
-            /* FIX: Use Flexbox to center everything */
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Vertical centering */
-            align-items: center;     /* Horizontal centering */
+            align-items: center;
         }
 
+        /* Visible border only for actual barcodes */
+        .sticker.has-content {
+            border: 1px dotted #eee;
+        }
+
+        /* Size: 1" x 0.375" */
+        .size-1x0-375 {
+            width: 1in;
+            height: 0.375in;
+            padding: 1mm;
+            justify-content: space-between;
+        }
+        .size-1x0-375 .product-name { font-size: 6px; }
+        .size-1x0-375 .barcode-text { font-size: 6px; }
+        .size-1x0-375 .price { font-size: 7px; }
+
+        /* Size: 48.5mm x 25.4mm (44 per page: 4 columns x 11 rows) */
+        .size-48-5x25-4 {
+            width: 48.5mm;
+            height: 25.4mm;
+            padding: 2mm;
+            justify-content: center;
+            margin-bottom: 0.5mm; /* Minimal spacing to fit 11 rows */
+        }
+        .size-48-5x25-4 .product-name { font-size: 9px; margin-bottom: 2px; }
+        .size-48-5x25-4 .barcode-text { font-size: 8px; margin-bottom: 2px; }
+        .size-48-5x25-4 .price { font-size: 11px; }
+
+        /* Size: 2" x 1" (40 per page: 4 columns x 10 rows) */
+        .size-2x1 {
+            width: 2in;    /* ~50.8mm */
+            height: 1in;   /* ~25.4mm */
+            padding: 2mm;
+            justify-content: center;
+            margin-bottom: 2mm; /* Spacing for 10 rows */
+        }
+        .size-2x1 .product-name { font-size: 10px; margin-bottom: 4px; }
+        .size-2x1 .barcode-text { font-size: 9px; margin-bottom: 4px; }
+        .size-2x1 .price { font-size: 13px; }
+
         .product-name {
-            font-size: 10px;
             font-weight: bold;
+            line-height: 1.1;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 100%;
-            margin-bottom: 5px;
+            text-align: center;
         }
 
         .barcode-container {
-            margin-bottom: 5px;
+            margin: 1px 0;
+            line-height: 0;
         }
 
         .barcode-text {
-            font-size: 11px;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             font-family: 'Courier New', monospace;
-            margin-bottom: 5px;
+            line-height: 1;
         }
 
         .price {
-            font-size: 14px;
             font-weight: bold;
+            line-height: 1;
         }
 
         /* Print-specific styles */
         @media print {
             .no-print { display: none; }
-            .sticker { border: none; } /* Hide dotted lines on actual labels */
-            body, .page { margin: 0; padding: 0; }
+            body { background-color: white; }
+            .page { 
+                margin: 0; 
+                box-shadow: none;
+                border: none;
+            }
+            .sticker { border: none; }
         }
     </style>
 </head>
@@ -87,21 +135,55 @@
         </button>
     </div>
 
-    <div class="page">
-        @foreach($printQueue as $item)
-            <div class="sticker">
-                <div class="product-name">{{ $item->name }}</div>
-                
-                <div class="barcode-container">
-                    {{-- FIX: Use {!! !!} to render the raw HTML generated for the barcode --}}
-                    {!! $generator->getBarcode($item->barcode_value, $generator::TYPE_CODE_128, 2, 40) !!}
+    @php
+        $sizeClass = 'size-' . str_replace(['"', '.', ' '], ['', '-', ''], $size);
+        
+        // Define settings based on size
+        $perPage = 40; // Default
+        $barcodeWidth = 2;
+        $barcodeHeight = 30;
+        
+        if ($size == '1x0.375') {
+            $perPage = 80;
+            $barcodeWidth = 1;
+            $barcodeHeight = 10;
+        } elseif ($size == '48.5x25.4') {
+            $perPage = 44;
+            $barcodeWidth = 1.3;
+            $barcodeHeight = 15;
+        } elseif ($size == '2x1') {
+            $perPage = 40;
+            $barcodeWidth = 1.5;
+            $barcodeHeight = 20;
+        }
+    @endphp
+
+    @foreach($printQueue->chunk($perPage) as $chunk)
+        <div class="page">
+            @foreach($chunk as $item)
+                <div class="sticker {{ $sizeClass }} has-content">
+                    <div class="product-name">{{ $item->name }}</div>
+                    
+                    <div class="barcode-container">
+                        {!! $generator->getBarcode($item->barcode_value, $generator::TYPE_CODE_128, $barcodeWidth, $barcodeHeight) !!}
+                    </div>
+                    
+                    <div class="barcode-text">{{ $item->barcode_value }}</div>
+                    <div class="price">AED {{ number_format($item->price, 2) }}</div>
                 </div>
-                
-                <div class="barcode-text">{{ $item->barcode_value }}</div>
-                <div class="price">AED {{ number_format($item->price, 2) }}</div>
-            </div>
-        @endforeach
-    </div>
+            @endforeach
+
+            {{-- Padding for empty grid spots to maintain alignment --}}
+            @php
+                $emptySpots = $perPage - $chunk->count();
+            @endphp
+            @for($i = 0; $i < $emptySpots; $i++)
+                <div class="sticker {{ $sizeClass }}">
+                    <!-- Empty placeholder sticker without border -->
+                </div>
+            @endfor
+        </div>
+    @endforeach
 
 </body>
 </html>

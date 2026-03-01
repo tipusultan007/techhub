@@ -412,7 +412,12 @@ class ProductController extends Controller
 
     public function printBarcode(Request $request)
     {
-        $request->validate(['ids' => 'required|array']);
+        $request->validate([
+            'ids' => 'required|array',
+            'barcode_size' => 'nullable|string'
+        ]);
+
+        $size = $request->input('barcode_size', '48.5x25.4');
 
         $products = Product::with('variants')->whereIn('id', $request->ids)->get();
         $printQueue = collect();
@@ -438,7 +443,7 @@ class ProductController extends Controller
         // This object is what creates the HTML
         $generator = new BarcodeGeneratorHTML;
 
-        return view('admin.products.barcode', compact('printQueue', 'generator'));
+        return view('admin.products.barcode', compact('printQueue', 'generator', 'size'));
     }
 
     /**

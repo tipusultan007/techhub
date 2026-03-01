@@ -120,10 +120,18 @@
                 </div>
             </div>
 
-            <!-- Print Labels Button -->
-            <button type="button" onclick="document.getElementById('barcode-form').submit();" class="bg-slate-800 text-white px-4 py-2 rounded shadow hover:bg-slate-700 font-bold text-sm">
-                <i class="fas fa-barcode mr-2"></i> Print Labels
-            </button>
+            <!-- Barcode Size Selection -->
+            <div class="flex items-center gap-2">
+                <select name="barcode_size" form="barcode-form" class="bg-white border border-gray-300 rounded shadow-sm px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="1x0.375">1" x 0.375"</option>
+                    <option value="48.5x25.4" selected>48.5mm x 25.4mm</option>
+                    <option value="2x1">2" x 1"</option>
+                </select>
+                <!-- Print Labels Button -->
+                <button type="button" onclick="document.getElementById('barcode-form').submit();" class="bg-slate-800 text-white px-4 py-2 rounded shadow hover:bg-slate-700 font-bold text-sm whitespace-nowrap">
+                    <i class="fas fa-barcode mr-2"></i> Print Labels
+                </button>
+            </div>
             
             <!-- Import Button -->
             <a href="{{ route('products.import.form') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow flex items-center text-sm">
