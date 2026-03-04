@@ -595,14 +595,21 @@
             let totalPayable = 0;
 
             if (cart.length === 0) {
-                $('#empty-cart-msg').show();
+                html = `
+                    <tr id="empty-cart-msg">
+                        <td colspan="4" class="text-center py-20 text-gray-400">
+                            <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                            <p>Cart is empty</p>
+                        </td>
+                    </tr>`;
+                $('#cart-body').html(html);
                 $('#discount_input').val(0);
                 $('#lbl-cart-total').text('0.00');
                 $('#lbl-payable').text('0.00');
                 $('#lbl-vat').text('0.00');
                 $('#lbl-vat').prev().text('Total Tax');
+                return;
             } else {
-                $('#empty-cart-msg').hide();
                 cart.forEach((item, index) => {
                     let itemTaxRate = parseFloat(item.tax_rate) / 100 || 0;
                     let itemBasePrice = parseFloat(item.price) || 0; // Ensure it's a number
@@ -662,7 +669,9 @@
                         <td class="p-2 text-right align-middle" style="width: 16%;">
                             <div class="flex flex-col items-end">
                                 ${priceDisplay}
-                                <button onclick="removeItem(${index})" class="text-[10px] text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                                <button type="button" onclick="removeItem(${index})" class="p-2 text-red-500 hover:text-red-700 transition-colors" title="Remove Item">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>`;
@@ -811,31 +820,15 @@
                 return;
             }
 
-            $.ajax({
-                url: '/admin/pos/check-serial',
-                data: {
-                    serial: serial,
-                    product_id: pendingProduct.id,
-                    variant_id: pendingProduct.variant_id
-                },
-                success: function(response) {
-                    if (response.valid) {
-                        
-                        cart.push({
-                            ...pendingProduct,
-                            qty: 1,
-                            serial: serial
-                        });
-                        renderCart();
-                        closeSerialModal();
-                        toastr.success('Serial Verified');
-                    } else {
-                        
-                        $('#serialError').text(response.message).removeClass('hidden');
-                        $('#modalSerialInput').select();
-                    }
-                }
+            // Skip backend verification - allow whatever admin inputs
+            cart.push({
+                ...pendingProduct,
+                qty: 1,
+                serial: serial
             });
+            renderCart();
+            closeSerialModal();
+            toastr.success('Serial Added');
         }
 
         // --- 4. CHECKOUT ---

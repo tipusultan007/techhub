@@ -392,10 +392,8 @@ class PosController extends Controller
                         'status' => 'sold',
                         'order_id' => $order->id
                     ]);
-                } else {
-                    // Fail safe if serial scanned but sold in another transaction milliseconds ago
-                    throw new \Exception("Serial number {$item['serial']} is no longer available.");
                 }
+                // If serial not found (manual entry), just proceed without error
 
                 // Calculate Warranty Date
                 $product = Product::find($item['id']);

@@ -85,6 +85,9 @@ class ProductController extends Controller
             'tax_method' => 'required|in:inclusive,exclusive',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|in:draft,published',
+            'has_serial_number' => 'nullable|boolean',
+            'warranty_duration' => 'nullable|integer|min:0',
+            'warranty_type' => 'nullable|string|in:days,months,years',
         ];
 
         if ($request->type === 'simple' || $request->type === 'service') {
@@ -117,6 +120,9 @@ class ProductController extends Controller
                 'specifications' => $request->specifications,
                 'tax_method' => $request->tax_method,
                 'tax_rate' => $request->tax_rate ?? 0,
+                'has_serial_number' => $request->has_serial_number ?? 0,
+                'warranty_duration' => $request->warranty_duration,
+                'warranty_type' => $request->warranty_type,
             ];
 
             // 3. If Simple/Service, Add Stock/Price Data to Main Table
@@ -235,6 +241,9 @@ class ProductController extends Controller
             'tax_method' => 'required|in:inclusive,exclusive',
             'tax_rate' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|in:draft,published',
+            'has_serial_number' => 'nullable|boolean',
+            'warranty_duration' => 'nullable|integer|min:0',
+            'warranty_type' => 'nullable|string|in:days,months,years',
             'image' => 'nullable|image|max:2048',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|max:2048',
@@ -270,6 +279,9 @@ class ProductController extends Controller
                 'specifications' => $request->specifications,
                 'tax_method' => $request->tax_method,
                 'tax_rate' => $request->tax_rate ?? 0,
+                'has_serial_number' => $request->has_serial_number ?? 0,
+                'warranty_duration' => $request->warranty_duration,
+                'warranty_type' => $request->warranty_type,
             ];
 
             // 4. Update Simple/Service Product Logic
@@ -414,28 +426,32 @@ class ProductController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'barcode_size' => 'nullable|string'
+            'barcode_size' => 'nullable|string',
+            'qty' => 'nullable|integer|min:1',
         ]);
 
         $size = $request->input('barcode_size', '48.5x25.4');
+        $qty = $request->input('qty', 1);
 
         $products = Product::with('variants')->whereIn('id', $request->ids)->get();
         $printQueue = collect();
 
         foreach ($products as $product) {
-            if ($product->type === 'simple') {
-                $printQueue->push((object) [
-                    'name' => $product->name,
-                    'price' => $product->selling_price,
-                    'barcode_value' => $product->barcode ?? $product->sku,
-                ]);
-            } elseif ($product->type === 'variable') {
-                foreach ($product->variants as $variant) {
+            for ($i = 0; $i < $qty; $i++) {
+                if ($product->type === 'simple') {
                     $printQueue->push((object) [
-                        'name' => $product->name.' ('.$variant->variant_name.')',
-                        'price' => $variant->selling_price,
-                        'barcode_value' => $variant->barcode ?? $variant->sku,
+                        'name' => $product->name,
+                        'price' => $product->selling_price,
+                        'barcode_value' => $product->barcode ?? $product->sku,
                     ]);
+                } elseif ($product->type === 'variable') {
+                    foreach ($product->variants as $variant) {
+                        $printQueue->push((object) [
+                            'name' => $product->name.' ('.$variant->variant_name.')',
+                            'price' => $variant->selling_price,
+                            'barcode_value' => $variant->barcode ?? $variant->sku,
+                        ]);
+                    }
                 }
             }
         }

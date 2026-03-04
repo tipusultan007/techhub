@@ -247,6 +247,9 @@
                                 <!-- Actions -->
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end items-center space-x-4">
+                                        <button type="button" onclick="openBarcodeModal({{ $product->id }}, '{{ addslashes($product->name) }}')" class="text-slate-600 hover:text-slate-900" title="Print Barcodes">
+                                            <i class="fas fa-barcode"></i>
+                                        </button>
                                         <a href="{{ route('products.show', $product) }}" class="text-gray-500 hover:text-blue-600" title="View"><i class="fas fa-eye"></i></a>
                                         <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit"><i class="fas fa-edit"></i></a>
                                         
@@ -285,11 +288,76 @@
         </form>
     @endforeach
 
+    <!-- Individual Barcode Modal -->
+    <div id="barcodeModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-vh-100 pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeBarcodeModal()"></div>
+
+            <!-- Modal panel -->
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="individual-barcode-form" action="{{ route('products.print_barcodes') }}" method="POST" target="_blank">
+                    @csrf
+                    <input type="hidden" name="ids[]" id="modal-product-id">
+                    
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="fas fa-barcode text-blue-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                    Print Product Barcodes
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500 mb-4" id="modal-product-name"></p>
+                                    
+                                    <div class="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Sticker Size</label>
+                                            <select name="barcode_size" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="1x0.375">1" x 0.375"</option>
+                                                <option value="48.5x25.4" selected>48.5mm x 25.4mm</option>
+                                                <option value="2x1">2" x 1"</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Quantity (How many stickers?)</label>
+                                            <input type="number" name="qty" value="1" min="1" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" onclick="closeBarcodeModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Generate Barcodes
+                        </button>
+                        <button type="button" onclick="closeBarcodeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
 @section('scripts')
     <script>
+        function openBarcodeModal(id, name) {
+            document.getElementById('modal-product-id').value = id;
+            document.getElementById('modal-product-name').innerText = 'Product: ' + name;
+            document.getElementById('barcodeModal').classList.remove('hidden');
+        }
+
+        function closeBarcodeModal() {
+            document.getElementById('barcodeModal').classList.add('hidden');
+        }
+
         // Checkbox "Select All" logic
         document.getElementById('select-all').onclick = function() {
             var checkboxes = document.querySelectorAll('.product-checkbox');
@@ -314,6 +382,16 @@
                     document.getElementById('delete-form-' + productId).submit();
                 }
             })
+        }
+
+        function openBarcodeModal(id, name) {
+            document.getElementById('modal-product-id').value = id;
+            document.getElementById('modal-product-name').innerText = 'Product: ' + name;
+            document.getElementById('barcodeModal').classList.remove('hidden');
+        }
+
+        function closeBarcodeModal() {
+            document.getElementById('barcodeModal').classList.add('hidden');
         }
 
         function getSelectedIds() {
