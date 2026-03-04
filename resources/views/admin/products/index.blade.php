@@ -120,15 +120,22 @@
                 </div>
             </div>
 
-            <!-- Barcode Size Selection -->
+            <!-- Barcode Size and Skip Selection -->
             <div class="flex items-center gap-2">
-                <select name="barcode_size" form="barcode-form" class="bg-white border border-gray-300 rounded shadow-sm px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="1x0.375">1" x 0.375"</option>
-                    <option value="48.5x25.4" selected>48.5mm x 25.4mm</option>
-                    <option value="2x1">2" x 1"</option>
-                </select>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase px-1">Size</label>
+                    <select name="barcode_size" form="barcode-form" class="bg-white border border-gray-300 rounded shadow-sm px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="1x0.375">1" x 0.375"</option>
+                        <option value="48.5x25.4" selected>48.5mm x 25.4mm</option>
+                        <option value="2x1">2" x 1"</option>
+                    </select>
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase px-1">Skip</label>
+                    <input type="number" name="skip" form="barcode-form" value="0" min="0" title="Skip used stickers" class="w-16 bg-white border border-gray-300 rounded shadow-sm px-2 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
                 <!-- Print Labels Button -->
-                <button type="button" onclick="document.getElementById('barcode-form').submit();" class="bg-slate-800 text-white px-4 py-2 rounded shadow hover:bg-slate-700 font-bold text-sm whitespace-nowrap">
+                <button type="button" onclick="document.getElementById('barcode-form').submit();" class="bg-slate-800 text-white px-4 py-2 rounded shadow hover:bg-slate-700 font-bold text-sm whitespace-nowrap mt-4">
                     <i class="fas fa-barcode mr-2"></i> Print Labels
                 </button>
             </div>
@@ -312,7 +319,7 @@
                                 <div class="mt-2">
                                     <p class="text-sm text-gray-500 mb-4" id="modal-product-name"></p>
                                     
-                                    <div class="grid grid-cols-1 gap-4">
+                                    <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Sticker Size</label>
                                             <select name="barcode_size" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
@@ -322,6 +329,10 @@
                                             </select>
                                         </div>
                                         <div>
+                                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Skip Stickers</label>
+                                            <input type="number" name="skip" value="0" min="0" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500" title="Skip used stickers">
+                                        </div>
+                                        <div class="col-span-2">
                                             <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Quantity (How many stickers?)</label>
                                             <input type="number" name="qty" value="1" min="1" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500" required>
                                         </div>

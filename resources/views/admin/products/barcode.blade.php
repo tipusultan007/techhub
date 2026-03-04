@@ -156,21 +156,41 @@
             $barcodeWidth = 1.5;
             $barcodeHeight = 20;
         }
+
+        // Logic for skipping stickers
+        // We'll prepend the printQueue with empty placeholders for the skipped amount
+        $skip = (int) ($skip ?? 0);
+        $totalItems = $printQueue->count() + $skip;
     @endphp
 
-    @foreach($printQueue->chunk($perPage) as $chunk)
+    @php
+        // Create a flat collection including skip placeholders for the first page logic
+        $placeholders = collect();
+        for ($i = 0; $i < $skip; $i++) {
+            $placeholders->push(null);
+        }
+        $fullQueue = $placeholders->concat($printQueue);
+    @endphp
+
+    @foreach($fullQueue->chunk($perPage) as $chunk)
         <div class="page">
             @foreach($chunk as $item)
-                <div class="sticker {{ $sizeClass }} has-content">
-                    <div class="product-name">{{ $item->name }}</div>
-                    
-                    <div class="barcode-container">
-                        {!! $generator->getBarcode($item->barcode_value, $generator::TYPE_CODE_128, $barcodeWidth, $barcodeHeight) !!}
+                @if($item)
+                    <div class="sticker {{ $sizeClass }} has-content">
+                        <div class="product-name">{{ $item->name }}</div>
+                        
+                        <div class="barcode-container">
+                            {!! $generator->getBarcode($item->barcode_value, $generator::TYPE_CODE_128, $barcodeWidth, $barcodeHeight) !!}
+                        </div>
+                        
+                        <div class="barcode-text">{{ $item->barcode_value }}</div>
+                        <div class="price">AED {{ number_format($item->price, 2) }}</div>
                     </div>
-                    
-                    <div class="barcode-text">{{ $item->barcode_value }}</div>
-                    <div class="price">AED {{ number_format($item->price, 2) }}</div>
-                </div>
+                @else
+                    <div class="sticker {{ $sizeClass }}">
+                        <!-- Empty placeholder for skipped sticker -->
+                    </div>
+                @endif
             @endforeach
 
             {{-- Padding for empty grid spots to maintain alignment --}}
