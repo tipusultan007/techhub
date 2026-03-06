@@ -43,10 +43,9 @@ class RakbankPaymentService
                         ],
                     ],
                     'displayControl' => [
-                        'billingAddress'  => 'HIDE',
-                        'customerEmail'   => 'HIDE',
-                        'orderSummary'    => 'SHOW',
-                        'shipping'        => 'HIDE',
+                        'billingAddress' => 'HIDE',
+                        'customerEmail'  => 'HIDE',
+                        'shipping'       => 'HIDE',
                     ],
                     'locale' => 'en_US',
                 ],
