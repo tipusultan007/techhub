@@ -45,15 +45,35 @@ class RakbankPaymentController extends Controller
         // Query the API to confirm payment status (more secure than trusting URL params)
         $orderData = $this->rakbankService->retrieveOrder($order->invoice_no);
 
-        $gatewayStatus = $orderData['status'] ?? null;
+        // RAKBANK nests status under order.status (not top-level)
+        // e.g. { "order": { "status": "CAPTURED", ... }, "result": "SUCCESS" }
+        $gatewayStatus = $orderData['order']['status'] ?? null;
+        $result        = $orderData['result'] ?? null;
 
-        if ($orderData && in_array($gatewayStatus, ['CAPTURED', 'AUTHORIZED'])) {
+        Log::info('RAKBANK Callback Received', [
+            'order_id'       => $order->id,
+            'gateway_status' => $gatewayStatus,
+            'result'         => $result,
+            'full_response'  => $orderData,
+        ]);
+
+        $successStatuses = ['CAPTURED', 'AUTHORIZED', 'PURCHASED'];
+
+        if ($orderData && in_array($gatewayStatus, $successStatuses)) {
             // Payment Successful - update order only if still pending
             if ($order->status === 'pending') {
+                $transactionId  = $orderData['transaction'][0]['transaction']['id']
+                    ?? $orderData['transaction']['id']
+                    ?? null;
+                $gatewayOrderId = $orderData['order']['id'] ?? null;
+
                 $order->update([
-                    'status' => 'processing',
-                    'payment_method' => 'rakbank',
-                    'notes' => ($order->notes ? $order->notes . "\n" : "") . "RAKBANK Payment {$gatewayStatus}."
+                    'status'          => 'processing',
+                    'payment_method'  => 'rakbank',
+                    'transaction_id'  => $transactionId,
+                    'gateway_order_id'=> $gatewayOrderId,
+                    'notes'           => ($order->notes ? $order->notes . "\n" : "")
+                        . "RAKBANK Payment {$gatewayStatus}. Txn: {$transactionId}",
                 ]);
 
                 // Clear cart session for the user
@@ -66,9 +86,10 @@ class RakbankPaymentController extends Controller
         }
 
         Log::warning('RAKBANK Payment Verification Failed or Cancelled', [
-            'order_id' => $order->id,
+            'order_id'       => $order->id,
             'gateway_status' => $gatewayStatus,
-            'gateway_data' => $orderData
+            'result'         => $result,
+            'gateway_data'   => $orderData,
         ]);
 
         return redirect()->route('checkout.index')->with('error', 'Payment failed or was cancelled. Please try again.');
@@ -111,10 +132,16 @@ class RakbankPaymentController extends Controller
         if ($gatewayStatus === 'CAPTURED' || $gatewayStatus === 'AUTHORIZED') {
             // Only update if not already processed
             if ($order->status === 'pending') {
+                $transactionId  = $payload['transaction']['id'] ?? null;
+                $gatewayOrderId = $payload['order']['id'] ?? null;
+
                 $order->update([
-                    'status' => 'processing',
-                    'payment_method' => 'rakbank',
-                    'notes' => ($order->notes ? $order->notes . "\n" : "") . "RAKBANK Webhook: Payment Captured."
+                    'status'          => 'processing',
+                    'payment_method'  => 'rakbank',
+                    'transaction_id'  => $transactionId,
+                    'gateway_order_id'=> $gatewayOrderId,
+                    'notes'           => ($order->notes ? $order->notes . "\n" : "")
+                        . "RAKBANK Webhook: {$gatewayStatus}. Txn: {$transactionId}",
                 ]);
 
                 // Clear cart if we can identify the session?

@@ -203,14 +203,38 @@
                     <span class="text-sm text-gray-600">Method</span>
                     <span class="font-semibold text-gray-800 uppercase">{{ $order->payment_method }}</span>
                 </div>
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center mb-2">
                     <span class="text-sm text-gray-600">Status</span>
-                    @if($order->status == 'completed' || $order->payment_method == 'card')
+                    @if($order->status == 'completed' || $order->payment_method == 'rakbank')
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
                     @else
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
                     @endif
                 </div>
+
+                @if($order->payment_method === 'rakbank')
+                <div class="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs text-gray-500">Transaction ID</span>
+                        @if($order->transaction_id)
+                            <span class="text-xs font-mono font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded select-all">{{ $order->transaction_id }}</span>
+                        @else
+                            <span class="text-xs text-gray-400 italic">Not recorded</span>
+                        @endif
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs text-gray-500">Gateway Order ID</span>
+                        @if($order->gateway_order_id)
+                            <span class="text-xs font-mono font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded select-all">{{ $order->gateway_order_id }}</span>
+                        @else
+                            <span class="text-xs text-gray-400 italic">{{ $order->invoice_no }}</span>
+                        @endif
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1">
+                        Use these IDs to verify in the <strong>RAKBANK Merchant Portal</strong>.
+                    </p>
+                </div>
+                @endif
             </div>
 
             <!-- 3. Activity Timeline -->
