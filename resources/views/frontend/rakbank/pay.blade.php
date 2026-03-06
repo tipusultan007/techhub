@@ -95,14 +95,21 @@
             }
         });
 
-        // Auto-open lightbox
+        // Try Lightbox first, fall back to full-page redirect
         setTimeout(function() {
-            try {
-                Checkout.showLightbox();
-            } catch (e) {
-                console.error("showLightbox error:", e);
-                var btn = document.getElementById('manual-btn-wrapper');
-                if (btn) btn.style.display = 'block';
+            if (typeof Checkout.showLightbox === 'function') {
+                try {
+                    Checkout.showLightbox();
+                } catch (e) {
+                    console.warn("Lightbox failed, trying showPaymentPage:", e);
+                    Checkout.showPaymentPage();
+                }
+            } else if (typeof Checkout.showPaymentPage === 'function') {
+                console.info("Lightbox not available, using payment page redirect.");
+                Checkout.showPaymentPage();
+            } else {
+                console.error("No RAKBANK payment method available.");
+                document.getElementById('manual-btn-wrapper').style.display = 'block';
             }
         }, 800);
     }
@@ -118,8 +125,12 @@
         var btn = document.getElementById('manual-pay-btn');
         if (btn) {
             btn.addEventListener('click', function() {
-                if (typeof Checkout !== 'undefined' && typeof Checkout.showLightbox === 'function') {
+                if (typeof Checkout === 'undefined') {
+                    onRakbankScriptError();
+                } else if (typeof Checkout.showLightbox === 'function') {
                     Checkout.showLightbox();
+                } else if (typeof Checkout.showPaymentPage === 'function') {
+                    Checkout.showPaymentPage();
                 } else {
                     onRakbankScriptError();
                 }
