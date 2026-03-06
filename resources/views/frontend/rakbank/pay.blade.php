@@ -75,23 +75,11 @@
             return;
         }
 
+        // API v67+: ONLY session is allowed in configure()
+        // All other settings must be passed via INITIATE_CHECKOUT on the server
         Checkout.configure({
             session: {
                 id: RAKBANK_SESSION_ID
-            },
-            interaction: {
-                merchant: {
-                    name: '{{ addslashes(config('app.name')) }}',
-                    address: { line1: 'Dubai, UAE' }
-                },
-                displayControl: {
-                    billingAddress: 'HIDE',
-                    customerEmail: 'HIDE',
-                    orderSummary: 'SHOW',
-                    shipping: 'HIDE'
-                },
-                locale: 'en_US',
-                timeoutUrl: CHECKOUT_INDEX_URL
             }
         });
 

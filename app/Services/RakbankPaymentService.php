@@ -35,16 +35,27 @@ class RakbankPaymentService
                     'operation' => 'PURCHASE',
                     'returnUrl' => route('rakbank.callback', ['order_id' => $order->id]),
                     'cancelUrl' => route('checkout.index'),
+                    'timeoutUrl' => route('checkout.index'),
                     'merchant' => [
                         'name' => config('app.name'),
-                    ]
+                        'address' => [
+                            'line1' => 'Dubai, UAE',
+                        ],
+                    ],
+                    'displayControl' => [
+                        'billingAddress'  => 'HIDE',
+                        'customerEmail'   => 'HIDE',
+                        'orderSummary'    => 'SHOW',
+                        'shipping'        => 'HIDE',
+                    ],
+                    'locale' => 'en_US',
                 ],
                 'order' => [
                     'id' => $order->invoice_no,
                     'amount' => $order->total,
                     'currency' => 'AED',
                     'description' => 'Online Order ' . $order->invoice_no,
-                ]
+                ],
             ]);
 
             if ($response->successful()) {
