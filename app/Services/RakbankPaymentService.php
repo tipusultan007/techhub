@@ -25,36 +25,46 @@ class RakbankPaymentService
     {
         $url = "{$this->baseUrl}/merchant/{$this->merchantId}/session";
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
-        ])->post($url, [
-            'apiOperation' => 'INITIATE_CHECKOUT',
-            'interaction' => [
-                'operation' => 'PURCHASE',
-                'returnUrl' => route('rakbank.callback', ['order_id' => $order->id]),
-                'cancelUrl' => route('checkout.index'),
-                'merchant' => [
-                    'name' => config('app.name'),
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic ' . base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
+            ])->post($url, [
+                'apiOperation' => 'INITIATE_CHECKOUT',
+                'interaction' => [
+                    'operation' => 'PURCHASE',
+                    'returnUrl' => route('rakbank.callback', ['order_id' => $order->id]),
+                    'cancelUrl' => route('checkout.index'),
+                    'merchant' => [
+                        'name' => config('app.name'),
+                    ]
+                ],
+                'order' => [
+                    'id' => $order->invoice_no,
+                    'amount' => $order->total,
+                    'currency' => 'AED',
+                    'description' => 'Online Order ' . $order->invoice_no,
                 ]
-            ],
-            'order' => [
-                'id' => $order->invoice_no,
-                'amount' => $order->total,
-                'currency' => 'AED',
-                'description' => 'Online Order ' . $order->invoice_no,
-            ]
-        ]);
+            ]);
 
-        if ($response->successful()) {
-            return $response->json();
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('RAKBANK Initiate Checkout Failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'order_id' => $order->id
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('RAKBANK Connection Error (initiateCheckout): ' . $e->getMessage(), [
+                'order_id' => $order->id
+            ]);
+        } catch (\Exception $e) {
+            Log::error('RAKBANK Unexpected Error (initiateCheckout): ' . $e->getMessage(), [
+                'order_id' => $order->id
+            ]);
         }
-
-        Log::error('RAKBANK Initiate Checkout Failed', [
-            'status' => $response->status(),
-            'body' => $response->body(),
-            'order_id' => $order->id
-        ]);
 
         return null;
     }
@@ -90,12 +100,22 @@ class RakbankPaymentService
     {
         $url = "{$this->baseUrl}/merchant/{$this->merchantId}/order/{$orderInvoiceId}";
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Basic ' . base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
-        ])->get($url);
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic ' . base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
+            ])->get($url);
 
-        if ($response->successful()) {
-            return $response->json();
+            if ($response->successful()) {
+                return $response->json();
+            }
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('RAKBANK Connection Error (retrieveOrder): ' . $e->getMessage(), [
+                'invoice_no' => $orderInvoiceId
+            ]);
+        } catch (\Exception $e) {
+            Log::error('RAKBANK Unexpected Error (retrieveOrder): ' . $e->getMessage(), [
+                'invoice_no' => $orderInvoiceId
+            ]);
         }
 
         return null;
