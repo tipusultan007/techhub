@@ -154,14 +154,14 @@
                             </label>
                         </div>
 
-                        <!-- Card (Placeholder for now) -->
+                        <!-- Card (RAKBANK) -->
                         <div>
-                            <input type="radio" name="payment_method" id="pay-card" value="card" class="pay-radio">
+                            <input type="radio" name="payment_method" id="pay-card" value="rakbank" class="pay-radio">
                             <label for="pay-card" class="pay-card">
                                 <div class="radio-circle"><div class="radio-dot"></div></div>
                                 <div style="flex:1;">
-                                    <span style="font-weight:700; color:var(--text-main); display:block;">Credit / Debit Card</span>
-                                    <span style="font-size:0.85rem; color:#64748b;">Secure online payment</span>
+                                    <span style="font-weight:700; color:var(--text-main); display:block;">Credit / Debit Card (RAKBANK)</span>
+                                    <span style="font-size:0.85rem; color:#64748b;">Secure online payment via RAKBANK</span>
                                 </div>
                                 <div style="display:flex; gap:10px; font-size:1.5rem; color:#64748b;">
                                     <i class="ri-visa-line"></i>

@@ -23,6 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         );
 
+        $middleware->validateCsrfTokens(except: [
+            '/rakbank/webhook',
+        ]);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

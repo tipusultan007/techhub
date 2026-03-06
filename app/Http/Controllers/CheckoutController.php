@@ -59,7 +59,7 @@ class CheckoutController extends Controller
             'phone' => 'required|string',
             'address' => 'required|string',
             'city' => 'required|string',
-            'payment_method' => 'required|in:cod,card'
+            'payment_method' => 'required|in:cod,rakbank'
         ]);
 
         $cart = Session::get('cart', []);
@@ -168,13 +168,19 @@ class CheckoutController extends Controller
                 }
             }
 
-            Session::forget('cart');
-            Session::forget('coupon');
+            if ($request->payment_method === 'cod') {
+                Session::forget('cart');
+                Session::forget('coupon');
+            }
 
             return $order;
         });
 
         session()->put('placed_order_id', $order->id);
+
+        if ($request->payment_method === 'rakbank') {
+            return redirect()->route('rakbank.pay', $order->id);
+        }
 
         return redirect()->route('checkout.success', $order->id);
 

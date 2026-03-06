@@ -40,4 +40,11 @@ return [
         'secret' => env('RECAPTCHA_SECRET_KEY'),
     ],
 
+    'rakbank' => [
+        'merchant_id' => env('RAKBANK_MERCHANT_ID'),
+        'api_password' => env('RAKBANK_API_PASSWORD'),
+        'base_url' => env('RAKBANK_BASE_URL'),
+        'webhook_secret' => env('RAKBANK_WEBHOOK_SECRET'),
+    ],
+
 ];

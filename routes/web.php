@@ -81,6 +81,11 @@ Route::group(['middleware' => ['maintenance']], function () {
 
     Route::get('/order/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
+    // RAKBANK Payment Routes
+    Route::get('/rakbank/pay/{order}', [App\Http\Controllers\RakbankPaymentController::class, 'pay'])->name('rakbank.pay');
+    Route::get('/rakbank/callback', [App\Http\Controllers\RakbankPaymentController::class, 'callback'])->name('rakbank.callback');
+    Route::post('/rakbank/webhook', [App\Http\Controllers\RakbankPaymentController::class, 'webhook'])->name('rakbank.webhook');
+
     Route::match(['get', 'post'], '/track-order', [TrackOrderController::class, 'index'])->name('track.order');
     Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
