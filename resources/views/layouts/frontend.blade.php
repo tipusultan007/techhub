@@ -560,16 +560,70 @@
                     <li><a href="tel:{{ $settings['contact_phone'] ?? '' }}"><i class="ri-phone-fill"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a></li>
                     <li><a href="mailto:{{ $settings['contact_email'] ?? 'support@techhubrak.ae' }}"><i class="ri-mail-fill"></i> {{ $settings['contact_email'] ?? 'support@techhubrak.ae' }}</a></li>
                 </ul>
-                <div class="payment-icons">
-                    <i class="ri-visa-line"></i>
-                    <i class="ri-mastercard-line"></i>
-                    <i class="ri-paypal-line"></i>
-                </div>
+                
             </div>
         </div>
 
-        <div style="text-align:center; border-top:1px solid #1e293b; padding-top:20px; color:#64748b; font-size:12px;">
-            &copy; {{ date('Y') }} {{ $settings['site_name'] ?? 'TechHubRak' }}. All Rights Reserved.
+        {{-- Footer Bottom: Card Logos + Copyright --}}
+        <div style="border-top:1px solid #1e293b; padding-top:20px; margin-top:10px;">
+            <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px;">
+
+                {{-- Copyright --}}
+                <div style="color:#64748b; font-size:12px;">
+                    &copy; {{ date('Y') }} {{ $settings['site_name'] ?? 'TechHubRak' }}. All Rights Reserved.
+                </div>
+
+                {{-- Accepted Payment Cards --}}
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span style="color:#64748b; font-size:11px; margin-right:4px;">We Accept:</span>
+
+                    {{-- Visa --}}
+                    <span title="Visa" style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:3px 8px; display:inline-flex; align-items:center; height:30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 500" height="18">
+                            <path fill="#0066B2" d="M293.2 348.7l33.4-195.8h53.4l-33.4 195.8z"/>
+                            <path fill="#0066B2" d="M539.8 157c-10.6-4-27.2-8.3-48-8.3-52.9 0-90.2 26.6-90.5 64.7-.3 28.2 26.6 43.9 46.9 53.3 20.8 9.7 27.8 15.8 27.7 24.5-.1 13.2-16.6 19.2-32 19.2-21.4 0-32.8-3-50.3-10.4l-6.9-3.1-7.5 43.8c12.5 5.5 35.6 10.2 59.6 10.4 56.2 0 92.7-26.3 93.1-67-.2-22.3-14-39.3-44.6-53.3-18.6-9.1-30-15.1-29.9-24.3 0-8.1 9.6-16.8 30.5-16.8 17.4-.3 30 3.5 39.8 7.5l4.8 2.3 7.3-42.5z"/>
+                            <path fill="#0066B2" d="M657.4 152.9h-41.4c-12.8 0-22.4 3.5-28 16.3l-79.4 179.5h56.2l11.2-29.4 68.6.1 6.5 29.3H704l-46.6-195.8zm-65.9 124.9c4.4-11.3 21.3-54.8 21.3-54.8s4.4-11.4 7.1-18.7l3.6 16.9 12.4 56.6h-44.4z"/>
+                            <path fill="#0066B2" d="M230.2 152.9l-52.4 133.4-5.6-27.3c-9.7-31.4-40-65.4-73.8-82.4l48 172H203l75.4-195.7h-48.2z"/>
+                            <path fill="#F9A51A" d="M131.5 152.9H48.8l-.7 4c64 15.5 106.5 52.9 124.1 97.8l-17.9-86.1c-3-12.5-12.4-15.3-22.8-15.7z"/>
+                        </svg>
+                    </span>
+
+                    {{-- Mastercard --}}
+                    <span title="Mastercard" style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:3px 8px; display:inline-flex; align-items:center; height:30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 131.39 86.9" height="18">
+                            <rect x="48.19" fill="#FF5F00" width="35" height="86.9"/>
+                            <path fill="#EB001B" d="M51.94 43.45a55.3 55.3 0 0 1 14.25-37.06A48.2 48.2 0 0 0 0 43.45a48.2 48.2 0 0 0 66.19 45.06A55.3 55.3 0 0 1 51.94 43.45z"/>
+                            <path fill="#F79E1B" d="M131.39 43.45A48.2 48.2 0 0 0 65.2 6.39a55.3 55.3 0 0 1 0 74.12 48.2 48.2 0 0 0 66.19-37.06z"/>
+                        </svg>
+                    </span>
+
+                    {{-- American Express --}}
+                    <span title="American Express" style="background:#007BC1; border:1px solid #007BC1; border-radius:5px; padding:3px 10px; display:inline-flex; align-items:center; height:30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 471" height="16">
+                            <path fill="#fff" d="M0 0h750v471H0z" opacity="0"/>
+                            <path fill="#fff" d="M184 169l-13 31h26zm378 2h-47v18h46v18h-46v20h47l22-28zm-290 84h-22l-1-65-28 65h-19l-28-65v65h-39l-7-18h-39l-7 18h-24l34-82h32l32 77V171h35l25 57 23-57h36zm64 0h-22V171h22zm146 0h-30l-40-54v54h-39l-8-18h-39l-7 18h-25l34-82h32l33 77V171h33l37 50v-50h22z"/>
+                        </svg>
+                        <span style="color:#fff; font-size:9px; font-weight:900; letter-spacing:0.5px; margin-left:4px;">AMEX</span>
+                    </span>
+
+                    {{-- Maestro --}}
+                    <span title="Maestro" style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:3px 8px; display:inline-flex; align-items:center; height:30px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 131.39 86.9" height="18">
+                            <circle cx="45.3" cy="43.45" r="43.45" fill="#EB001B"/>
+                            <circle cx="86.09" cy="43.45" r="43.45" fill="#0099DF" opacity=".85"/>
+                            <path fill="#6C6BBD" d="M65.7 13.17a43.45 43.45 0 0 1 0 60.56 43.45 43.45 0 0 1 0-60.56z"/>
+                        </svg>
+                    </span>
+
+                    {{-- Secure badge --}}
+                    <span title="Secured by RAKBANK" style="background:#10b981; border-radius:5px; padding:3px 8px; display:inline-flex; align-items:center; height:30px; gap:4px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="14" height="14">
+                            <path d="M12 1l9 4v6c0 5.55-3.84 10.74-9 12-5.16-1.26-9-6.45-9-12V5l9-4zm-1 14l6-6-1.4-1.4L11 12.17l-2.6-2.57L7 11l4 4z"/>
+                        </svg>
+                        <span style="color:#fff; font-size:9px; font-weight:700; white-space:nowrap;">Secure Pay</span>
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 </footer>

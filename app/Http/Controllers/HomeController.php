@@ -6,7 +6,6 @@ use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Wishlist;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
@@ -21,16 +20,16 @@ class HomeController extends Controller
         $products = Product::published()->physical()->inStock()
             ->with(['category', 'variants', 'media'])
             ->latest()
-            ->take(10)
+            ->take(20)
             ->get();
 
         return view('home', [
-            'mainBanners'  => Banner::where('position', '=', 'main')->where('is_active', '=', true)->orderBy('order')->get(),
-            'sideTop'      => Banner::where('position', '=', 'side_top')->where('is_active', '=', true)->first(),
-            'sideBottom'   => Banner::where('position', '=', 'side_bottom')->where('is_active', '=', true)->first(),
+            'mainBanners' => Banner::where('position', '=', 'main')->where('is_active', '=', true)->orderBy('order')->get(),
+            'sideTop' => Banner::where('position', '=', 'side_top')->where('is_active', '=', true)->first(),
+            'sideBottom' => Banner::where('position', '=', 'side_bottom')->where('is_active', '=', true)->first(),
             'featuredCategories' => $featuredCategories,
-            'featuredBrands'     => \App\Models\Brand::where('is_featured', true)->get(),
-            'products'      => $products,
+            'featuredBrands' => \App\Models\Brand::where('is_featured', true)->get(),
+            'products' => $products,
         ]);
     }
 
@@ -48,7 +47,6 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
-
         $inWishlist = false;
         if (Auth::guard('customer')->check()) {
             $inWishlist = Wishlist::where('customer_id', Auth::guard('customer')->id())
@@ -56,6 +54,6 @@ class HomeController extends Controller
                 ->exists();
         }
 
-        return view('frontend.product', compact('product', 'relatedProducts','inWishlist'));
+        return view('frontend.product', compact('product', 'relatedProducts', 'inWishlist'));
     }
 }

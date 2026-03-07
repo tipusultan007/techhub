@@ -33,7 +33,7 @@
             <div class="header">
                 <a href="{{ url('/') }}" class="logo">
                     @if(settings('site_logo'))
-                        <img src="{{ settings('site_logo') }}" alt="{{ settings('site_name') }}" class="logo-img">
+                        <img src="{{ asset('images/techhub-white.svg') }}" width="240" alt="{{ settings('site_name') }}" class="logo-img">
                     @else
                         <span class="logo-text">{{ settings('site_name', 'Tech Hub') }}</span>
                     @endif
