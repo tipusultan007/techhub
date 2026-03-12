@@ -71,9 +71,16 @@
                 <h1 class="page-title" style="margin-top: 10px;">Order Details</h1>
             </div>
             @if($order->status !== 'cancelled')
-                <a href="{{ route('customer.orders.download', $order) }}" class="btn-solid">
-                    <i class="ri-download-line"></i> Download Invoice
-                </a>
+                <div style="display: flex; gap: 10px;">
+                    @if($order->status === 'pending' && $order->payment_method === 'rakbank')
+                        <a href="{{ route('rakbank.pay', $order) }}" class="btn-solid" style="background: var(--brand-emerald); border-color: var(--brand-emerald);">
+                            <i class="ri-secure-payment-line mr-1"></i> Pay Now
+                        </a>
+                    @endif
+                    <a href="{{ route('customer.orders.download', $order) }}" class="btn-solid">
+                        <i class="ri-download-line"></i> Download Invoice
+                    </a>
+                </div>
             @endif
         </div>
 

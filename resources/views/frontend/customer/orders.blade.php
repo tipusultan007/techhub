@@ -443,7 +443,13 @@
                                 <a href="{{ route('customer.orders.show', $order) }}" class="btn-outline">View
                                     Details</a>
                                 @if($order->status !== 'completed' && $order->status !== 'cancelled')
-                                    <a href="{{ route('track.order', ['invoice_no' => $order->invoice_no, 'email' => $order->guest_email ?? ($order->customer ? $order->customer->email : '')]) }}" class="btn-solid">Track Order</a>
+                                    <a href="{{ route('track.order', ['invoice_no' => $order->invoice_no, 'email' => $order->guest_email ?? ($order->customer ? $order->customer->email : '')]) }}" class="btn-outline">Track Order</a>
+                                @endif
+
+                                @if($order->status === 'pending' && $order->payment_method === 'rakbank')
+                                    <a href="{{ route('rakbank.pay', $order) }}" class="btn-solid" style="background: var(--brand-emerald); border-color: var(--brand-emerald);">
+                                        <i class="ri-secure-payment-line mr-1"></i> Pay Now
+                                    </a>
                                 @endif
                             </div>
                         </div>

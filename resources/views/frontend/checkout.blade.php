@@ -70,16 +70,16 @@
                 <div class="checkout-section">
                     <div class="section-head">
                         1. Contact Information
-                        @guest
-                            <a href="{{ route('login') }}" class="edit-link">Already have an account? Login</a>
+                        @guest('customer')
+                            <a href="{{ route('customer.login') }}" class="edit-link">Already have an account? Login</a>
                         @endguest
                     </div>
 
-                    @auth
+                    @auth('customer')
                         <div class="guest-alert">
                             <i class="ri-user-smile-line text-lg"></i>
                             <div>
-                                Logged in as <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->email }})
+                                Logged in as <strong>{{ auth('customer')->user()->name }}</strong> ({{ auth('customer')->user()->email }})
                             </div>
                         </div>
                     @endauth
@@ -87,7 +87,7 @@
                     <div class="form-group">
                         <label class="form-label">Email Address <span class="text-red-500">*</span></label>
                         <input type="email" name="email" class="form-input"
-                               value="{{ auth()->check() ? auth()->user()->email : old('email') }}"
+                               value="{{ auth('customer')->check() ? auth('customer')->user()->email : old('email') }}"
                                placeholder="e.g. name@example.com" required>
                         <p style="font-size: 11px; color: #64748b; margin-top: 5px;">
                             We'll send the receipt and order updates here.
@@ -102,7 +102,7 @@
                         <div class="form-group">
                             <label class="form-label">First Name <span class="text-red-500">*</span></label>
                             <input type="text" name="first_name" class="form-input"
-                                   value="{{ old('first_name', auth()->user()->name ?? '') }}" required>
+                                   value="{{ old('first_name', auth('customer')->user()->name ?? '') }}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Last Name <span class="text-red-500">*</span></label>
@@ -110,11 +110,11 @@
                         </div>
                         <div class="form-group full-width">
                             <label class="form-label">Mobile Number (UAE) <span class="text-red-500">*</span></label>
-                            <input type="tel" name="phone" class="form-input" placeholder="+971 50 123 4567" value="{{ old('phone') }}" required>
+                            <input type="tel" name="phone" class="form-input" placeholder="+971 50 123 4567" value="{{ old('phone', auth('customer')->user()->phone ?? '') }}" required>
                         </div>
                         <div class="form-group full-width">
                             <label class="form-label">Address <span class="text-red-500">*</span></label>
-                            <input type="text" name="address" class="form-input" placeholder="e.g. Street, Building, Flat no." value="{{ old('address') }}" required>
+                            <input type="text" name="address" class="form-input" placeholder="e.g. Street, Building, Flat no." value="{{ old('address', auth('customer')->user()->address ?? '') }}" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Emirate <span class="text-red-500">*</span></label>

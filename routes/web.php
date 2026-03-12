@@ -172,6 +172,7 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
 
         Route::post('/products/bulk-delete', [ProductController::class, 'bulkDestroy'])->name('products.bulk_delete');
         Route::post('/products/bulk-update-status', [ProductController::class, 'bulkUpdateStatus'])->name('products.bulk_update_status');
+        Route::post('/products/bulk-update-category', [ProductController::class, 'bulkUpdateCategory'])->name('products.bulk_update_category');
         Route::resource('products', ProductController::class);
         Route::post('/brands/{brand}/toggle-featured', [BrandController::class, 'toggleFeatured'])->name('brands.toggle-featured');
         Route::resource('brands', BrandController::class);

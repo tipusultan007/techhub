@@ -536,4 +536,17 @@ class ProductController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Status updated successfully for selected products.']);
     }
+
+    public function bulkUpdateCategory(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:products,id',
+            'category_id' => 'required|exists:categories,id',
+        ]);
+
+        Product::whereIn('id', $request->ids)->update(['category_id' => $request->category_id]);
+
+        return response()->json(['success' => true, 'message' => 'Category updated successfully for selected products.']);
+    }
 }

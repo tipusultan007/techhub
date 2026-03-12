@@ -93,7 +93,7 @@
             @endif
         </div>
 
-        <div class="flex flex-wrap gap-2 justify-end w-full md:w-auto">
+        <div class="flex flex-wrap gap-2 justify-end items-end w-full md:w-auto">
             <!-- Reset Button Moved Here -->
             <a href="{{ route('products.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded shadow flex items-center text-sm">
                 <i class="fas fa-undo mr-1"></i> Reset
@@ -112,6 +112,9 @@
                         <button type="button" onclick="bulkUpdateStatus('draft')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                             <i class="fas fa-file-alt mr-2 text-slate-500"></i> Mark as Draft
                         </button>
+                        <button type="button" onclick="openBulkCategoryModal()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <i class="fas fa-tag mr-2 text-orange-500"></i> Change Category
+                        </button>
                         <div class="border-t border-gray-100"></div>
                         <button type="button" onclick="bulkDelete()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center font-semibold">
                             <i class="fas fa-trash-alt mr-2"></i> Delete Selected
@@ -121,7 +124,7 @@
             </div>
 
             <!-- Barcode Size and Skip Selection -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-end gap-2">
                 <div class="flex flex-col">
                     <label class="text-[10px] font-bold text-gray-500 uppercase px-1">Size</label>
                     <select name="barcode_size" form="barcode-form" class="bg-white border border-gray-300 rounded shadow-sm px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
@@ -135,7 +138,7 @@
                     <input type="number" name="skip" form="barcode-form" value="0" min="0" title="Skip used stickers" class="w-16 bg-white border border-gray-300 rounded shadow-sm px-2 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <!-- Print Labels Button -->
-                <button type="button" onclick="document.getElementById('barcode-form').submit();" class="bg-slate-800 text-white px-4 py-2 rounded shadow hover:bg-slate-700 font-bold text-sm whitespace-nowrap mt-4">
+                <button type="button" onclick="document.getElementById('barcode-form').submit();" class="bg-slate-800 text-white px-4 py-2 rounded shadow hover:bg-slate-700 font-bold text-sm whitespace-nowrap">
                     <i class="fas fa-barcode mr-2"></i> Print Labels
                 </button>
             </div>
@@ -354,6 +357,51 @@
         </div>
     </div>
 
+    <!-- Bulk Category Modal -->
+    <div id="bulkCategoryModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-vh-100 pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeBulkCategoryModal()"></div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-tag text-orange-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Change Category
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Select a new category for the selected products.
+                                </p>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">New Category</label>
+                                    <select id="bulk-category-id" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="">Select Category</option>
+                                        @foreach($categories as $cat)
+                                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="submitBulkCategory()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Update Category
+                    </button>
+                    <button type="button" onclick="closeBulkCategoryModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -486,6 +534,56 @@
                     }).catch(error => {
                         console.error(error);
                         Swal.fire('Error', 'Something went wrong while updating product status.', 'error');
+                    });
+                }
+            })
+        }
+
+        function openBulkCategoryModal() {
+            const ids = getSelectedIds();
+            if (ids.length === 0) {
+                Swal.fire('No selection', 'Please select at least one product.', 'info');
+                return;
+            }
+            document.getElementById('bulkCategoryModal').classList.remove('hidden');
+        }
+
+        function closeBulkCategoryModal() {
+            document.getElementById('bulkCategoryModal').classList.add('hidden');
+        }
+
+        function submitBulkCategory() {
+            const ids = getSelectedIds();
+            const categoryId = document.getElementById('bulk-category-id').value;
+
+            if (!categoryId) {
+                Swal.fire('Error', 'Please select a category.', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to update the category of ${ids.length} products.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#aaa',
+                confirmButtonText: 'Yes, update category'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    closeBulkCategoryModal();
+                    axios.post("{{ route('products.bulk_update_category') }}", {
+                        ids: ids,
+                        category_id: categoryId
+                    }).then(response => {
+                        if (response.data.success) {
+                            Swal.fire('Updated!', response.data.message, 'success').then(() => {
+                                window.location.reload();
+                            });
+                        }
+                    }).catch(error => {
+                        console.error(error);
+                        Swal.fire('Error', 'Something went wrong while updating category.', 'error');
                     });
                 }
             })

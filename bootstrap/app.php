@@ -16,10 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($request->is('backend/*') || $request->is('backend')) {
                     return route('login');
                 }
-                if ($request->is('account/*') || $request->is('account')) {
-                    return route('customer.login');
+                return route('customer.login');
+            }
+        );
+
+        $middleware->redirectUsersTo(
+            function ($request) {
+                if ($request->is('backend/*') || $request->is('backend')) {
+                    return route('admin.dashboard'); // Or wherever admins go
                 }
-                return route('login');
+                return route('customer.dashboard');
             }
         );
 

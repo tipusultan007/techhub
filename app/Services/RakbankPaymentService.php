@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Log;
 class RakbankPaymentService
 {
     protected $merchantId;
+
     protected $apiPassword;
+
     protected $baseUrl;
 
     public function __construct()
@@ -28,7 +30,7 @@ class RakbankPaymentService
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Basic ' . base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
+                'Authorization' => 'Basic '.base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
             ])->post($url, [
                 'apiOperation' => 'INITIATE_CHECKOUT',
                 'interaction' => [
@@ -37,15 +39,15 @@ class RakbankPaymentService
                     'cancelUrl' => route('checkout.index'),
                     'timeoutUrl' => route('checkout.index'),
                     'merchant' => [
-                        'name' => config('app.name'),
+                        'name' => 'Tech Hub Information Technology',
                         'address' => [
-                            'line1' => 'Dubai, UAE',
+                            'line1' => 'RAK, UAE',
                         ],
                     ],
                     'displayControl' => [
                         'billingAddress' => 'HIDE',
-                        'customerEmail'  => 'HIDE',
-                        'shipping'       => 'HIDE',
+                        'customerEmail' => 'HIDE',
+                        'shipping' => 'HIDE',
                     ],
                     'locale' => 'en_US',
                 ],
@@ -53,7 +55,7 @@ class RakbankPaymentService
                     'id' => $order->invoice_no,
                     'amount' => $order->total,
                     'currency' => 'AED',
-                    'description' => 'Online Order ' . $order->invoice_no,
+                    'description' => 'Online Order '.$order->invoice_no,
                 ],
             ]);
 
@@ -64,15 +66,15 @@ class RakbankPaymentService
             Log::error('RAKBANK Initiate Checkout Failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
-                'order_id' => $order->id
+                'order_id' => $order->id,
             ]);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('RAKBANK Connection Error (initiateCheckout): ' . $e->getMessage(), [
-                'order_id' => $order->id
+            Log::error('RAKBANK Connection Error (initiateCheckout): '.$e->getMessage(), [
+                'order_id' => $order->id,
             ]);
         } catch (\Exception $e) {
-            Log::error('RAKBANK Unexpected Error (initiateCheckout): ' . $e->getMessage(), [
-                'order_id' => $order->id
+            Log::error('RAKBANK Unexpected Error (initiateCheckout): '.$e->getMessage(), [
+                'order_id' => $order->id,
             ]);
         }
 
@@ -87,7 +89,7 @@ class RakbankPaymentService
         $url = "{$this->baseUrl}/merchant/{$this->merchantId}/session/{$sessionId}";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Basic ' . base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
+            'Authorization' => 'Basic '.base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
         ])->get($url);
 
         if ($response->successful()) {
@@ -97,7 +99,7 @@ class RakbankPaymentService
         Log::error('RAKBANK Retrieve Session Failed', [
             'status' => $response->status(),
             'body' => $response->body(),
-            'session_id' => $sessionId
+            'session_id' => $sessionId,
         ]);
 
         return null;
@@ -112,19 +114,19 @@ class RakbankPaymentService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Basic ' . base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
+                'Authorization' => 'Basic '.base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),
             ])->get($url);
 
             if ($response->successful()) {
                 return $response->json();
             }
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('RAKBANK Connection Error (retrieveOrder): ' . $e->getMessage(), [
-                'invoice_no' => $orderInvoiceId
+            Log::error('RAKBANK Connection Error (retrieveOrder): '.$e->getMessage(), [
+                'invoice_no' => $orderInvoiceId,
             ]);
         } catch (\Exception $e) {
-            Log::error('RAKBANK Unexpected Error (retrieveOrder): ' . $e->getMessage(), [
-                'invoice_no' => $orderInvoiceId
+            Log::error('RAKBANK Unexpected Error (retrieveOrder): '.$e->getMessage(), [
+                'invoice_no' => $orderInvoiceId,
             ]);
         }
 
