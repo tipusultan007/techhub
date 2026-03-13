@@ -322,25 +322,7 @@
         <ul class="nav-list">
             @if($headerMenu && $headerMenu->menuItems->count() > 0)
                 @foreach($headerMenu->menuItems as $item)
-                    <li class="{{ request()->url() == $item->url ? 'active' : '' }} {{ $item->children->count() > 0 ? 'has-dropdown' : '' }}">
-                        <a href="{{ $item->url }}" target="{{ $item->target }}">
-                            {{ $item->label }}
-                            @if($item->children->count() > 0)
-                                <i class="ri-arrow-down-s-line"></i>
-                            @endif
-                        </a>
-                        @if($item->children->count() > 0)
-                            <ul class="dropdown-menu">
-                                @foreach($item->children as $child)
-                                    <li>
-                                        <a href="{{ $child->url }}" target="{{ $child->target }}">
-                                            {{ $child->label }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </li>
+                    @include('frontend.partials.menu-item', ['item' => $item])
                 @endforeach
             @else
                 {{-- Fallback to default menu if no dynamic menu is set --}}
@@ -351,25 +333,7 @@
                     <a href="{{ route('solutions.index') }}">IT Solutions</a>
                 </li>
                 @foreach($headerCategories as $category)
-                    <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}">
-                        <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
-                            {{ $category->name }}
-                            @if($category->children->count() > 0)
-                                <i class="ri-arrow-down-s-line"></i>
-                            @endif
-                        </a>
-                        @if($category->children->count() > 0)
-                            <ul class="dropdown-menu">
-                                @foreach($category->children as $child)
-                                    <li>
-                                        <a href="{{ route('category.show', ['slug' => $child->slug]) }}">
-                                            {{ $child->name }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </li>
+                    @include('frontend.partials.menu-item', ['item' => $category])
                 @endforeach
             @endif
         </ul>
@@ -429,29 +393,7 @@
         <ul class="mobile-nav-list">
             @if($headerMenu && $headerMenu->menuItems->count() > 0)
                 @foreach($headerMenu->menuItems as $item)
-                    <li class="{{ request()->url() == $item->url ? 'active' : '' }}" x-data="{ open: false }">
-                        <div class="mobile-nav-item" :class="{ 'submenu-active': open }">
-                            <a href="{{ $item->url }}" target="{{ $item->target }}">
-                                {{ $item->label }}
-                            </a>
-                            @if($item->children->count() > 0)
-                                <div class="submenu-toggle" @click="open = !open">
-                                    <i class="ri-arrow-down-s-line"></i>
-                                </div>
-                            @endif
-                        </div>
-                        @if($item->children->count() > 0)
-                            <ul class="mobile-submenu" :class="{ 'open': open }" x-show="open" x-collapse>
-                                @foreach($item->children as $child)
-                                    <li>
-                                        <a href="{{ $child->url }}" target="{{ $child->target }}">
-                                            {{ $child->label }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </li>
+                    @include('frontend.partials.mobile-menu-item', ['item' => $item])
                 @endforeach
             @else
                 <li class="{{ request()->is('/') ? 'active' : '' }}">
@@ -461,29 +403,7 @@
                     <a href="{{ route('solutions.index') }}">IT Solutions</a>
                 </li>
                 @foreach($headerCategories as $category)
-                    <li class="{{ request()->route('id') == $category->id ? 'active' : '' }}" x-data="{ open: false }">
-                        <div class="mobile-nav-item" :class="{ 'submenu-active': open }">
-                            <a href="{{ route('category.show', ['slug' => $category->slug]) }}">
-                                {{ $category->name }}
-                            </a>
-                            @if($category->children->count() > 0)
-                                <div class="submenu-toggle" @click="open = !open">
-                                    <i class="ri-arrow-down-s-line"></i>
-                                </div>
-                            @endif
-                        </div>
-                        @if($category->children->count() > 0)
-                            <ul class="mobile-submenu" :class="{ 'open': open }" x-show="open" x-collapse>
-                                @foreach($category->children as $child)
-                                    <li>
-                                        <a href="{{ route('category.show', ['slug' => $child->slug]) }}">
-                                            {{ $child->name }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </li>
+                    @include('frontend.partials.mobile-menu-item', ['item' => $category])
                 @endforeach
             @endif
         </ul>
@@ -589,32 +509,17 @@
                     </span>
 
                     {{-- Mastercard --}}
-                    <span title="Mastercard" style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:3px 8px; display:inline-flex; align-items:center; height:30px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 131.39 86.9" height="18">
-                            <rect x="48.19" fill="#FF5F00" width="35" height="86.9"/>
-                            <path fill="#EB001B" d="M51.94 43.45a55.3 55.3 0 0 1 14.25-37.06A48.2 48.2 0 0 0 0 43.45a48.2 48.2 0 0 0 66.19 45.06A55.3 55.3 0 0 1 51.94 43.45z"/>
-                            <path fill="#F79E1B" d="M131.39 43.45A48.2 48.2 0 0 0 65.2 6.39a55.3 55.3 0 0 1 0 74.12 48.2 48.2 0 0 0 66.19-37.06z"/>
+                    <span title="Mastercard" style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; display:inline-flex; align-items:center; height:30px;">
+                        <svg width="45px" height="40px" viewBox="0 -11 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0.5" y="0.5" width="69" height="47" rx="5.5" fill="white" stroke="#D9D9D9"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M35.3945 34.7619C33.0114 36.8184 29.92 38.0599 26.5421 38.0599C19.0047 38.0599 12.8945 31.8788 12.8945 24.254C12.8945 16.6291 19.0047 10.448 26.5421 10.448C29.92 10.448 33.0114 11.6895 35.3945 13.7461C37.7777 11.6895 40.869 10.448 44.247 10.448C51.7843 10.448 57.8945 16.6291 57.8945 24.254C57.8945 31.8788 51.7843 38.0599 44.247 38.0599C40.869 38.0599 37.7777 36.8184 35.3945 34.7619Z" fill="#ED0006"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M35.3945 34.7619C38.3289 32.2296 40.1896 28.4616 40.1896 24.254C40.1896 20.0463 38.3289 16.2783 35.3945 13.7461C37.7777 11.6895 40.869 10.448 44.247 10.448C51.7843 10.448 57.8945 16.6291 57.8945 24.254C57.8945 31.8788 51.7843 38.0599 44.247 38.0599C40.869 38.0599 37.7777 36.8184 35.3945 34.7619Z" fill="#F9A000"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M35.3946 13.7461C38.329 16.2784 40.1897 20.0463 40.1897 24.254C40.1897 28.4616 38.329 32.2295 35.3946 34.7618C32.4603 32.2295 30.5996 28.4616 30.5996 24.254C30.5996 20.0463 32.4603 16.2784 35.3946 13.7461Z" fill="#FF5E00"/>
                         </svg>
+
                     </span>
 
-                    {{-- American Express --}}
-                    <span title="American Express" style="background:#007BC1; border:1px solid #007BC1; border-radius:5px; padding:3px 10px; display:inline-flex; align-items:center; height:30px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 471" height="16">
-                            <path fill="#fff" d="M0 0h750v471H0z" opacity="0"/>
-                            <path fill="#fff" d="M184 169l-13 31h26zm378 2h-47v18h46v18h-46v20h47l22-28zm-290 84h-22l-1-65-28 65h-19l-28-65v65h-39l-7-18h-39l-7 18h-24l34-82h32l32 77V171h35l25 57 23-57h36zm64 0h-22V171h22zm146 0h-30l-40-54v54h-39l-8-18h-39l-7 18h-25l34-82h32l33 77V171h33l37 50v-50h22z"/>
-                        </svg>
-                        <span style="color:#fff; font-size:9px; font-weight:900; letter-spacing:0.5px; margin-left:4px;">AMEX</span>
-                    </span>
-
-                    {{-- Maestro --}}
-                    <span title="Maestro" style="background:#fff; border:1px solid #e2e8f0; border-radius:5px; padding:3px 8px; display:inline-flex; align-items:center; height:30px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 131.39 86.9" height="18">
-                            <circle cx="45.3" cy="43.45" r="43.45" fill="#EB001B"/>
-                            <circle cx="86.09" cy="43.45" r="43.45" fill="#0099DF" opacity=".85"/>
-                            <path fill="#6C6BBD" d="M65.7 13.17a43.45 43.45 0 0 1 0 60.56 43.45 43.45 0 0 1 0-60.56z"/>
-                        </svg>
-                    </span>
-
+                
                     {{-- Secure badge --}}
                     <span title="Secured by RAKBANK" style="background:#10b981; border-radius:5px; padding:3px 8px; display:inline-flex; align-items:center; height:30px; gap:4px;">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="14" height="14">
