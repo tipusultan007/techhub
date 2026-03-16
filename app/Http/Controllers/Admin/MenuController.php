@@ -39,9 +39,7 @@ class MenuController extends Controller
 
     public function builder(Menu $menu)
     {
-        $menu->load(['menuItems.children' => function($query) {
-            $query->orderBy('order');
-        }]);
+        $menu->load(['menuItems.childrenRecursive']);
 
         $categories = Category::whereNull('parent_id')->with('children')->get();
         $brands = Brand::orderBy('name')->get();
