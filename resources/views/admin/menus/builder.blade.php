@@ -319,6 +319,38 @@ $(document).ready(function() {
         
         $('#editItemModal').removeClass('hidden');
     });
+
+    // Delete Item Logic
+    $(document).on('click', '.delete-item-btn', function() {
+        if (confirm('Remove this item and all its children?')) {
+            const btn = $(this);
+            const row = btn.closest('.menu-item-row');
+            const url = btn.data('action');
+
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    _method: "DELETE"
+                },
+                success: function(response) {
+                    if (response.success) {
+                        row.fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                        toastr.success(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Failed to remove menu item.');
+                    btn.prop('disabled', false).html('<i class="fas fa-times"></i>');
+                }
+            });
+        }
+    });
 });
 </script>
 @endpush

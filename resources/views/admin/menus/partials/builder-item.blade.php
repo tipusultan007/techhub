@@ -11,12 +11,9 @@
             <button type="button" class="edit-item-btn p-1.5 text-gray-400 hover:text-emerald-500 transition-colors" data-id="{{ $item->id }}" data-label="{{ $item->label }}" data-url="{{ $item->url }}" data-target="{{ $item->target }}">
                 <i class="fas fa-cog"></i>
             </button>
-            <form action="{{ route('menus.items.destroy', $item) }}" method="POST" class="inline">
-                @csrf @method('DELETE')
-                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-500 transition-colors" onclick="return confirm('Remove this item?')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </form>
+            <button type="button" class="delete-item-btn p-1.5 text-gray-400 hover:text-red-500 transition-colors" data-id="{{ $item->id }}" data-action="{{ route('menus.items.destroy', $item) }}">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
     <div class="nested-sortable mt-2">

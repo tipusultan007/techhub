@@ -100,6 +100,9 @@ class MenuController extends Controller
     public function deleteItem(MenuItem $item)
     {
         $item->delete();
+        if (request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Item removed from menu.']);
+        }
         return back()->with('success', 'Item removed from menu.');
     }
 
