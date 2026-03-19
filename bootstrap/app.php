@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectTo(
             function ($request) {
-                if ($request->is('backend/*') || $request->is('backend')) {
+                if ($request->is('backend/*') || $request->is('backend') || $request->is('em-secure-portal/*')) {
                     return route('login');
                 }
                 return route('customer.login');
@@ -22,8 +22,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectUsersTo(
             function ($request) {
-                if ($request->is('backend/*') || $request->is('backend')) {
-                    return route('admin.dashboard'); // Or wherever admins go
+                if (\Illuminate\Support\Facades\Auth::guard('web')->check()) {
+                    return route('dashboard');
+                }
+                if (\Illuminate\Support\Facades\Auth::guard('customer')->check()) {
+                    return route('customer.dashboard');
+                }
+
+                if ($request->is('backend/*') || $request->is('backend') || $request->is('em-secure-portal/*')) {
+                    return route('dashboard');
                 }
                 return route('customer.dashboard');
             }

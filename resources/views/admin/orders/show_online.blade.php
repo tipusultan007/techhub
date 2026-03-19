@@ -1,5 +1,6 @@
 @extends('layouts.admin')
 
+@section('title', 'Online Order #' . $order->invoice_no)
 @section('header')
     <div class="flex justify-between items-center">
         <div>
