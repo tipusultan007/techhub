@@ -130,7 +130,7 @@
                     <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</th>
                     <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Tax (%)</th>
                     <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Tax Amount</th>
-                    <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="px-8 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total (Incl. VAT)</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
@@ -165,7 +165,7 @@
                         {{ number_format($item->tax_amount, 2) }}
                     </td>
                     <td class="px-8 py-4 text-sm text-right font-bold text-gray-800">
-                        {{ number_format($item->subtotal, 2) }}
+                        {{ number_format($item->subtotal + $item->tax_amount, 2) }}
                     </td>
                 </tr>
                 @endforeach

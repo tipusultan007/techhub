@@ -28,26 +28,66 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
 
-        // Calculate Totals
-        $subtotal = 0;
-        foreach($cart as $item) $subtotal += $item['price'] * $item['quantity'];
+        $coupon = Session::get('coupon');
+        $totals = $this->getCartTotals($cart, $coupon);
 
-        // Validate Coupon
-        if ($coupon && $subtotal < $coupon['min_amount']) {
-            Session::forget('coupon');
-            $coupon = null;
+        return view('frontend.checkout', [
+            'cart' => $cart,
+            'subtotal' => $totals['subtotal'],
+            'vat' => $totals['vat'],
+            'total' => $totals['total'],
+            'discount' => $totals['discount'],
+            'coupon' => $coupon
+        ]);
+    }
+
+    private function getCartTotals($cart, $coupon = null)
+    {
+        $netSubtotal = 0;
+        $vatAmount = 0;
+        $grossTotal = 0;
+
+        foreach ($cart as $item) {
+            $price = $item['price'];
+            $qty = $item['quantity'];
+            $rate = $item['tax_rate'] ?? 5;
+            $method = $item['tax_method'] ?? 'inclusive';
+
+            $itemGrossBase = $price * $qty;
+
+            if ($method === 'exclusive') {
+                $itemVat = $itemGrossBase * ($rate / 100);
+                $itemNet = $itemGrossBase;
+                $itemGross = $itemGrossBase + $itemVat;
+            } else {
+                $itemVat = $itemGrossBase - ($itemGrossBase / (1 + ($rate / 100)));
+                $itemNet = $itemGrossBase - $itemVat;
+                $itemGross = $itemGrossBase;
+            }
+
+            $netSubtotal += $itemNet;
+            $vatAmount += $itemVat;
+            $grossTotal += $itemGross;
         }
 
         $discount = 0;
         if ($coupon) {
-            $discount = ($coupon['type'] === 'percentage') ? ($subtotal * ($coupon['value'] / 100)) : $coupon['value'];
+            $sumOfPrices = 0;
+            foreach($cart as $item) $sumOfPrices += $item['price'] * $item['quantity'];
+
+            if ($coupon['type'] === 'percentage') {
+                $discount = $sumOfPrices * ($coupon['value'] / 100);
+            } else {
+                $discount = $coupon['value'];
+            }
         }
 
-        $taxableAmount = $subtotal - $discount;
-        $vat = $taxableAmount * 0.05;
-        $total = $taxableAmount + $vat;
-
-        return view('frontend.checkout', compact('cart', 'subtotal', 'vat', 'total', 'discount', 'coupon'));
+        return [
+            'subtotal' => $netSubtotal,
+            'vat' => $vatAmount,
+            'total' => $grossTotal - $discount,
+            'discount' => $discount
+        ];
     }
 
     public function store(Request $request)
@@ -65,20 +105,14 @@ class CheckoutController extends Controller
         $cart = Session::get('cart', []);
         if (empty($cart)) return redirect()->route('cart.index');
 
-        $subtotal = 0;
-        foreach($cart as $item) $subtotal += $item['price'] * $item['quantity'];
-
         $coupon = Session::get('coupon');
-        $discount = 0;
-        if ($coupon && $subtotal >= $coupon['min_amount']) {
-            $discount = ($coupon['type'] === 'percentage') ? ($subtotal * ($coupon['value'] / 100)) : $coupon['value'];
-        }
+        $totals = $this->getCartTotals($cart, $coupon);
 
-        $taxableAmount = $subtotal - $discount;
-        $vat_amount = $taxableAmount * 0.05;
-        $total = $taxableAmount + $vat_amount;
-
-        $order = DB::transaction(function () use ($request, $cart, $subtotal, $vat_amount, $total, $discount, $coupon) {
+        $order = DB::transaction(function () use ($request, $cart, $totals, $coupon) {
+            $subtotal = $totals['subtotal'];
+            $vat_amount = $totals['vat'];
+            $total = $totals['total'];
+            $discount = $totals['discount'];
 
             // 1. CRM LOGIC
             $customer = Customer::where('phone', $request->phone)
@@ -115,7 +149,7 @@ class CheckoutController extends Controller
                 'shipping_address' => $request->address,
                 'shipping_city'    => $request->city,
                 'shipping_area'    => $request->area,
-                'subtotal'         => $subtotal,
+                'subtotal'         => $subtotal, // Net
                 'vat_amount'       => $vat_amount,
                 'discount'         => $discount,
                 'total'            => $total,
@@ -140,14 +174,35 @@ class CheckoutController extends Controller
 
             // 3. CREATE ORDER ITEMS
             foreach ($cart as $item) {
+                $itemPrice = $item['price'];
+                $itemQty = $item['quantity'];
+                $itemRate = $item['tax_rate'] ?? 5;
+                $itemMethod = $item['tax_method'] ?? 'inclusive';
+
+                $itemGrossBase = $itemPrice * $itemQty;
+
+                if ($itemMethod === 'exclusive') {
+                    $itemVat = $itemGrossBase * ($itemRate / 100);
+                    $itemNet = $itemGrossBase;
+                    $itemGross = $itemGrossBase + $itemVat;
+                    $unitPrice = $itemPrice;
+                } else {
+                    $itemVat = $itemGrossBase - ($itemGrossBase / (1 + ($itemRate / 100)));
+                    $itemNet = $itemGrossBase - $itemVat;
+                    $itemGross = $itemGrossBase;
+                    $unitPrice = $itemPrice / (1 + ($itemRate / 100));
+                }
+
                 OrderItem::create([
                     'order_id'           => $order->id,
                     'product_id'         => $item['product_id'],
                     'product_variant_id' => $item['variant_id'] ?? null,
                     'product_name'       => $item['name'],
                     'quantity'           => $item['quantity'],
-                    'unit_price'         => $item['price'],
-                    'subtotal'           => $item['price'] * $item['quantity'],
+                    'unit_price'         => $unitPrice,
+                    'subtotal'           => $itemNet,
+                    'tax_rate'           => $itemRate,
+                    'tax_amount'         => $itemVat,
                 ]);
 
                 // Deduct Stock

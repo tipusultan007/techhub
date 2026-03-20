@@ -195,7 +195,7 @@
                                 </div>
                                 <div style="font-weight:700; font-size:0.95rem; display: flex; flex-direction: column; align-items: flex-end;">
                                     <span>{{ number_format($item['price'] * $item['quantity']) }}</span>
-                                    <span style="font-size: 0.7em; color: #64748b; font-weight: 400;">+ 5% VAT</span>
+                                    <span style="font-size: 0.7em; color: #64748b; font-weight: 400;">{{ ($item['tax_method'] ?? 'inclusive') === 'exclusive' ? '(+ VAT)' : '(Incl. VAT)' }}</span>
                                 </div>
                             </div>
                         @endforeach
@@ -203,8 +203,12 @@
                         <div style="margin:20px 0; border-bottom:1px solid #f1f5f9;"></div>
 
                         <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.95rem; color:#64748b;">
-                            <span>Subtotal</span>
+                            <span>Subtotal (Excl. VAT)</span>
                             <span>{{ number_format($subtotal, 2) }} AED</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.95rem; color:#64748b;">
+                            <span>VAT (5%)</span>
+                            <span>{{ number_format($vat, 2) }} AED</span>
                         </div>
 
                         @if(isset($discount) && $discount > 0)
@@ -217,10 +221,6 @@
                         <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.95rem; color:#64748b;">
                             <span>Shipping</span>
                             <span class="text-green-600 font-bold">Free</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.95rem; color:#64748b;">
-                            <span>VAT (5%)</span>
-                            <span>{{ number_format($vat, 2) }} AED</span>
                         </div>
 
                         <div style="border-top:1px solid #e2e8f0; padding-top:20px; margin-top:20px; font-size:1.3rem; font-weight:800; color:var(--brand-deep-blue); display:flex; justify-content:space-between; align-items:center;">

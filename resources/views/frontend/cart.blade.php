@@ -156,7 +156,7 @@
                                 {{ number_format($item['price'] * $item['quantity']) }}
                             </span>
                                     <span style="font-size: 0.6em;">AED</span>
-                                    <span style="font-size: 0.5em; color: #64748b; margin-left: 2px;">+ 5% VAT</span>
+                                    <span style="font-size: 0.5em; color: #64748b; margin-left: 2px;">{{ ($item['tax_method'] ?? 'inclusive') === 'exclusive' ? '(+ VAT)' : '(Incl. VAT)' }}</span>
                                 </div>
 
                                 <form action="{{ route('cart.remove') }}" method="POST">
@@ -176,7 +176,7 @@
                     <div class="summary-title">Order Summary</div>
 
                     <div class="summary-row">
-                        <span>Subtotal</span>
+                        <span>Subtotal (Excl. VAT)</span>
                         <span x-text="subtotal + ' AED'">{{ number_format($subtotal, 2) }} AED</span>
                     </div>
 

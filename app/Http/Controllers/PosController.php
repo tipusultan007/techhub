@@ -244,24 +244,36 @@ class PosController extends Controller
         $totalVat = 0;
         $calculatedPayable = 0;
 
-        foreach ($request->items as $item) {
+        $calculatedItems = [];
+        foreach ($request->items as $index => $item) {
             $itemTaxRate = ($item['tax_rate'] ?? 0) / 100;
             $itemPrice = (float) $item['price'];
             $itemQty = (int) $item['qty'];
             $rowSubtotal = $itemPrice * $itemQty;
             $rowTax = 0;
             $rowPayable = 0;
+            $netUnitPrice = $itemPrice;
 
             if (($item['tax_method'] ?? 'inclusive') === 'exclusive') {
                 $rowTax = $rowSubtotal * $itemTaxRate;
                 $rowPayable = $rowSubtotal + $rowTax;
+                $netUnitPrice = $itemPrice;
+                $netRowSubtotal = $rowSubtotal;
             } else { // inclusive
                 $rowTax = $rowSubtotal - ($rowSubtotal / (1 + $itemTaxRate));
                 $rowPayable = $rowSubtotal;
+                $netUnitPrice = $itemPrice / (1 + $itemTaxRate);
+                $netRowSubtotal = $rowSubtotal - $rowTax;
             }
 
             $totalVat += $rowTax;
             $calculatedPayable += $rowPayable;
+
+            $calculatedItems[$index] = [
+                'tax_amount' => $rowTax,
+                'net_unit_price' => $netUnitPrice,
+                'net_subtotal' => $netRowSubtotal,
+            ];
         }
 
         // Apply Discount
@@ -407,6 +419,12 @@ class PosController extends Controller
                 }
             }
 
+            $calc = $calculatedItems[$index] ?? [
+                'tax_amount' => ($item['price'] * $item['qty']) * (($item['tax_rate'] ?? 0) / 100),
+                'net_unit_price' => $item['price'],
+                'net_subtotal' => $item['price'] * $item['qty'],
+            ];
+
             // --- C. Create Order Item ---
             OrderItem::create([
                 'order_id' => $order->id,
@@ -414,12 +432,12 @@ class PosController extends Controller
                 'product_variant_id' => $item['variant_id'] ?? null,
                 'product_name' => $productNameSnapshot, // Save snapshot of name
                 'quantity' => $item['qty'],
-                'unit_price' => $item['price'],
-                'subtotal' => $item['price'] * $item['qty'],
+                'unit_price' => $calc['net_unit_price'],
+                'subtotal' => $calc['net_subtotal'],
                 'serial_numbers' => $serialNumbers,
                 'warranty_end_date' => $warrantyEnd,
                 'tax_rate' => $item['tax_rate'] ?? 0,
-                'tax_amount' => ($item['price'] * $item['qty']) * (($item['tax_rate'] ?? 0) / 100),
+                'tax_amount' => $calc['tax_amount'],
                 'is_service' => filter_var($item['is_service'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ]);
         }

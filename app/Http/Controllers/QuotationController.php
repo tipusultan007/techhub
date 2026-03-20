@@ -177,11 +177,33 @@ class QuotationController extends Controller
 
             $subtotal = 0;
             $totalTax = 0;
-            foreach ($request->items as $item) {
-                $itemSubtotal = ($item['price'] * $item['qty']);
-                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
-                $subtotal += $itemSubtotal;
-                $totalTax += $itemTax;
+            $calculatedItems = [];
+            foreach ($request->items as $index => $item) {
+                $itemTaxRate = ($item['tax_rate'] ?? 0) / 100;
+                $itemPrice = (float) $item['price'];
+                $itemQty = (int) $item['qty'];
+                $rowSubtotal = $itemPrice * $itemQty;
+
+                if (($item['tax_method'] ?? 'inclusive') === 'exclusive') {
+                    $rowTax = $rowSubtotal * $itemTaxRate;
+                    $rowPayable = $rowSubtotal + $rowTax;
+                    $netUnitPrice = $itemPrice;
+                    $netRowSubtotal = $rowSubtotal;
+                } else {
+                    $rowTax = $rowSubtotal - ($rowSubtotal / (1 + $itemTaxRate));
+                    $rowPayable = $rowSubtotal;
+                    $netUnitPrice = $itemPrice / (1 + $itemTaxRate);
+                    $netRowSubtotal = $rowSubtotal - $rowTax;
+                }
+
+                $subtotal += $netRowSubtotal;
+                $totalTax += $rowTax;
+
+                $calculatedItems[$index] = [
+                    'tax_amount' => $rowTax,
+                    'net_unit_price' => $netUnitPrice,
+                    'net_subtotal' => $netRowSubtotal,
+                ];
             }
 
             $discount = $request->discount ?? 0;
@@ -201,19 +223,18 @@ class QuotationController extends Controller
                 'expiry_date' => $request->expiry_date ?? now()->addDays(15) // Use manual date or default
             ]);
 
-            foreach ($request->items as $item) {
-                $itemSubtotal = ($item['price'] * $item['qty']);
-                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
+            foreach ($request->items as $index => $item) {
+                $calc = $calculatedItems[$index];
                 QuotationItem::create([
                     'quotation_id' => $quotation->id,
                     'product_id' => $item['id'] ?? null,
                     'product_variant_id' => $item['variant_id'] ?? null,
                     'product_name' => $item['name'],
                     'quantity' => $item['qty'],
-                    'unit_price' => $item['price'],
+                    'unit_price' => $calc['net_unit_price'],
                     'tax_rate' => $item['tax_rate'] ?? 0,
-                    'tax_amount' => $itemTax,
-                    'subtotal' => $itemSubtotal,
+                    'tax_amount' => $calc['tax_amount'],
+                    'subtotal' => $calc['net_subtotal'],
                     'is_service' => filter_var($item['is_service'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 ]);
             }
@@ -272,11 +293,33 @@ class QuotationController extends Controller
 
             $subtotal = 0;
             $totalTax = 0;
-            foreach ($request->items as $item) {
-                $itemSubtotal = ($item['price'] * $item['qty']);
-                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
-                $subtotal += $itemSubtotal;
-                $totalTax += $itemTax;
+            $calculatedItems = [];
+            foreach ($request->items as $index => $item) {
+                $itemTaxRate = ($item['tax_rate'] ?? 0) / 100;
+                $itemPrice = (float) $item['price'];
+                $itemQty = (int) $item['qty'];
+                $rowSubtotal = $itemPrice * $itemQty;
+
+                if (($item['tax_method'] ?? 'inclusive') === 'exclusive') {
+                    $rowTax = $rowSubtotal * $itemTaxRate;
+                    $rowPayable = $rowSubtotal + $rowTax;
+                    $netUnitPrice = $itemPrice;
+                    $netRowSubtotal = $rowSubtotal;
+                } else {
+                    $rowTax = $rowSubtotal - ($rowSubtotal / (1 + $itemTaxRate));
+                    $rowPayable = $rowSubtotal;
+                    $netUnitPrice = $itemPrice / (1 + $itemTaxRate);
+                    $netRowSubtotal = $rowSubtotal - $rowTax;
+                }
+
+                $subtotal += $netRowSubtotal;
+                $totalTax += $rowTax;
+
+                $calculatedItems[$index] = [
+                    'tax_amount' => $rowTax,
+                    'net_unit_price' => $netUnitPrice,
+                    'net_subtotal' => $netRowSubtotal,
+                ];
             }
 
             $discount = $request->discount ?? 0;
@@ -297,19 +340,18 @@ class QuotationController extends Controller
             // Delete old items and create new ones
             $quotation->items()->delete();
 
-            foreach ($request->items as $item) {
-                $itemSubtotal = ($item['price'] * $item['qty']);
-                $itemTax = $itemSubtotal * (($item['tax_rate'] ?? 0) / 100);
+            foreach ($request->items as $index => $item) {
+                $calc = $calculatedItems[$index];
                 QuotationItem::create([
                     'quotation_id' => $quotation->id,
                     'product_id' => $item['id'] ?? null,
                     'product_variant_id' => $item['variant_id'] ?? null,
                     'product_name' => $item['name'],
                     'quantity' => $item['qty'],
-                    'unit_price' => $item['price'],
+                    'unit_price' => $calc['net_unit_price'],
                     'tax_rate' => $item['tax_rate'] ?? 0,
-                    'tax_amount' => $itemTax,
-                    'subtotal' => $itemSubtotal,
+                    'tax_amount' => $calc['tax_amount'],
+                    'subtotal' => $calc['net_subtotal'],
                     'is_service' => filter_var($item['is_service'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 ]);
             }

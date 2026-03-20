@@ -84,7 +84,7 @@
                             <th class="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest">Product Description</th>
                             <th class="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest w-24">Qty</th>
                             <th class="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest w-32">Unit Price</th>
-                            <th class="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest w-32">Total</th>
+                            <th class="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest w-32">Total (Incl. VAT)</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -122,7 +122,7 @@
                                 {{ number_format($item->unit_price, 2) }}
                             </td>
                             <td class="px-6 py-5 text-right">
-                                <div class="text-sm font-black text-slate-900">{{ number_format($item->subtotal, 2) }}</div>
+                                <div class="text-sm font-black text-slate-900">{{ number_format($item->subtotal + ($item->tax_amount ?? 0), 2) }}</div>
                                 <div class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{{ settings('currency_symbol', 'AED') }}</div>
                             </td>
                         </tr>

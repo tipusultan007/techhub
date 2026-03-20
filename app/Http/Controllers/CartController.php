@@ -14,34 +14,68 @@ class CartController extends Controller
         $cart = Session::get('cart', []);
         $coupon = Session::get('coupon');
 
-        // Calculate Totals
-        $subtotal = 0;
-        foreach($cart as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
-        }
+        $crossSellProducts = \App\Models\Product::published()->physical()->inStock()->inRandomOrder(now()->timestamp)->take(4)->with('media')->get();
+        $totals = $this->getCartTotals($cart, $coupon);
 
-        // Validate applied coupon
-        if ($coupon && $subtotal < $coupon['min_amount']) {
-            Session::forget('coupon');
-            $coupon = null;
+        return view('frontend.cart', [
+            'cart' => $cart,
+            'subtotal' => $totals['subtotal'], 
+            'vat' => $totals['vat'],
+            'total' => $totals['total'], 
+            'crossSellProducts' => $crossSellProducts,
+            'discount' => $totals['discount'],
+            'coupon' => $coupon,
+        ]);
+    }
+
+    private function getCartTotals($cart, $coupon = null)
+    {
+        $netSubtotal = 0;
+        $vatAmount = 0;
+        $grossTotal = 0;
+
+        foreach ($cart as $item) {
+            $price = $item['price'];
+            $qty = $item['quantity'];
+            $rate = $item['tax_rate'] ?? 5;
+            $method = $item['tax_method'] ?? 'inclusive';
+
+            $itemGrossBase = $price * $qty;
+
+            if ($method === 'exclusive') {
+                $itemVat = $itemGrossBase * ($rate / 100);
+                $itemNet = $itemGrossBase;
+                $itemGross = $itemGrossBase + $itemVat;
+            } else {
+                $itemVat = $itemGrossBase - ($itemGrossBase / (1 + ($rate / 100)));
+                $itemNet = $itemGrossBase - $itemVat;
+                $itemGross = $itemGrossBase;
+            }
+
+            $netSubtotal += $itemNet;
+            $vatAmount += $itemVat;
+            $grossTotal += $itemGross;
         }
 
         $discount = 0;
         if ($coupon) {
+            // Discount calculated on the sum of original prices
+            $sumOfPrices = 0;
+            foreach($cart as $item) $sumOfPrices += $item['price'] * $item['quantity'];
+
             if ($coupon['type'] === 'percentage') {
-                $discount = $subtotal * ($coupon['value'] / 100);
+                $discount = $sumOfPrices * ($coupon['value'] / 100);
             } else {
                 $discount = $coupon['value'];
             }
         }
 
-        $taxableAmount = $subtotal - $discount;
-        $vat = $taxableAmount * 0.05;
-        $total = $taxableAmount + $vat;
-
-        $crossSellProducts = \App\Models\Product::published()->physical()->inStock()->inRandomOrder(now()->timestamp)->take(4)->with('media')->get();
-
-        return view('frontend.cart', compact('cart', 'subtotal', 'vat', 'total', 'crossSellProducts', 'discount', 'coupon'));
+        return [
+            'subtotal' => $netSubtotal,
+            'vat' => $vatAmount,
+            'total' => $grossTotal - $discount,
+            'discount' => $discount
+        ];
     }
 
     public function add(Request $request)
@@ -93,7 +127,7 @@ class CartController extends Controller
             }
         }
 
-        // --- CART LOGIC (Using Session for simplicity, adjust if using DB/Package) ---
+        // --- CART LOGIC (Using Session for simplicity) ---
         $cart = Session::get('cart', []);
 
         // Create unique key for item (Product ID + Variant ID)
@@ -108,7 +142,9 @@ class CartController extends Controller
                 'quantity' => $request->quantity,
                 'image' => $product->getFirstMediaUrl('product_images', 'thumb'),
                 'product_id' => $product->id,
-                'variant_id' => $request->variant_id
+                'variant_id' => $request->variant_id,
+                'tax_method' => $product->tax_method ?? 'inclusive',
+                'tax_rate' => $product->tax_rate ?? 5,
             ];
         }
 
@@ -136,33 +172,26 @@ class CartController extends Controller
             $cart[$key]['quantity'] = $request->quantity;
             Session::put('cart', $cart);
 
-            // Recalculate for AJAX response
-            $subtotal = 0;
-            foreach($cart as $item) $subtotal += $item['price'] * $item['quantity'];
-
             // Re-validate Coupon
+            $sumOfPrices = 0;
+            foreach($cart as $item) $sumOfPrices += $item['price'] * $item['quantity'];
+
             $coupon = Session::get('coupon');
-            if ($coupon && $subtotal < $coupon['min_amount']) {
+            if ($coupon && $sumOfPrices < $coupon['min_amount']) {
                 Session::forget('coupon');
                 $coupon = null;
             }
 
-            $discount = 0;
-            if ($coupon) {
-                $discount = ($coupon['type'] === 'percentage') ? ($subtotal * ($coupon['value'] / 100)) : $coupon['value'];
-            }
-
-            $taxableAmount = $subtotal - $discount;
-            $vat = $taxableAmount * 0.05;
+            $totals = $this->getCartTotals($cart, $coupon);
 
             return response()->json([
                 'status' => 'success',
-                'subtotal' => number_format($subtotal, 2),
-                'discount' => number_format($discount, 2),
-                'vat' => number_format($vat, 2),
-                'total' => number_format($taxableAmount + $vat, 2),
+                'subtotal' => number_format($totals['subtotal'], 2),
+                'discount' => number_format($totals['discount'], 2),
+                'vat' => number_format($totals['vat'], 2),
+                'total' => number_format($totals['total'], 2),
                 'itemTotal' => number_format($cart[$key]['price'] * $request->quantity, 2),
-                'couponRemoved' => !$coupon && Session::has('coupon_temp_removed') // Internal flag if we want
+                'couponRemoved' => !$coupon && Session::has('coupon_temp_removed')
             ]);
         }
 
@@ -182,14 +211,15 @@ class CartController extends Controller
     public function miniCart()
     {
         $cart = session()->get('cart', []);
-        $subtotal = 0;
-        foreach($cart as $item) $subtotal += $item['price'] * $item['quantity'];
-
-        $vat = $subtotal * 0.05;
-        $total = $subtotal + $vat;
+        $totals = $this->getCartTotals($cart);
 
         // Return a partial view
-        return view('frontend.partials.mini-cart', compact('cart', 'subtotal', 'vat', 'total'));
+        return view('frontend.partials.mini-cart', [
+            'cart' => $cart,
+            'subtotal' => $totals['subtotal'], 
+            'vat' => $totals['vat'],
+            'total' => $totals['total'] 
+        ]);
     }
 
     public function remove(Request $request)

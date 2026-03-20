@@ -107,7 +107,7 @@
                     <th class="px-4 py-3 text-right">Rate</th>
                     <th class="px-4 py-3 text-right">Tax %</th>
                     <th class="px-4 py-3 text-right">Tax</th>
-                    <th class="px-4 py-3 text-right">Amount</th>
+                    <th class="px-4 py-3 text-right">Amount (Incl. VAT)</th>
                 </tr>
             </thead>
             <tbody class="text-sm text-gray-700">
@@ -121,7 +121,7 @@
                     <td class="px-4 py-4 text-right font-mono">{{ number_format($item->unit_price, 2) }}</td>
                     <td class="px-4 py-4 text-right font-mono">{{ number_format($item->tax_rate, 2) }}</td>
                     <td class="px-4 py-4 text-right font-mono">{{ number_format($item->tax_amount, 2) }}</td>
-                    <td class="px-4 py-4 text-right font-mono font-bold">{{ number_format($item->subtotal, 2) }}</td>
+                    <td class="px-4 py-4 text-right font-mono font-bold">{{ number_format($item->subtotal + $item->tax_amount, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>

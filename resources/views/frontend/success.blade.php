@@ -162,7 +162,7 @@
                                     <div style="font-size:0.8rem; color:#64748b;">Qty: {{ $item->quantity }}</div>
                                 </div>
                             </div>
-                            <span class="item-price">{{ number_format($item->subtotal, 2) }} AED</span>
+                            <span class="item-price">{{ number_format($item->subtotal + $item->tax_amount, 2) }} AED</span>
                         </div>
                     @endforeach
                 </div>

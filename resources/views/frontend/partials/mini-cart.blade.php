@@ -23,7 +23,7 @@
                 </div>
                 <span class="mini-price">
                     {{ number_format($item['price'] * $item['quantity']) }} {{ settings('currency_symbol', 'AED') }}
-                    <span style="font-size: 0.7em; color: #64748b; margin-left: 2px;">+ 5% VAT</span>
+                    <span style="font-size: 0.7em; color: #64748b; margin-left: 2px;">{{ ($item['tax_method'] ?? 'inclusive') === 'exclusive' ? '(+ VAT)' : '(Incl. VAT)' }}</span>
                 </span>
             </div>
 
@@ -39,7 +39,7 @@
     @endforeach
 
     <div class="mini-total">
-        <span>Subtotal:</span>
+        <span>Subtotal (Excl. VAT):</span>
         <span>{{ number_format($subtotal, 2) }} {{ settings('currency_symbol', 'AED') }}</span>
     </div>
     <div class="mini-total" style="border-top: none; padding-top: 0; margin-top: -10px; font-size: 0.9em; color: #64748b;">

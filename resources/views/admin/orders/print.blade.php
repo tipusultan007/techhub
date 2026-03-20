@@ -335,7 +335,7 @@
                     <th style="width: 15%; text-align: right;">Price</th>
                     <th style="width: 10%; text-align: center;">Tax %</th>
                     <th style="width: 10%; text-align: right;">Tax</th>
-                    <th style="width: 15%; text-align: right;">Total</th>
+                    <th style="width: 15%; text-align: right;">Total (Incl. VAT)</th>
                 </tr>
             </thead>
             <tbody>
@@ -361,7 +361,7 @@
                     <td align="right" style="color: #475569;"> {{ number_format($item->unit_price, 2) }}</td>
                     <td align="center" style="color: #475569;">{{ number_format($item->tax_rate, 2) }}</td>
                     <td align="right" style="color: #475569;">{{ number_format($item->tax_amount, 2) }}</td>
-                    <td align="right" style="font-weight: 700; color: #0f172a;"> {{ number_format($item->subtotal, 2) }}</td>
+                    <td align="right" style="font-weight: 700; color: #0f172a;"> {{ number_format($item->subtotal + $item->tax_amount, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>

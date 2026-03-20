@@ -84,8 +84,8 @@
                     <tr>
                         <th>Description</th>
                         <th style="text-align: center; font-size: 11px;">Qty</th>
-                        <th style="text-align: right; font-size: 11px;">Unit Price</th>
-                        <th style="text-align: right; font-size: 11px;">Total</th>
+                        <th style="text-align: right; font-size: 11px;">Unit Price (Incl. VAT)</th>
+                        <th style="text-align: right; font-size: 11px;">Total (Incl. VAT)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -98,8 +98,8 @@
                             @endif
                         </td>
                         <td style="text-align: center; font-size: 11px;">{{ $item->quantity }}</td>
-                        <td style="text-align: right; font-size: 11px;">{{ number_format($item->unit_price, 2) }}</td>
-                        <td style="text-align: right; font-size: 11px;">{{ number_format($item->unit_price * $item->quantity, 2) }}</td>
+                        <td style="text-align: right; font-size: 11px;">{{ number_format(($item->subtotal + $item->tax_amount) / $item->quantity, 2) }}</td>
+                        <td style="text-align: right; font-size: 11px;">{{ number_format($item->subtotal + $item->tax_amount, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -109,7 +109,7 @@
         <div class="summary-table">
             <table>
                 <tr>
-                    <td>Subtotal</td>
+                    <td>Subtotal (Excl. VAT)</td>
                     <td style="text-align: right;">{{ number_format($order->subtotal, 2) }}</td>
                 </tr>
                 @if($order->discount > 0)

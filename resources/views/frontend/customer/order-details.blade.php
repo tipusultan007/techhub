@@ -112,7 +112,7 @@
                                     <th>Product</th>
                                     <th>Price</th>
                                     <th>Quantity</th>
-                                    <th style="text-align: right;">Total</th>
+                                    <th style="text-align: right;">Total (Incl. VAT)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -135,9 +135,9 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{{ number_format($item->unit_price, 2) }}</td>
+                                        <td>{{ number_format(($item->subtotal + $item->tax_amount) / $item->quantity, 2) }}</td>
                                         <td>{{ $item->quantity }}</td>
-                                        <td style="text-align: right; font-weight: 700;">{{ number_format($item->unit_price * $item->quantity, 2) }}</td>
+                                        <td style="text-align: right; font-weight: 700;">{{ number_format($item->subtotal + $item->tax_amount, 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -160,7 +160,7 @@
                     <div class="summary-box">
                         <div class="s-title">Order Summary</div>
                         <div class="s-row">
-                            <span>Subtotal</span>
+                            <span>Subtotal (Excl. VAT)</span>
                             <span>{{ number_format($order->subtotal, 2) }} AED</span>
                         </div>
                         @if($order->discount > 0)
