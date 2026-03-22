@@ -17,7 +17,7 @@ class GenerateSitemap extends Command
      *
      * @var string
      */
-    protected $signature = 'sitemap:generate';
+    protected $signature = 'sitemap:generate {--url= : Override the base URL for the sitemap}';
 
     /**
      * The console command description.
@@ -32,6 +32,12 @@ class GenerateSitemap extends Command
     public function handle()
     {
         $this->info('Starting sitemap generation...');
+
+        $baseUrl = $this->option('url') ?: config('app.url');
+        if($this->option('url')) {
+            \Illuminate\Support\Facades\URL::forceRootUrl($baseUrl);
+            $this->info("Forcing base URL to: " . $baseUrl);
+        }
 
         $sitemap = Sitemap::create();
 

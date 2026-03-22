@@ -168,13 +168,28 @@ class CartController extends Controller
         $key = $request->key;
 
         if(isset($cart[$key])) {
-            // Check Stock Logic here if needed
-            $cart[$key]['quantity'] = $request->quantity;
+            $item = $cart[$key];
+            $product = \App\Models\Product::find($item['product_id']);
+            $newQty = (int) $request->quantity;
+
+            // Stock Check
+            if (isset($item['variant_id']) && $item['variant_id']) {
+                $variant = \App\Models\ProductVariant::find($item['variant_id']);
+                if ($variant && $variant->stock_quantity < $newQty) {
+                    return response()->json(['status' => 'error', 'message' => 'Not enough stock available.'], 400);
+                }
+            } else {
+                if ($product && $product->stock_quantity < $newQty) {
+                    return response()->json(['status' => 'error', 'message' => 'Not enough stock available.'], 400);
+                }
+            }
+
+            $cart[$key]['quantity'] = $newQty;
             Session::put('cart', $cart);
 
             // Re-validate Coupon
             $sumOfPrices = 0;
-            foreach($cart as $item) $sumOfPrices += $item['price'] * $item['quantity'];
+            foreach($cart as $cItem) $sumOfPrices += $cItem['price'] * $cItem['quantity'];
 
             $coupon = Session::get('coupon');
             if ($coupon && $sumOfPrices < $coupon['min_amount']) {

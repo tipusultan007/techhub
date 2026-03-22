@@ -127,13 +127,19 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                            <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Title</label>
                                 <input type="text" name="title" value="{{ $banner->title ?? '' }}" 
                                        class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:border-blue-500 text-sm"
                                        placeholder="Title">
                             </div>
-                            <div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Subtitle</label>
+                                <textarea name="subtitle" rows="2" 
+                                       class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:border-blue-500 text-sm"
+                                       placeholder="Short description...">{{ $banner->subtitle ?? '' }}</textarea>
+                            </div>
+                            <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Target Link</label>
                                 <input type="text" name="link" value="{{ $banner->link ?? '#' }}" 
                                        class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:border-blue-500 text-sm"
