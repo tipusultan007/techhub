@@ -388,6 +388,13 @@
                         </div>
                         <input type="text" name="social_linkedin" value="{{ settings('social_linkedin') }}" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
                     </div>
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">WhatsApp</label>
+                        <div class="absolute inset-y-0 left-0 pt-6 pl-3 flex items-center pointer-events-none">
+                            <i class="ri-whatsapp-line text-gray-400"></i>
+                        </div>
+                        <input type="text" name="social_whatsapp" value="{{ settings('social_whatsapp') }}" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition" placeholder="https://wa.me/971...">
+                    </div>
                 </div>
             </div>
 

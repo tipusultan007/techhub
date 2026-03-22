@@ -449,6 +449,9 @@
                     @if(settings('social_twitter'))
                         <a href="{{ settings('social_twitter') }}" target="_blank"><i class="ri-twitter-x-fill"></i></a>
                     @endif
+                    @if(settings('social_whatsapp'))
+                        <a href="{{ settings('social_whatsapp') }}" target="_blank"><i class="ri-whatsapp-fill"></i></a>
+                    @endif
                 </div>
             </div>
 
