@@ -341,6 +341,9 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
         Route::delete('/menu-items/{item}', [MenuController::class, 'deleteItem'])->name('menus.items.destroy');
         Route::put('/menu-items/{item}', [MenuController::class, 'updateItem'])->name('menus.items.update');
         Route::post('/menus/update-order', [MenuController::class, 'updateOrder'])->name('menus.update-order');
+
+        // Change Log
+        Route::get('/changelog', [\App\Http\Controllers\Admin\ChangeLogController::class, 'index'])->name('admin.changelog.index');
     });
 
 });

@@ -1,0 +1,46 @@
+[
+    {
+        "version": "1.1.0",
+        "date": "2026-03-24",
+        "type": "Major Feature",
+        "title": "Dynamic SEO & Professional Versioning",
+        "changes": [
+            "Implemented Dynamic SEO Mirror Pages for Categories and Products.",
+            "Added Footer Visibility Control for all custom pages.",
+            "Integrated Select2 for searchable category/product selection in admin.",
+            "Added professional Versioning and Change Log system.",
+            "Resolved route name collisions for better stability."
+        ]
+    },
+    {
+        "version": "1.0.2",
+        "date": "2026-03-20",
+        "type": "Patch",
+        "title": "Core Optimization",
+        "changes": [
+            "Bug fixes and security updates in authentication flow.",
+            "Optimized database queries for product listing pages.",
+            "Improved mobile responsiveness of the admin dashboard."
+        ]
+    },
+    {
+        "version": "1.0.1",
+        "date": "2026-03-15",
+        "type": "Patch",
+        "title": "Initial Refinements",
+        "changes": [
+            "Fixed layout issues in order details page.",
+            "Added VAT calculations to the checkout process."
+        ]
+    },
+    {
+        "version": "1.0.0",
+        "date": "2026-03-01",
+        "type": "Release",
+        "title": "Initial Launch",
+        "changes": [
+            "Initial release of Electromart Platform.",
+            "Core modules: POS, Inventory, Sales, CRM, and Settings."
+        ]
+    }
+]

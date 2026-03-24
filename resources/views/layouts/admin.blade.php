@@ -415,6 +415,10 @@
                    class="sidebar-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                     <i class="fas fa-history"></i> <span>Activity Logs</span>
                 </a>
+                <a href="{{ route('admin.changelog.index') }}"
+                   class="sidebar-item {{ request()->routeIs('admin.changelog.*') ? 'active' : '' }}">
+                    <i class="fas fa-list-alt"></i> <span>System Change Log</span>
+                </a>
                 @endif
 
             </nav>
@@ -431,6 +435,7 @@
                     <div class="flex-1 overflow-hidden">
                         <p class="text-[0.8rem] font-bold truncate text-gray-100 leading-tight">{{ Auth::user()->name }}</p>
                         <p class="text-[0.65rem] text-[#2dae9a] font-bold uppercase tracking-wider">{{ Auth::user()->getRoleNames()->first() ?? 'Staff' }}</p>
+                        <p class="text-[0.6rem] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Build v{{ app_version() }}</p>
                     </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

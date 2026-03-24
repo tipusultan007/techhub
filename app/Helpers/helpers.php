@@ -17,3 +17,15 @@ if (!function_exists('settings')) {
         return $settings[$key] ?? $default;
     }
 }
+
+if (!function_exists('app_version')) {
+    function app_version() {
+        return \App\Services\VersionService::currentVersion();
+    }
+}
+
+if (!function_exists('app_changelog')) {
+    function app_changelog() {
+        return \App\Services\VersionService::getChangelog();
+    }
+}
