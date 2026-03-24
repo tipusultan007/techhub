@@ -58,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
                 ->get();
             
             $footerPages = \App\Models\Page::where('is_active', true)
+                ->where('show_on_footer', true)
                 ->get();
 
             $headerMenu = \App\Models\Menu::where('location', 'header')

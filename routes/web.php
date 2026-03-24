@@ -310,6 +310,7 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
             'index' => 'pages.admin.index',
             'create' => 'pages.admin.create',
             'store' => 'pages.admin.store',
+            'show' => 'pages.admin.show',
             'edit' => 'pages.admin.edit',
             'update' => 'pages.admin.update',
             'destroy' => 'pages.admin.destroy',

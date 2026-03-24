@@ -10,9 +10,15 @@ class Page extends Model
         'title',
         'slug',
         'content',
+        'redirect_url',
         'meta_title',
+        'meta_keywords',
         'meta_description',
         'is_active',
+        'type',
+        'reference_id',
+        'canonical_url',
+        'show_on_footer',
     ];
 
     protected static function boot()

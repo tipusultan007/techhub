@@ -1,6 +1,12 @@
 @extends('layouts.frontend')
 
-@section('title', $product->name . ' | Tech Hub')
+@section('title', isset($page) && $page->meta_title ? $page->meta_title : ($product->name . ' | Tech Hub'))
+
+@if(isset($page))
+    @if($page->meta_description) @section('meta_description', $page->meta_description) @endif
+    @if($page->meta_keywords) @section('meta_keywords', $page->meta_keywords) @endif
+    @if($page->canonical_url) @section('canonical', $page->canonical_url) @endif
+@endif
 
 @push('styles')
     <style>

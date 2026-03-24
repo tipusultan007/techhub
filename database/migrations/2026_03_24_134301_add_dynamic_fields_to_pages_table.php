@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('pages', function (Blueprint $table) {
+            $table->string('type')->default('static')->after('slug'); 
+            // static / category / product
+            
+            $table->unsignedBigInteger('reference_id')->nullable()->after('type'); 
+            // category_id or product_id
+            
+            $table->string('canonical_url')->nullable()->after('meta_keywords');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('pages', function (Blueprint $table) {
+            $table->dropColumn(['type', 'reference_id', 'canonical_url']);
+        });
+    }
+};

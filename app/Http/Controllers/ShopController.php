@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class ShopController extends Controller
 {
-    public function index(Request $request, $categorySlug = null)
+    public function index(Request $request, $categorySlug = null, $page = null)
     {
         // 1. Base Query
         $query = Product::published()->physical()->inStock()->with(['category', 'media', 'variants']);
@@ -83,6 +83,6 @@ class ShopController extends Controller
 
         $attributes = Attribute::with('values')->get();
 
-        return view('frontend.shop', compact('products', 'brands', 'categories', 'currentCategory','attributes'));
+        return view('frontend.shop', compact('products', 'brands', 'categories', 'currentCategory','attributes', 'page'));
     }
 }

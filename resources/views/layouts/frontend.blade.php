@@ -9,7 +9,7 @@
     <title>@yield('title', ($settings['meta_title'] ?? 'Tech Hub') . ' | Computer Trading')</title>
     <meta name="description" content="@yield('meta_description', $settings['meta_description'] ?? 'Your premier destination for high-performance computing, custom gaming builds, and enterprise IT solutions.')">
     <meta name="keywords" content="@yield('meta_keywords', $settings['meta_keywords'] ?? 'computer, gaming pc, laptop, dubai, tech hub')">
-    <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
     <link rel="icon" href="{{ settings('site_favicon') ? asset(settings('site_favicon')) : asset('favicon.ico') }}">
 
     {{-- Open Graph / Facebook --}}

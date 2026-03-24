@@ -33,7 +33,7 @@ class HomeController extends Controller
         ]);
     }
 
-    public function product($slug)
+    public function product($slug, $page = null)
     {
         $product = Product::published()->where('slug', $slug)
             ->with(['category', 'brand', 'variants', 'media'])
@@ -54,6 +54,6 @@ class HomeController extends Controller
                 ->exists();
         }
 
-        return view('frontend.product', compact('product', 'relatedProducts', 'inWishlist'));
+        return view('frontend.product', compact('product', 'relatedProducts', 'inWishlist', 'page'));
     }
 }
