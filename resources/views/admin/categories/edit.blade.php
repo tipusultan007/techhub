@@ -168,6 +168,31 @@
                     </div>
                 </div>
 
+                <!-- SEO Meta Tags -->
+                <div class="mt-8 border-t border-gray-100 pt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">SEO Meta Tags</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="meta_title" class="block text-sm font-bold text-gray-700">Meta Title</label>
+                            <input type="text" name="meta_title" id="meta_title" value="{{ old('meta_title', $category->meta_title) }}"
+                                   class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2.5"
+                                   placeholder="SEO Title (Optional)">
+                        </div>
+                        <div>
+                            <label for="meta_description" class="block text-sm font-bold text-gray-700">Meta Description</label>
+                            <textarea name="meta_description" id="meta_description" rows="3"
+                                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2.5"
+                                      placeholder="Brief description for search results...">{{ old('meta_description', $category->meta_description) }}</textarea>
+                        </div>
+                        <div>
+                            <label for="meta_keywords" class="block text-sm font-bold text-gray-700">Meta Keywords</label>
+                            <textarea name="meta_keywords" id="meta_keywords" rows="2"
+                                      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2.5"
+                                      placeholder="keyword1, keyword2, keyword3...">{{ old('meta_keywords', $category->meta_keywords) }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Buttons -->
                 <div class="flex justify-end space-x-3 pt-6 border-t border-gray-100 mt-6">
                     <a href="{{ route('categories.index') }}" class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-medium">Cancel</a>

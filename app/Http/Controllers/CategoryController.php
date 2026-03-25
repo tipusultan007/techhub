@@ -28,13 +28,16 @@ class CategoryController extends Controller
     {
         // 1. Create Category with new fields
         $category = Category::create([
-            'name'        => $request->name,
-            'slug'        => $request->slug,
-            'parent_id'   => $request->parent_id,
-            'icon_class'  => $request->icon_class,
+            'name'             => $request->name,
+            'slug'             => $request->slug,
+            'parent_id'        => $request->parent_id,
+            'icon_class'       => $request->icon_class,
             // Convert checkbox "on"/null to boolean true/false
-            'is_featured' => $request->boolean('is_featured'),
-            'priority'    => $request->priority ?? 0,
+            'is_featured'      => $request->boolean('is_featured'),
+            'priority'         => $request->priority ?? 0,
+            'meta_title'       => $request->meta_title,
+            'meta_description' => $request->meta_description,
+            'meta_keywords'    => $request->meta_keywords,
         ]);
 
         // 2. Handle Image Upload (Spatie)
@@ -57,12 +60,15 @@ class CategoryController extends Controller
     {
         // 1. Update fields
         $category->update([
-            'name'        => $request->name,
-            'slug'        => $request->slug,
-            'parent_id'   => $request->parent_id,
-            'icon_class'  => $request->icon_class,
-            'is_featured' => $request->boolean('is_featured'),
-            'priority'    => $request->priority ?? 0,
+            'name'             => $request->name,
+            'slug'             => $request->slug,
+            'parent_id'        => $request->parent_id,
+            'icon_class'       => $request->icon_class,
+            'is_featured'      => $request->boolean('is_featured'),
+            'priority'         => $request->priority ?? 0,
+            'meta_title'       => $request->meta_title,
+            'meta_description' => $request->meta_description,
+            'meta_keywords'    => $request->meta_keywords,
         ]);
 
         // 2. Handle Image Upload

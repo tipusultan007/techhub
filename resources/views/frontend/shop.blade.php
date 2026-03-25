@@ -1,8 +1,13 @@
 @extends('layouts.frontend')
 
-@section('title', isset($page) && $page->meta_title ? $page->meta_title : ($currentCategory ? $currentCategory->name : 'Shop All Products'))
+@section('title', isset($page) && $page->meta_title ? $page->meta_title : ($currentCategory ? ($currentCategory->meta_title ?: $currentCategory->name) : 'Shop All Products'))
 
-@if(isset($page))
+@if($currentCategory)
+    @if($currentCategory->meta_description) @section('meta_description', $currentCategory->meta_description) @endif
+    @if($currentCategory->meta_keywords) @section('meta_keywords', $currentCategory->meta_keywords) @endif
+@endif
+
+@if(isset($page) && is_object($page))
     @if($page->meta_description) @section('meta_description', $page->meta_description) @endif
     @if($page->meta_keywords) @section('meta_keywords', $page->meta_keywords) @endif
     @if($page->canonical_url) @section('canonical', $page->canonical_url) @endif

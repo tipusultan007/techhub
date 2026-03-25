@@ -18,7 +18,10 @@ class Category extends Model implements HasMedia
         'parent_id',
         'icon_class',
         'is_featured',
-        'priority'
+        'priority',
+        'meta_title',
+        'meta_description',
+        'meta_keywords'
     ];
 
     /**
