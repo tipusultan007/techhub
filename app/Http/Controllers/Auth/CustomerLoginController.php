@@ -13,23 +13,13 @@ class CustomerLoginController extends Controller
         return view('auth.customer-login');
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Auth\CustomerLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $request->authenticate();
 
-        // Attempt login using the 'customer' guard
-        if (Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            // Redirect to home or customer dashboard
-            return redirect()->intended(route('home'));
-        }
+        $request->session()->regenerate();
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        return redirect()->intended(route('home'));
     }
 
     public function destroy(Request $request)
