@@ -1,7 +1,8 @@
 @extends('layouts.frontend')
 
-@section('title', $solution->title . ' | Tech Hub Solutions')
-@section('meta_description', $solution->summary)
+@section('title', ($solution->meta_title ?: $solution->title) . ' | Tech Hub Solutions')
+@section('meta_description', $solution->meta_description ?: $solution->summary)
+@section('meta_keywords', $solution->meta_keywords ?: 'IT solutions, tech hub, ' . $solution->title)
 
 @section('content')
 <div class="container py-16">

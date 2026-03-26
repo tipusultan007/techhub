@@ -67,6 +67,35 @@
                     </label>
                 </div>
             </div>
+
+            <!-- SEO Metadata Section -->
+            <div class="pt-6 border-t border-gray-100 space-y-6">
+                <h3 class="text-lg font-bold text-gray-900">SEO Metadata (Optional)</h3>
+                
+                <div class="space-y-2">
+                    <label for="meta_title" class="text-sm font-semibold text-gray-700">Meta Title</label>
+                    <input type="text" name="meta_title" id="meta_title" value="{{ old('meta_title') }}" 
+                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        placeholder="Default is the solution title">
+                    @error('meta_title') <p class="text-red-500 text-xs">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2">
+                    <label for="meta_description" class="text-sm font-semibold text-gray-700">Meta Description</label>
+                    <textarea name="meta_description" id="meta_description" rows="3"
+                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        placeholder="Brief SEO description...">{{ old('meta_description') }}</textarea>
+                    @error('meta_description') <p class="text-red-500 text-xs">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2">
+                    <label for="meta_keywords" class="text-sm font-semibold text-gray-700">Meta Keywords</label>
+                    <textarea name="meta_keywords" id="meta_keywords" rows="2"
+                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        placeholder="keyword1, keyword2, ...">{{ old('meta_keywords') }}</textarea>
+                    @error('meta_keywords') <p class="text-red-500 text-xs">{{ $message }}</p> @enderror
+                </div>
+            </div>
         </div>
 
         <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">

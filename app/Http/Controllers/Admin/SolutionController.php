@@ -38,6 +38,9 @@ class SolutionController extends Controller
             'description' => 'nullable|string',
             'is_active' => 'boolean',
             'order' => 'integer',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
         ]);
 
         if (empty($validated['slug'])) {
@@ -77,6 +80,9 @@ class SolutionController extends Controller
             'description' => 'nullable|string',
             'is_active' => 'boolean',
             'order' => 'integer',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
         ]);
 
         $validated['is_active'] = $request->has('is_active');

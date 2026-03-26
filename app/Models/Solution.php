@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Solution extends Model
 {
     protected $fillable = [
-        'title', 'slug', 'icon_class', 'summary', 'description', 'is_active', 'order'
+        'title', 'slug', 'icon_class', 'summary', 'description', 'is_active', 'order',
+        'meta_title', 'meta_description', 'meta_keywords'
     ];
 
     public static function boot()
