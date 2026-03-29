@@ -1,5 +1,20 @@
 [
     {
+        "version": "1.2.0",
+        "date": "2026-03-30",
+        "type": "Major Feature",
+        "title": "Featured Product Curation & Homepage Redesign",
+        "changes": [
+            "Implemented AJAX-powered 'Featured' product toggle in Admin Inventory for manual curation.",
+            "Complete Homepage Redesign with dedicated sections for 'Featured Products' and 'Latest Arrivals'.",
+            "Added Google Merchant (Auto Product Integration) with dynamic XML feed synchronization.",
+            "Integrated Facebook Pixel and Google Ads Pixel for advanced conversion tracking.",
+            "Added TikTok Pixel integration for expanded social media marketing reach.",
+            "Enhanced shop responsiveness and button hover animations for a premium user experience.",
+            "Standardized branding with emerald color #2DAE9A for arrivals and core UI accents."
+        ]
+    },
+    {
         "version": "1.1.3",
         "date": "2026-03-26",
         "type": "Minor Feature",

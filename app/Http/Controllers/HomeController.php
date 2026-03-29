@@ -17,7 +17,14 @@ class HomeController extends Controller
             ->take(16)
             ->get();
 
-        $products = Product::published()->physical()->inStock()
+        $featuredProducts = Product::published()->physical()->inStock()
+            ->featured()
+            ->with(['category', 'variants', 'media'])
+            ->latest()
+            ->take(15)
+            ->get();
+
+        $latestProducts = Product::published()->physical()->inStock()
             ->with(['category', 'variants', 'media'])
             ->latest()
             ->take(20)
@@ -29,7 +36,8 @@ class HomeController extends Controller
             'sideBottom' => Banner::where('position', '=', 'side_bottom')->where('is_active', '=', true)->first(),
             'featuredCategories' => $featuredCategories,
             'featuredBrands' => \App\Models\Brand::where('is_featured', true)->get(),
-            'products' => $products,
+            'featuredProducts' => $featuredProducts,
+            'latestProducts' => $latestProducts,
         ]);
     }
 

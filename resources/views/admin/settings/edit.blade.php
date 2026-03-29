@@ -519,33 +519,119 @@
 
                 <!-- 8. ANALYTICS TAB -->
                 <div x-show="activeTab === 'analytics'" class="space-y-12 animate-in fade-in duration-300" style="display: none;">
-                    <!-- Google Analytics -->
+                    <!-- Google Analytics & Merchant Center -->
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-2xl font-black text-slate-900 tracking-tight">Google Analytics</h3>
-                            <p class="text-slate-500 font-medium">Track website traffic and user behavior.</p>
+                            <h3 class="text-2xl font-black text-slate-900 tracking-tight">Google Merchant & Analytics</h3>
+                            <p class="text-slate-500 font-medium">Connect your product discovery and track performance.</p>
                         </div>
                         <div class="h-px bg-slate-100 w-full"></div>
 
-                        <div class="max-w-2xl">
-                            <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Measurement ID</label>
-                            <input type="text" name="google_analytics_id" value="{{ settings('google_analytics_id') }}" placeholder="G-XXXXXXXXXX" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2dae9a] focus:ring-0 shadow-sm transition">
-                            <p class="text-xs text-slate-400 mt-2 font-medium">Found in Google Analytics > Admin > Data Streams.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="max-w-2xl">
+                                <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Measurement ID (GA4)</label>
+                                <input type="text" name="google_analytics_id" value="{{ settings('google_analytics_id') }}" placeholder="G-XXXXXXXXXX" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2dae9a] focus:ring-0 shadow-sm transition">
+                                <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">Acts as your tracking pixel. Found in Google Analytics.</p>
+                            </div>
+                
+                            <div class="max-w-2xl">
+                                <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Merchant ID</label>
+                                <input type="text" name="google_merchant_id" value="{{ settings('google_merchant_id') }}" placeholder="123456789" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2dae9a] focus:ring-0 shadow-sm transition">
+                                <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">Your Google Merchant Center ID for reference.</p>
+                            </div>
+
+                            <div class="max-w-2xl md:col-span-2">
+                                <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Site Verification Code</label>
+                                <input type="text" name="google_site_verification" value="{{ settings('google_site_verification') }}" placeholder="Verification string from Google" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2dae9a] focus:ring-0 shadow-sm transition">
+                                <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">Paste only the content of the `google-site-verification` meta tag.</p>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Facebook Pixel -->
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-2xl font-black text-slate-900 tracking-tight">Facebook Pixel</h3>
-                            <p class="text-slate-500 font-medium">Track conversions and optimize your ad campaigns.</p>
+                            <h3 class="text-2xl font-black text-slate-900 tracking-tight">Facebook Pixel & Catalog</h3>
+                            <p class="text-slate-500 font-medium">Track conversions and automate your product catalog sync.</p>
                         </div>
                         <div class="h-px bg-slate-100 w-full"></div>
-
-                        <div class="max-w-2xl">
-                            <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Pixel ID</label>
+                
+                        <div class="max-w-xl mb-10">
+                            <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Facebook Pixel ID</label>
                             <input type="text" name="facebook_pixel_id" value="{{ settings('facebook_pixel_id') }}" placeholder="Enter your Pixel ID" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2dae9a] focus:ring-0 shadow-sm transition">
-                            <p class="text-xs text-slate-400 mt-2 font-medium">Found in Facebook Events Manager under Settings.</p>
+                            <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">Found in Facebook Events Manager under Settings.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Facebook Sync -->
+                            <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm relative overflow-hidden hvr-icon-pulse-shrink">
+                                <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-100/30 rounded-full blur-2xl"></div>
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+                                        <i class="ri-facebook-fill"></i>
+                                    </div>
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Facebook Catalog Feed</h4>
+                                </div>
+                                <p class="text-[0.65rem] text-slate-500 font-bold mb-4 leading-relaxed uppercase">
+                                    CSV URL for Scheduled Feed
+                                </p>
+                                <div class="relative flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group">
+                                    <input type="text" readonly value="{{ url('/facebook/products.csv') }}" class="flex-1 bg-transparent border-none text-[10px] font-mono py-2.5 px-3 focus:ring-0 text-slate-600">
+                                    <button type="button" 
+                                            onclick="navigator.clipboard.writeText('{{ url('/facebook/products.csv') }}'); toastr.success('Facebook Feed URL copied');"
+                                            class="bg-slate-50 hover:bg-slate-100 border-l border-slate-200 px-3 py-2.5 text-slate-500 transition-all flex items-center justify-center">
+                                        <i class="ri-file-copy-line hvr-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Google Sync -->
+                            <div class="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 shadow-sm relative overflow-hidden hvr-icon-pulse-shrink">
+                                <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-100/30 rounded-full blur-2xl"></div>
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+                                        <i class="ri-google-fill"></i>
+                                    </div>
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Google Merchant Feed</h4>
+                                </div>
+                                <p class="text-[0.65rem] text-slate-500 font-bold mb-4 leading-relaxed uppercase">
+                                    XML URL for Scheduled Fetch
+                                </p>
+                                <div class="relative flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group">
+                                    <input type="text" readonly value="{{ url('/google/products.xml') }}" class="flex-1 bg-transparent border-none text-[10px] font-mono py-2.5 px-3 focus:ring-0 text-slate-600">
+                                    <button type="button" 
+                                            onclick="navigator.clipboard.writeText('{{ url('/google/products.xml') }}'); toastr.success('Google Feed URL copied');"
+                                            class="bg-slate-50 hover:bg-slate-100 border-l border-slate-200 px-3 py-2.5 text-slate-500 transition-all flex items-center justify-center">
+                                        <i class="ri-file-copy-line hvr-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- TikTok Sync -->
+                            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-sm relative overflow-hidden hvr-icon-pulse-shrink">
+                                <div class="absolute -right-4 -top-4 w-20 h-20 bg-gray-800/30 rounded-full blur-2xl"></div>
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black shadow-sm">
+                                        <i class="ri-tiktok-fill"></i>
+                                    </div>
+                                    <h4 class="text-xs font-black text-white uppercase tracking-widest">TikTok Catalog Feed</h4>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-tight mb-1">TikTok Pixel ID</label>
+                                    <input type="text" name="tiktok_pixel_id" value="{{ settings('tiktok_pixel_id') }}" placeholder="Pixel ID" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-[10px] text-white focus:border-white focus:ring-0 transition">
+                                </div>
+                                <p class="text-[0.65rem] text-slate-400 font-bold mb-2 leading-relaxed uppercase">
+                                    CSV URL for Scheduled Feed
+                                </p>
+                                <div class="relative flex items-center bg-gray-800 border border-gray-700 rounded-xl overflow-hidden shadow-sm group">
+                                    <input type="text" readonly value="{{ url('/tiktok/products.csv') }}" class="flex-1 bg-transparent border-none text-[10px] font-mono py-2.5 px-3 focus:ring-0 text-white">
+                                    <button type="button" 
+                                            onclick="navigator.clipboard.writeText('{{ url('/tiktok/products.csv') }}'); toastr.success('TikTok Feed URL copied');"
+                                            class="bg-gray-700 hover:bg-gray-600 border-l border-gray-600 px-3 py-2.5 text-slate-300 transition-all flex items-center justify-center">
+                                        <i class="ri-file-copy-line hvr-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

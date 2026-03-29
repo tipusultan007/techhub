@@ -12,6 +12,10 @@
     <link rel="canonical" href="@yield('canonical', url()->current())">
     <link rel="icon" href="{{ settings('site_favicon') ? asset(settings('site_favicon')) : asset('favicon.ico') }}">
 
+    @if(settings('google_site_verification'))
+    <meta name="google-site-verification" content="{{ settings('google_site_verification') }}" />
+    @endif
+
     {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
@@ -175,8 +179,21 @@
     <noscript>
         <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{ settings('facebook_pixel_id') }}&ev=PageView&noscript=1"/>
     </noscript>
-    <!-- End Meta Pixel Code -->
     @endif
+    <!-- End Meta Pixel Code -->
+
+    <!-- TikTok Pixel Code -->
+    @if(settings('tiktok_pixel_id'))
+    <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t.async=!0,t.src=e;var n=d.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n)};for(var i=0;i<ttq.methods.length;i++)ttq.instance=function(t){for(var e=ttq[t]||[],n=0;n<ttq.methods.length;n++)!function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(e,ttq.methods[n]);return e},ttq[ttq.methods[i]]=ttq.instance(ttq.methods[i]);ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n;var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+    
+      ttq.load('{{ settings('tiktok_pixel_id') }}');
+      ttq.page();
+    }(window, document, 'ttq');
+    </script>
+    @endif
+    <!-- End TikTok Pixel Code -->
 
     @stack('styles')
 </head>

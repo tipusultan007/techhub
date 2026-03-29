@@ -549,4 +549,20 @@ class ProductController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Category updated successfully for selected products.']);
     }
+
+    /**
+     * Toggle the featured status of a product.
+     */
+    public function toggleFeatured(Product $product)
+    {
+        $product->update([
+            'is_featured' => ! $product->is_featured,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $product->is_featured ? 'Product marked as featured.' : 'Product removed from featured.',
+            'is_featured' => $product->is_featured
+        ]);
+    }
 }

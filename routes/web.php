@@ -115,6 +115,11 @@ Route::group(['middleware' => ['maintenance']], function () {
     Route::get('/contact', [App\Http\Controllers\ContactMessageController::class, 'index'])->name('contact');
     Route::post('/contact', [App\Http\Controllers\ContactMessageController::class, 'store'])->name('contact.store');
 
+    // Facebook & Google Product Feeds
+    Route::get('/facebook/products.csv', [App\Http\Controllers\FacebookFeedController::class, 'index'])->name('facebook.feed');
+    Route::get('/google/products.xml', [App\Http\Controllers\GoogleFeedController::class, 'index'])->name('google.feed');
+Route::get('/tiktok/products.csv', [App\Http\Controllers\TikTokFeedController::class, 'index'])->name('tiktok.feed');
+
     // Public Dynamic Pages (MUST BE LAST)
     Route::get('/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('pages.show');
 });
@@ -125,6 +130,9 @@ Route::group(['middleware' => ['maintenance']], function () {
 
 // We apply 'auth' middleware AND the 'backend' prefix here
 Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], function () {
+
+    // Product Toggle Featured
+    Route::patch('/products/{product}/toggle-featured', [App\Http\Controllers\ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
 
     // --- COMMON BACKEND ROUTES ---
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -225,6 +225,43 @@
                 height: 200px;
             }
         }
+
+        /* Section Action Buttons */
+        .btn-featured-all {
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 2px solid #2DAE9A;
+            color: #2DAE9A;
+            background: transparent;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .btn-featured-all:hover {
+            background: #2DAE9A;
+            color: white !important;
+            box-shadow: 0 5px 15px rgba(45, 174, 154, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-arrivals-all {
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 2px solid #2DAE9A;
+            color: #2DAE9A;
+            background: transparent;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .btn-arrivals-all:hover {
+            background: #2DAE9A;
+            color: white !important;
+            box-shadow: 0 5px 15px rgba(45, 174, 154, 0.3);
+            transform: translateY(-2px);
+        }
     </style>
 
     <div class="container">
@@ -442,23 +479,53 @@
         </div>
         @endif
 
-        <!-- FLASH DEALS -->
+        <!-- FEATURED PRODUCTS -->
         <div class="section-wrapper">
             <div class="section-header">
                 <div class="sec-title">
-                    <i class="ri-flashlight-fill" style="color: #ef4444;"></i> Featured Products
+                    <i class="ri-star-fill" style="color: #f59e0b;"></i> Featured Products
                 </div>
-                <a href="{{ route('shop.index') }}" class="view-all">More Products <i class="ri-arrow-right-s-line"></i></a>
             </div>
 
             <div class="grid-5">
-                @forelse($products as $product)
+                @forelse($featuredProducts as $product)
                     <x-product-card :product="$product" />
                 @empty
-                    <div class="col-span-full text-center p-10">
-                        <p>No products found.</p>
+                    <div class="col-span-full text-center p-10 bg-gray-50 rounded-lg">
+                        <p class="text-gray-500">No featured products at the moment. Check back soon!</p>
                     </div>
                 @endforelse
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{{ route('shop.index') }}" class="btn-featured-all">
+                    Shop All Featured <i class="ri-arrow-right-line ml-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- LATEST ARRIVALS -->
+        <div class="section-wrapper">
+            <div class="section-header">
+                <div class="sec-title">
+                    <i class="ri-time-fill" style="color: #3b82f6;"></i> Latest Arrivals
+                </div>
+            </div>
+
+            <div class="grid-5">
+                @forelse($latestProducts as $product)
+                    <x-product-card :product="$product" />
+                @empty
+                    <div class="col-span-full text-center p-10 bg-gray-50 rounded-lg">
+                        <p class="text-gray-500">New products coming soon!</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{{ route('shop.index') }}" class="btn-arrivals-all">
+                    View All Arrivals <i class="ri-arrow-right-line ml-1"></i>
+                </a>
             </div>
         </div>
 

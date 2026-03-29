@@ -565,6 +565,59 @@
                     <!-- Validation Errors Handled by Toastr -->
                 @endif
 
+                <!-- Version Update Alert -->
+                <div id="version-update-alert" class="mb-6 hidden">
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-1 shadow-lg shadow-emerald-900/20 relative overflow-hidden group">
+                        <!-- Animated background pattern -->
+                        <div class="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <svg class="h-full w-full" fill="none" viewBox="0 0 400 400">
+                                <defs>
+                                    <pattern id="pattern-update" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                                        <path d="M0 40L40 0M-10 10L10 -10M30 50L50 30" stroke="white" stroke-width="2"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#pattern-update)" />
+                            </svg>
+                        </div>
+                        
+                        <div class="bg-white rounded-[0.9rem] p-4 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 shadow-inner">
+                                    <i class="fas fa-rocket text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-black text-gray-900 uppercase tracking-widest leading-none">System Update v1.2.0</h4>
+                                    <p class="text-xs text-gray-500 font-bold mt-1">Featured Product Curation, Homepage Redesign & Marketing Pixels are now live!</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <a href="{{ route('admin.changelog.index') }}" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[0.7rem] font-black uppercase tracking-widest transition-all shadow-md shadow-emerald-900/10">
+                                    View What's New
+                                </a>
+                                <button onclick="dismissVersionAlert()" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                    <i class="fas fa-times text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const currentVersion = '1.2.0';
+                        const dismissedVersion = localStorage.getItem('dismissed_version');
+                        
+                        if (dismissedVersion !== currentVersion) {
+                            document.getElementById('version-update-alert').classList.remove('hidden');
+                        }
+                    });
+
+                    function dismissVersionAlert() {
+                        localStorage.setItem('dismissed_version', '1.2.0');
+                        document.getElementById('version-update-alert').classList.add('hidden');
+                    }
+                </script>
+
                 @yield('content')
             </div>
         </main>

@@ -40,7 +40,7 @@ class Product extends Model implements HasMedia
         'tax_method', 'tax_rate',
         'type', 'status', 'specifications',
         'sku', 'pno', 'barcode', 'cost_price', 'selling_price', 'sale_price', 'stock_quantity', 'alert_quantity',
-        'has_serial_number', 'warranty_type', 'warranty_duration',
+        'has_serial_number', 'warranty_type', 'warranty_duration', 'is_featured',
     ];
 
     public function scopeSearch($query, $term)
@@ -60,6 +60,11 @@ class Product extends Model implements HasMedia
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
     }
 
     /**

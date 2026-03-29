@@ -172,6 +172,7 @@
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Price (AED)</th>
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Stock</th>
                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase text-center">Featured</th>
                             <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
@@ -252,6 +253,19 @@
                                     @else
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Published</span>
                                     @endif
+                                </td>
+
+                                <!-- Featured Toggle -->
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <button type="button" 
+                                            onclick="toggleFeatured({{ $product->id }}, this)" 
+                                            class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {{ $product->is_featured ? 'bg-blue-600' : 'bg-gray-200' }}"
+                                            role="switch" 
+                                            aria-checked="{{ $product->is_featured ? 'true' : 'false' }}">
+                                        <span aria-hidden="true" 
+                                              class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 {{ $product->is_featured ? 'translate-x-5' : 'translate-x-0' }}">
+                                        </span>
+                                    </button>
                                 </td>
 
                                 <!-- Actions -->
@@ -587,6 +601,49 @@
                     });
                 }
             })
+        }
+
+        function toggleFeatured(productId, btn) {
+            const url = "{{ route('products.toggle-featured', ':id') }}".replace(':id', productId);
+            
+            axios.patch(url)
+                .then(response => {
+                    if (response.data.success) {
+                        const isFeatured = response.data.is_featured;
+                        
+                        // Update UI
+                        if (isFeatured) {
+                            btn.classList.remove('bg-gray-200');
+                            btn.classList.add('bg-blue-600');
+                            btn.querySelector('span').classList.remove('translate-x-0');
+                            btn.querySelector('span').classList.add('translate-x-5');
+                            btn.setAttribute('aria-checked', 'true');
+                        } else {
+                            btn.classList.remove('bg-blue-600');
+                            btn.classList.add('bg-gray-200');
+                            btn.querySelector('span').classList.remove('translate-x-5');
+                            btn.querySelector('span').classList.add('translate-x-0');
+                            btn.setAttribute('aria-checked', 'false');
+                        }
+
+                        // Optional: Toast notification
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire('Error', 'Failed to toggle featured status.', 'error');
+                });
         }
     </script>
 @endsection
