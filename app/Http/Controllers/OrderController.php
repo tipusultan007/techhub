@@ -155,9 +155,9 @@ class OrderController extends Controller
                     // tax_amount = inclusive_subtotal - (inclusive_subtotal / (1 + tax_rate/100))
                     // net_subtotal = inclusive_subtotal - tax_amount
 
-                    $rowInclusiveTotal = $price * $qty;
-                    $rowTaxAmount = $rowInclusiveTotal - ($rowInclusiveTotal / (1 + ($taxRate / 100)));
-                    $rowNetSubtotal = $rowInclusiveTotal - $rowTaxAmount;
+                    $rowNetSubtotal = $price * $qty;
+                    $rowTaxAmount = $rowNetSubtotal * ($taxRate / 100);
+                    $rowInclusiveTotal = $rowNetSubtotal + $rowTaxAmount;
 
                     $productName = $itemData['product_name'] ?? 'Unknown Item';
                     if ($itemData['product_id']) {
@@ -176,10 +176,10 @@ class OrderController extends Controller
                         'product_variant_id' => $itemData['variant_id'] ?? null,
                         'product_name' => $productName,
                         'quantity' => $qty,
-                        'unit_price' => $price,
+                        'unit_price' => $price, // Base price (exclusive)
                         'tax_rate' => $taxRate,
                         'tax_amount' => $rowTaxAmount,
-                        'subtotal' => $rowInclusiveTotal, // Row total inclusive
+                        'subtotal' => $rowNetSubtotal, // Row total exclusive
                     ]);
 
                     // 4. Deduct New Stock
@@ -234,7 +234,7 @@ class OrderController extends Controller
                     'customer_name' => $request->customer_id ? \App\Models\Customer::find($request->customer_id)->name : 'Guest/Walk-in',
                     'po_number' => $request->po_number,
                     'payment_method' => $request->payment_method,
-                    'subtotal' => $totalSubtotal, // This should eventually be totalGrand - totalTax?
+                    'subtotal' => $finalGrand - $totalTax, 
                     'vat_amount' => $totalTax,
                     'discount' => $discount,
                     'total' => $finalGrand,

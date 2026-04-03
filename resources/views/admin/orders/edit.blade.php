@@ -138,7 +138,7 @@
                 </tbody>
                 <tfoot class="bg-emerald-50">
                     <tr>
-                        <td colspan="4" class="text-right p-3 font-bold text-emerald-900 border-r border-emerald-100 uppercase tracking-tighter text-xs">Total Before Discount:</td>
+                        <td colspan="4" class="text-right p-3 font-bold text-emerald-900 border-r border-emerald-100 uppercase tracking-tighter text-xs">Total Without VAT/Tax:</td>
                         <td class="p-3 text-right font-bold text-emerald-900 text-lg" id="display_subtotal">0.00</td>
                         <td></td>
                     </tr>
@@ -408,7 +408,7 @@
         }
 
         window.calculateTotal = function() {
-            let totalInclusive = 0;
+            let totalNet = 0;
             let totalTax = 0;
             
             $('#order_items_body tr').each(function() {
@@ -416,18 +416,19 @@
                 let qty = parseFloat($(this).find('.qty-input').val()) || 0;
                 let taxRate = parseFloat($(this).find('.item-tax-rate').val()) || 0;
                 
-                let rowInclusive = price * qty;
-                $(this).find('.row-total-display').text(rowInclusive.toFixed(2));
+                let rowNet = price * qty;
+                let rowTax = rowNet * (taxRate / 100);
+                let rowTotal = rowNet + rowTax;
+
+                $(this).find('.row-total-display').text(rowTotal.toFixed(2));
                 
-                // Calculate tax from inclusive price (POS matching logic)
-                let rowTax = rowInclusive - (rowInclusive / (1 + (taxRate / 100)));
-                
-                totalInclusive += rowInclusive;
+                totalNet += rowNet;
                 totalTax += rowTax;
             });
 
-            $('#display_subtotal').text(totalInclusive.toFixed(2));
+            $('#display_subtotal').text(totalNet.toFixed(2));
             
+            let totalInclusive = totalNet + totalTax;
             let discount = parseFloat($('#discount_input').val()) || 0;
             let grandTotal = Math.max(0, totalInclusive - discount);
 

@@ -1,5 +1,17 @@
 [
     {
+        "version": "1.2.1",
+        "date": "2026-04-03",
+        "type": "Patch",
+        "title": "Order Tax Calculation Fix",
+        "changes": [
+            "Fixed order tax calculation inconsistency between POS and manual edits.",
+            "Implemented exclusive tax logic (VAT added on top) in order edit page and controller.",
+            "Corrected database storage to ensure subtotal reflects net amount (exclusive of tax).",
+            "Fixed invoice display issue where tax was doubled on manual order updates."
+        ]
+    },
+    {
         "version": "1.2.0",
         "date": "2026-03-30",
         "type": "Major Feature",
