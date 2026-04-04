@@ -9,6 +9,7 @@
             "Implemented Sitemap Indexing management in Backend Settings.",
             "Added manual 'Regenerate Now' button for sitemaps.",
             "Integrated TikTok icons in footer and email templates.",
+            "Dynamic SEO Meta tags for Homepage (Title, Description, Keywords).",
             "Verified automated daily sitemap generation via cron."
         ]
     },

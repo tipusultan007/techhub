@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
     - View current sitemap status and URL.
     - Manual "Regenerate Now" button for instant sitemap updates.
     - Frontend/Icon integration for TikTok in footer and email templates.
+    - Dynamic SEO Meta tags for Homepage (Title, Description, Keywords).
 
 ### Improved
 - Sitemap generation logic now includes all Products, Categories, Solutions, and Dynamic Pages.

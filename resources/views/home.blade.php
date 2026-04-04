@@ -1,7 +1,8 @@
 @extends('layouts.frontend')
 
-@section('title', 'Home | Tech Hub Computer Trading')
-@section('meta_description', 'Best deals on Gaming PCs, Laptops, and Components in UAE.')
+@section('title', ($settings['meta_title'] ?? 'Home') . ' | ' . ($settings['site_name'] ?? 'Tech Hub'))
+@section('meta_description', $settings['meta_description'] ?? 'Best deals on Gaming PCs, Laptops, and Components in UAE.')
+@section('meta_keywords', $settings['meta_keywords'] ?? 'computer, gaming pc, laptop, dubai, tech hub')
 
 @section('content')
     <!-- Swiper CSS -->
