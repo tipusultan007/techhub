@@ -74,6 +74,13 @@
                             <i class="ri-mail-send-line mr-3 text-lg"></i>
                             <span>SMTP Engine</span>
                         </button>
+                        
+                        <button type="button" @click="activeTab = 'sitemap'" 
+                                :class="activeTab === 'sitemap' ? 'bg-[#2dae9a] text-white shadow-lg shadow-emerald-200' : 'text-slate-600 hover:bg-slate-100 hvr-icon-pulse-shrink'" 
+                                class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm transition-all flex items-center group">
+                            <i class="ri-global-line mr-3 text-lg"></i>
+                            <span>Sitemap Indexing</span>
+                        </button>
 
                         <button type="button" @click="activeTab = 'tools'" 
                                 :class="activeTab === 'tools' ? 'bg-[#2dae9a] text-white shadow-lg shadow-emerald-200' : 'text-slate-600 hover:bg-slate-100'" 
@@ -394,6 +401,13 @@
                             <i class="ri-whatsapp-line text-gray-400"></i>
                         </div>
                         <input type="text" name="social_whatsapp" value="{{ settings('social_whatsapp') }}" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition" placeholder="https://wa.me/971...">
+                    </div>
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">TikTok</label>
+                        <div class="absolute inset-y-0 left-0 pt-6 pl-3 flex items-center pointer-events-none">
+                            <i class="ri-tiktok-fill text-gray-400"></i>
+                        </div>
+                        <input type="text" name="social_tiktok" value="{{ settings('social_tiktok') }}" class="pl-10 w-full border border-gray-300 rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition" placeholder="https://tiktok.com/@...">
                     </div>
                 </div>
             </div>
@@ -840,6 +854,73 @@
                     </div>
                 </div>
 
+                <!-- 10. SITEMAP TAB -->
+                <div x-show="activeTab === 'sitemap'" class="space-y-12 animate-in fade-in duration-300" style="display: none;">
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Sitemap Indexing</h3>
+                                <p class="text-slate-500 font-medium">Manage your website's sitemap for search engines like Google and Bing.</p>
+                            </div>
+                            <button type="button" 
+                                    onclick="if(confirm('This will regenerate the sitemap.xml file. Proceed?')) document.getElementById('generate-sitemap-form').submit();"
+                                    class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-6 rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shadow-slate-200">
+                                <i class="ri-refresh-line text-lg"></i>
+                                <span>Regenerate Now</span>
+                            </button>
+                        </div>
+                        <div class="h-px bg-slate-100 w-full"></div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-600 shadow-sm border border-slate-100">
+                                        <i class="ri-links-line"></i>
+                                    </div>
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Primary Sitemap URL</h4>
+                                </div>
+                                <div class="relative flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm group">
+                                    <input type="text" readonly value="{{ url('/sitemap.xml') }}" class="flex-1 bg-transparent border-none text-[10px] font-mono py-2.5 px-3 focus:ring-0 text-slate-600">
+                                    <a href="{{ url('/sitemap.xml') }}" target="_blank" class="bg-slate-50 hover:bg-slate-100 border-l border-slate-200 px-3 py-2.5 text-slate-500 transition-all flex items-center justify-center">
+                                        <i class="ri-external-link-line"></i>
+                                    </a>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-tight">Submit this URL to Google Search Console.</p>
+                            </div>
+
+                            <div class="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                                        <i class="ri-time-line"></i>
+                                    </div>
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Last Generated</h4>
+                                </div>
+                                <p class="text-xl font-black text-indigo-900 tracking-tight">
+                                    @php
+                                        $sitemapPath = public_path('sitemap.xml');
+                                        $lastMod = file_exists($sitemapPath) ? date('M d, Y H:i', filemtime($sitemapPath)) : 'Never';
+                                    @endphp
+                                    {{ $lastMod }}
+                                </p>
+                                <p class="text-[10px] text-indigo-400 mt-2 font-bold uppercase tracking-tight">Automatically scheduled daily via Cron.</p>
+                            </div>
+                        </div>
+
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 shrink-0 flex items-center justify-center text-slate-400">
+                                <i class="ri-information-line"></i>
+                            </div>
+                                <div class="space-y-1">
+                                    <h5 class="text-xs font-black text-slate-800 uppercase tracking-widest">About Sitemaps</h5>
+                                    <p class="text-[11px] text-slate-500 font-medium leading-relaxed">
+                                        A sitemap is an XML file that lists all important pages of your website, making sure Google and other search engines can find and crawl them all. 
+                                        Our system automatically includes all <span class="font-bold">Products, Categories, Solutions, and Dynamic Pages</span>.
+                                    </p>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-12 pt-8 border-t border-slate-100 flex items-center justify-end">
                     <button type="submit" class="bg-[#2dae9a] hover:bg-[#248e7e] text-white font-black py-4 px-10 rounded-2xl shadow-xl shadow-emerald-200/50 transform transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-emerald-100 flex items-center gap-3">
                         <i class="ri-save-fill text-xl"></i>
@@ -847,6 +928,10 @@
                     </button>
                 </div>
             </div>
+        </form>
+
+        <form id="generate-sitemap-form" action="{{ route('settings.generate-sitemap') }}" method="POST" style="display: none;">
+            @csrf
         </form>
     </div>
 

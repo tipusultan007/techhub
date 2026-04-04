@@ -47,6 +47,7 @@
                     @if(settings('social_facebook')) <a href="{{ settings('social_facebook') }}" class="social-link">Facebook</a> @endif
                     @if(settings('social_instagram')) <a href="{{ settings('social_instagram') }}" class="social-link">Instagram</a> @endif
                     @if(settings('social_twitter')) <a href="{{ settings('social_twitter') }}" class="social-link">Twitter</a> @endif
+                    @if(settings('social_tiktok')) <a href="{{ settings('social_tiktok') }}" class="social-link">TikTok</a> @endif
                 </div>
                 &copy; {{ date('Y') }} {{ settings('site_name') }}. All rights reserved.<br>
                 {{ settings('contact_address') }}<br>

@@ -176,4 +176,17 @@ class SettingController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Manually regenerate the sitemap.
+     */
+    public function generateSitemap()
+    {
+        try {
+            Artisan::call('sitemap:generate');
+            return back()->with('success', 'Sitemap regenerated successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error generating sitemap: ' . $e->getMessage());
+        }
+    }
 }

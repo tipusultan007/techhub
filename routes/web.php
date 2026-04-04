@@ -277,6 +277,7 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
         Route::post('/settings/test-smtp', [SettingController::class, 'testSMTP'])->name('settings.test_smtp');
         Route::post('/settings/clear-cache', [SettingController::class, 'clearCache'])->name('settings.clear-cache');
         Route::post('/settings/storage-link', [SettingController::class, 'linkStorage'])->name('settings.storage-link');
+        Route::post('/settings/generate-sitemap', [SettingController::class, 'generateSitemap'])->name('settings.generate-sitemap');
 
         // User Management
         Route::post('/users/{user}/reset-2fa', [UserController::class, 'resetTwoFactor'])->name('users.reset-2fa');

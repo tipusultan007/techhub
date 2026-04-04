@@ -469,6 +469,9 @@
                     @if(settings('social_whatsapp'))
                         <a href="{{ settings('social_whatsapp') }}" target="_blank"><i class="ri-whatsapp-fill"></i></a>
                     @endif
+                    @if(settings('social_tiktok'))
+                        <a href="{{ settings('social_tiktok') }}" target="_blank"><i class="ri-tiktok-fill"></i></a>
+                    @endif
                 </div>
             </div>
 
