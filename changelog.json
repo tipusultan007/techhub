@@ -1,5 +1,18 @@
 [
     {
+        "version": "1.3.0",
+        "date": "2026-04-04",
+        "type": "Minor Feature",
+        "title": "Sitemap Management & TikTok Integration",
+        "changes": [
+            "Added TikTok profile link field in Social Media settings.",
+            "Implemented Sitemap Indexing management in Backend Settings.",
+            "Added manual 'Regenerate Now' button for sitemaps.",
+            "Integrated TikTok icons in footer and email templates.",
+            "Verified automated daily sitemap generation via cron."
+        ]
+    },
+    {
         "version": "1.2.1",
         "date": "2026-04-03",
         "type": "Patch",
