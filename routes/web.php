@@ -164,8 +164,6 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
         Route::post('/pos/store', [PosController::class, 'store'])->name('pos.store');
         Route::get('/pos/duplicate/{order}', [PosController::class, 'duplicate'])->name('pos.duplicate');
         Route::post('/pos/customer', [PosController::class, 'storeCustomer'])->name('pos.customer.store');
-
-        Route::get('/orders/{order}/print', [OrderController::class, 'print'])->name('orders.print');
     });
 
     // --- INVENTORY & SALES MANAGEMENT (Granular access) ---
@@ -248,13 +246,15 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
         Route::resource('expenses', App\Http\Controllers\ExpenseController::class);
     });
 
-    // --- SYSTEM ADMINISTRATION ---
-    Route::group(['middleware' => ['permission:manage users|manage roles|manage settings']], function () {
-
-        // Orders Management
+    // --- ORDERS MANAGEMENT ---
+    Route::group(['middleware' => ['permission:view orders|manage orders|access pos']], function () {
         Route::get('/orders/{order}/print', [OrderController::class, 'print'])->name('orders.print');
         Route::get('/orders/{order}/download-pdf', [OrderController::class, 'downloadPdf'])->name('orders.download-pdf');
         Route::resource('orders', OrderController::class);
+    });
+
+    // --- SYSTEM ADMINISTRATION ---
+    Route::group(['middleware' => ['permission:manage users|manage roles|manage settings']], function () {
 
         // Reports
         Route::group(['middleware' => ['permission:view reports']], function () {
