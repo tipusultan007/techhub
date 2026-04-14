@@ -145,7 +145,12 @@
             
             <!-- Import Button -->
             <a href="{{ route('products.import.form') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow flex items-center text-sm">
-                <i class="fas fa-file-excel mr-2"></i> Import Excel
+                <i class="fas fa-file-import mr-2"></i> Import Excel
+            </a>
+
+            <!-- Export Button -->
+            <a href="{{ route('products.export') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded shadow flex items-center text-sm">
+                <i class="fas fa-file-export mr-2"></i> Export Excel
             </a>
 
             <!-- Add Product Link -->

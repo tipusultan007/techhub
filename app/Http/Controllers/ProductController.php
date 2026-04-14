@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductsExport;
 use App\Imports\ProductsImport;
 use App\Models\Attribute;
 use App\Models\Brand;
@@ -488,6 +489,14 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error importing products: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Export products to Excel.
+     */
+    public function export()
+    {
+        return Excel::download(new ProductsExport, 'products.xlsx');
     }
 
     public function bulkDestroy(Request $request)

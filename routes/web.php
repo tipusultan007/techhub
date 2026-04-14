@@ -172,7 +172,8 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
         // Products & Catalog
         Route::post('/products/print-barcodes', [ProductController::class, 'printBarcode'])->name('products.print_barcodes');
 
-        // Import Products Routes
+        // Import/Export Products Routes
+        Route::get('/products/export', [ProductController::class, 'export'])->name('products.export');
         Route::get('/products/import', [ProductController::class, 'importForm'])->name('products.import.form');
         Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
 
