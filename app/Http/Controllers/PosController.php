@@ -326,7 +326,7 @@ class PosController extends Controller
         }
 
         // 7. Process Items
-        foreach ($request->items as $item) {
+        foreach ($request->items as $index => $item) {
             
             // --- A. Stock Deduction ---
             if (!empty($item['variant_id'])) {

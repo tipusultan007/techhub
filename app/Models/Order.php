@@ -33,11 +33,17 @@ class Order extends Model implements HasMedia
 
         static::creating(function ($order) {
             $year = now()->year;
-            $lastOrder = Order::whereYear('created_at', $year)->latest()->first();
+            $lastOrder = Order::whereYear('created_at', $year)->latest('id')->first();
 
             $sequence = $lastOrder ? (int)substr($lastOrder->invoice_no, -5) + 1 : 1;
+            $invoiceNo = 'INV-' . $year . '-' . str_pad($sequence, 5, '0', STR_PAD_LEFT);
 
-            $order->invoice_no = 'INV-' . $year . '-' . str_pad($sequence, 5, '0', STR_PAD_LEFT);
+            while (Order::where('invoice_no', $invoiceNo)->exists()) {
+                $sequence++;
+                $invoiceNo = 'INV-' . $year . '-' . str_pad($sequence, 5, '0', STR_PAD_LEFT);
+            }
+
+            $order->invoice_no = $invoiceNo;
         });
     }
 
