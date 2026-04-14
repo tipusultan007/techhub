@@ -28,9 +28,9 @@
 
         // Determine display string
         if ($minPrice == $maxPrice) {
-            $priceDisplay = number_format($minPrice);
+            $priceDisplay = number_format($minPrice, 2);
         } else {
-            $priceDisplay = number_format($minPrice) . ' - ' . number_format($maxPrice);
+            $priceDisplay = number_format($minPrice, 2) . ' - ' . number_format($maxPrice, 2);
         }
 
         // Check if the item is effectively on sale (if Min active price < Min regular price)
@@ -52,14 +52,14 @@
         if ($salePrice && $salePrice < $regularPrice) {
             $activePrice = $salePrice;
             $isOnSale = true;
-            $oldPriceDisplay = number_format($regularPrice);
+            $oldPriceDisplay = number_format($regularPrice, 2);
             $discountPercent = round((($regularPrice - $activePrice) / $regularPrice) * 100);
         } else {
             $activePrice = $regularPrice;
             $isOnSale = false;
         }
 
-        $priceDisplay = number_format($activePrice);
+        $priceDisplay = number_format($activePrice, 2);
     }
 
     $isOutOfStock = $stock <= 0;
