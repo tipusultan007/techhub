@@ -100,6 +100,7 @@
             </a>
 
             <!-- Bulk Actions Dropdown -->
+            @unless(auth()->user()->hasRole('Sales Person'))
             <div class="relative inline-block text-left" x-data="{ open: false }">
                 <button type="button" @click="open = !open" class="bg-slate-700 text-white px-4 py-2 rounded shadow hover:bg-slate-600 font-bold text-sm flex items-center whitespace-nowrap">
                     <i class="fas fa-tasks mr-2"></i> Bulk Actions <i class="fas fa-chevron-down ml-2 text-xs"></i>
@@ -122,6 +123,7 @@
                     </div>
                 </div>
             </div>
+            @endunless
 
             <!-- Barcode Size and Skip Selection -->
             <div class="flex items-end gap-2">
@@ -154,9 +156,11 @@
             </a>
 
             <!-- Add Product Link -->
+            @unless(auth()->user()->hasRole('Sales Person'))
             <a href="{{ route('products.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow flex items-center text-sm">
                 <i class="fas fa-plus mr-2"></i> Add Product
             </a>
+            @endunless
         </div>
     </div>
 
@@ -262,6 +266,7 @@
 
                                 <!-- Featured Toggle -->
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    @unless(auth()->user()->hasRole('Sales Person'))
                                     <button type="button" 
                                             onclick="toggleFeatured({{ $product->id }}, this)" 
                                             class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {{ $product->is_featured ? 'bg-blue-600' : 'bg-gray-200' }}"
@@ -271,6 +276,11 @@
                                               class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 {{ $product->is_featured ? 'translate-x-5' : 'translate-x-0' }}">
                                         </span>
                                     </button>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-400 rounded-full text-[10px] font-bold uppercase">
+                                            {{ $product->is_featured ? 'Featured' : 'Standard' }}
+                                        </span>
+                                    @endunless
                                 </td>
 
                                 <!-- Actions -->
@@ -280,12 +290,15 @@
                                             <i class="fas fa-barcode"></i>
                                         </button>
                                         <a href="{{ route('products.show', $product) }}" class="text-gray-500 hover:text-blue-600" title="View"><i class="fas fa-eye"></i></a>
+                                        
+                                        @unless(auth()->user()->hasRole('Sales Person'))
                                         <a href="{{ route('products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit"><i class="fas fa-edit"></i></a>
                                         
                                         <!-- FIX: Changed to a button with onclick -->
                                         <button type="button" onclick="confirmDelete({{ $product->id }})" class="text-red-500 hover:text-red-700" title="Delete">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @endunless
                                     </div>
                                 </td>
                             </tr>

@@ -9,6 +9,7 @@
         <a href="{{ route('products.index') }}" class="text-gray-600 hover:text-gray-900 flex items-center font-medium">
             <i class="fas fa-arrow-left mr-2"></i> Back to Inventory
         </a>
+        @unless(auth()->user()->hasRole('Sales Person'))
         <div class="flex space-x-3">
             <a href="{{ route('products.edit', $product) }}" class="bg-indigo-600 text-white px-5 py-2 rounded shadow hover:bg-indigo-700 font-bold transition">
                 <i class="fas fa-edit mr-2"></i> Edit Product
@@ -20,6 +21,7 @@
                 </button>
             </form>
         </div>
+        @endunless
     </div>
 
     <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">

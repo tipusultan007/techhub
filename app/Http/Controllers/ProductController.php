@@ -16,10 +16,24 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Picqer\Barcode\BarcodeGeneratorHTML;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ProductController extends Controller
+class ProductController extends Controller implements HasMiddleware
 {
     use LogsActivity;
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:manage products', only: [
+                'create', 'store', 'edit', 'update', 'destroy', 
+                'bulkDestroy', 'bulkUpdateStatus', 'bulkUpdateCategory', 
+                'toggleFeatured', 'importForm', 'import'
+            ]),
+            new Middleware('permission:view products', only: ['index', 'show', 'export', 'printBarcode']),
+        ];
+    }
 
     public function index(Request $request)
     {
