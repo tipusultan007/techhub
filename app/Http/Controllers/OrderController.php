@@ -11,10 +11,20 @@ use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class OrderController extends Controller
+class OrderController extends Controller implements HasMiddleware
 {
     use LogsActivity;
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:manage orders', only: ['edit', 'update', 'updateStatus', 'destroy']),
+            new Middleware('permission:view orders', only: ['index', 'show', 'print', 'downloadPdf', 'details']),
+        ];
+    }
 
     /**
      * Display a listing of sales orders.

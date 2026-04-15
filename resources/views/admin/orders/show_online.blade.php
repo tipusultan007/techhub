@@ -15,9 +15,11 @@
             <a href="{{ route('orders.index') }}" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded shadow-sm hover:bg-gray-50">
                 Back to List
             </a>
+            @unless(auth()->user()->hasRole('Sales Person'))
             <a href="{{ route('orders.edit', $order) }}" class="bg-emerald-600 text-white px-4 py-2 rounded shadow-sm hover:bg-emerald-700">
                 <i class="fas fa-edit mr-2"></i> Edit Order
             </a>
+            @endunless
             <a href="{{ route('orders.print', $order) }}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded shadow-sm hover:bg-blue-700">
                 <i class="fas fa-print mr-2"></i> Print Invoice
             </a>
@@ -165,6 +167,7 @@
         <div class="lg:col-span-1 space-y-6">
 
             <!-- 1. Actions Card -->
+            @unless(auth()->user()->hasRole('Sales Person'))
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">Update Status</h3>
 
@@ -196,6 +199,7 @@
                     </button>
                 </form>
             </div>
+            @endunless
 
             <!-- 2. Payment Info -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

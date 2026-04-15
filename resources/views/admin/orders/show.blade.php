@@ -10,9 +10,11 @@
             <i class="fas fa-arrow-left mr-2"></i> Back to Orders
         </a>
         <div class="flex gap-3">
+            @unless(auth()->user()->hasRole('Sales Person'))
             <a href="{{ route('orders.edit', $order) }}" class="bg-emerald-600 text-white px-5 py-2 rounded shadow hover:bg-emerald-700 font-bold transition">
                 <i class="fas fa-edit mr-2"></i> Edit Order
             </a>
+            @endunless
             <a href="{{ route('orders.print', $order) }}" target="_blank" class="bg-gray-800 text-white px-5 py-2 rounded shadow hover:bg-gray-700 font-bold transition">
                 <i class="fas fa-print mr-2"></i> Print Receipt
             </a>
