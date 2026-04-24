@@ -125,16 +125,15 @@
                 </div>
             </div>
 
-            <!-- Categories -->
             <div class="px-4 py-2 bg-white border-b flex gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
-                <button class="bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow">All Items</button>
+                <button onclick="filterByCategory(null, this)" class="category-btn bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow">All Items</button>
                 <button onclick="openServiceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow transition">
                     <i class="fas fa-plus-circle mr-1"></i> Add Service
                 </button>
                 @if(isset($categories) && count($categories) > 0)
                     @foreach ($categories as $cat)
-                        <button
-                            class="bg-gray-200 text-gray-700 hover:bg-slate-200 px-4 py-2 rounded-full text-sm font-bold transition">{{ $cat->name }}</button>
+                        <button onclick="filterByCategory({{ $cat->id }}, this)"
+                            class="category-btn bg-gray-200 text-gray-700 hover:bg-slate-200 px-4 py-2 rounded-full text-sm font-bold transition">{{ $cat->name }}</button>
                     @endforeach
                 @endif
             </div>
@@ -160,7 +159,7 @@
                             </div>
 
                             <div class="p-3">
-                                <div class="font-bold text-gray-800 text-sm h-10 overflow-hidden leading-tight mb-1">
+                                <div class="font-bold text-gray-800 text-sm h-14 overflow-hidden leading-tight mb-1">
                                     {{ $p['name'] }}
                                 </div>
                                 <div class="flex justify-between items-end">
@@ -185,9 +184,9 @@
 
             <!-- Customer & PO Section -->
             <div class="p-4 border-b bg-gray-50">
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-12 gap-3">
                     <!-- Customer Select -->
-                    <div>
+                    <div class="col-span-5">
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Customer</label>
                         <div class="flex gap-1">
                             <div class="flex-1">
@@ -205,14 +204,25 @@
                         </div>
                     </div>
                     <!-- PO Number at Top -->
-                    <div>
+                    <div class="col-span-3">
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">PO # (Optional)</label>
                         <div class="relative">
-                            <input type="text" id="po_number" placeholder="PO Number..."
+                            <input type="text" id="po_number" placeholder="PO #..."
                                 class="w-full border border-gray-300 rounded p-2 pl-9 text-sm focus:border-[#2dae9a] outline-none font-bold text-gray-700 h-[38px]"
                                 title="Purchase Order Number">
                             <div class="absolute left-3 top-2.5 text-gray-400"><i class="fas fa-file-invoice"></i></div>
                         </div>
+                    </div>
+                    <!-- Sales Person -->
+                    <div class="col-span-4">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Sales Person</label>
+                        <select id="user_id"
+                            class="w-full border border-gray-300 rounded p-2 text-sm focus:border-[#2dae9a] outline-none select2">
+                            <option value="">Select Sales Person</option>
+                            @foreach ($users as $u)
+                                <option value="{{ $u->id }}" {{ Auth::id() == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
             </div>
@@ -269,6 +279,24 @@
                         class="flex justify-between text-2xl font-bold text-slate-900 border-t border-gray-300 pt-2 mt-2">
                         <span>PAYABLE</span>
                         <span>AED <span id="lbl-payable">0.00</span></span>
+                    </div>
+
+                    <!-- Advanced Payment: Paid Amount -->
+                    <div class="flex justify-between items-center text-emerald-600 my-2 pt-2 border-t border-dashed border-gray-300">
+                        <span class="font-bold flex items-center text-xs uppercase">
+                            <i class="fas fa-hand-holding-usd mr-1"></i> Paid Amount
+                        </span>
+                        <div class="flex items-center">
+                            <input type="number" id="paid_amount_input" value="0" min="0" step="0.01"
+                                class="w-28 border-2 border-emerald-100 rounded-lg p-1.5 text-right text-lg focus:outline-none focus:border-emerald-500 text-emerald-700 font-bold bg-white"
+                                oninput="calculateDue()">
+                        </div>
+                    </div>
+
+                    <!-- Due Amount -->
+                    <div class="flex justify-between text-red-600 text-sm font-bold bg-red-50 p-2 rounded-lg">
+                        <span>DUE AMOUNT</span>
+                        <span>AED <span id="lbl-due">0.00</span></span>
                     </div>
                 </div>
 
@@ -432,6 +460,7 @@
         // --- GLOBAL VARIABLES ---
         let cart = @json($duplicateData['items'] ?? []);
         let pendingProduct = null;
+        let currentCategory = null;
        
         $(document).ready(function() {
             $('#search').focus();
@@ -441,7 +470,7 @@
 
             // Initialize Select2
             $('.select2').select2({
-                placeholder: "Select a customer",
+                placeholder: "Select an option",
                 allowClear: true,
                 width: '100%'
             });
@@ -449,6 +478,7 @@
             // Pre-fill fields if duplicating
             @isset($duplicateData)
                 $('#customer_id').val("{{ $duplicateData['customer_id'] }}").trigger('change');
+                $('#user_id').val("{{ $duplicateData['user_id'] }}").trigger('change');
                 $('input[name="po_number"]').val("{{ $duplicateData['po_number'] ?? '' }}");
                 $('#discount-input').val("{{ $duplicateData['discount'] }}");
                 renderCart();
@@ -521,9 +551,20 @@
             fetchProducts('');
         });
 
+        window.filterByCategory = function(id, btn) {
+            currentCategory = id;
+            
+            // Toggle button styles
+            $('.category-btn').removeClass('bg-slate-800 text-white').addClass('bg-gray-200 text-gray-700 shadow-none');
+            $(btn).removeClass('bg-gray-200 text-gray-700 shadow-none').addClass('bg-slate-800 text-white shadow');
+            
+            fetchProducts($('#search').val());
+        };
+
         function fetchProducts(term, isScan = false) {
             $.get("{{ route('pos.search') }}", {
-                term: term
+                term: term,
+                category_id: currentCategory
             }, function(data) {
                 let html = '';
                 if (data.length === 0) {
@@ -552,7 +593,7 @@
                         html += `
                         <div class="product-card bg-white rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md hover:border-[#2dae9a] transition relative overflow-hidden group" onclick='addToCart(${pStr})'>
                             <div class="h-32 bg-gray-50 flex items-center justify-center p-2"><img src="${image}" class="h-full object-contain group-hover:scale-105 transition"></div>
-                            <div class="p-3"><div class="font-bold text-gray-800 text-sm h-10 overflow-hidden leading-tight mb-1">${p.name}</div><div class="flex justify-between items-end"><div class="text-[#2dae9a] font-bold text-lg">AED ${parseFloat(p.price).toFixed(2)}</div></div><div class="mt-2 flex justify-between items-center"><span class="text-xs text-gray-500 font-mono">${p.sku}</span>${stockBadge}</div></div>
+                            <div class="p-3"><div class="font-bold text-gray-800 text-sm h-14 overflow-hidden leading-tight mb-1">${p.name}</div><div class="flex justify-between items-end"><div class="text-[#2dae9a] font-bold text-lg">AED ${parseFloat(p.price).toFixed(2)}</div></div><div class="mt-2 flex justify-between items-center"><span class="text-xs text-gray-500 font-mono">${p.sku}</span>${stockBadge}</div></div>
                         </div>`;
                     });
                 }
@@ -701,9 +742,39 @@
 
             $('#lbl-cart-total').text(totalPayable.toFixed(2));
             $('#lbl-payable').text(payableAfterDiscount.toFixed(2));
+            
+            // Set default Paid Amount if it's 0 or matches previous payable
+            let paidInput = $('#paid_amount_input');
+            if (paidInput.val() == 0 || paidInput.data('auto-sync') === true) {
+                paidInput.val(payableAfterDiscount.toFixed(2));
+                paidInput.data('auto-sync', true);
+            }
+
+            calculateDue();
+
             $('#lbl-vat').text(displayVat.toFixed(2));
             // Update label to remove hardcoded 5%
             $('#lbl-vat').prev().text('Total Tax');
+        }
+
+        window.calculateDue = function() {
+            let payable = parseFloat($('#lbl-payable').text()) || 0;
+            let paid = parseFloat($('#paid_amount_input').val()) || 0;
+            let due = payable - paid;
+            
+            $('#lbl-due').text(due.toFixed(2));
+            
+            // If user manually edits, stop auto-syncing
+            if (Math.abs(paid - payable) > 0.01) {
+                $('#paid_amount_input').data('auto-sync', false);
+            }
+
+            // Visual indicator
+            if(due <= 0) {
+                $('#lbl-due').parent().removeClass('bg-red-50 text-red-600').addClass('bg-green-50 text-green-600');
+            } else {
+                $('#lbl-due').parent().removeClass('bg-green-50 text-green-600').addClass('bg-red-50 text-red-600');
+            }
         }
 
         function updateQty(index, change) {
@@ -853,10 +924,13 @@
 
     let formData = new FormData();
     formData.append('customer_id', $('#customer_id').val() || '');
+    formData.append('user_id', $('#user_id').val() || '');
     formData.append('payment_method', method);
     formData.append('discount', discount);
     formData.append('po_number', $('#po_number').val() || '');
-    formData.append('amount_paid', finalPayable);
+    formData.append('amount_paid', finalPayable); // Keeping for compatibility if needed elsewhere
+    formData.append('paid_amount', parseFloat($('#paid_amount_input').val()) || 0);
+    formData.append('due_amount', parseFloat($('#lbl-due').text()) || 0);
     formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
 
     // Append items as JSON (or loop through them if backend expects array)
@@ -896,6 +970,7 @@
                 $('#payment_method').val('cash');
                 $('#po_number').val('');
                 $('#attachment').val(''); // Reset file input
+                $('#paid_amount_input').val(0).data('auto-sync', true);
                 renderCart();
                 
                 $('#processingOverlay').addClass('hidden').removeClass('flex');

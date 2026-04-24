@@ -154,6 +154,8 @@ class CheckoutController extends Controller
                 'discount'         => $discount,
                 'total'            => $total,
                 'payment_method'   => $request->payment_method,
+                'paid_amount'      => 0,
+                'due_amount'       => $total,
                 'status'           => 'pending',
                 'notes'            => $coupon ? 'Coupon: ' . $coupon['code'] : null,
             ]);

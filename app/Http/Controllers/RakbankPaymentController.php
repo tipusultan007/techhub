@@ -70,6 +70,8 @@ class RakbankPaymentController extends Controller
                 $order->update([
                     'status'          => 'processing',
                     'payment_method'  => 'rakbank',
+                    'paid_amount'     => $order->total,
+                    'due_amount'      => 0,
                     'transaction_id'  => $transactionId,
                     'gateway_order_id'=> $gatewayOrderId,
                     'notes'           => ($order->notes ? $order->notes . "\n" : "")
@@ -138,6 +140,8 @@ class RakbankPaymentController extends Controller
                 $order->update([
                     'status'          => 'processing',
                     'payment_method'  => 'rakbank',
+                    'paid_amount'     => $order->total,
+                    'due_amount'      => 0,
                     'transaction_id'  => $transactionId,
                     'gateway_order_id'=> $gatewayOrderId,
                     'notes'           => ($order->notes ? $order->notes . "\n" : "")

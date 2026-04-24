@@ -44,6 +44,17 @@
                 <input type="text" name="po_number" value="{{ $order->po_number }}" class="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="PO Number">
             </div>
             <div>
+                <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">Sales Person</label>
+                <select name="user_id" class="w-full border rounded p-2 mt-1 bg-white select2">
+                    <option value="">Select Sales Person</option>
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}" {{ $order->user_id == $user->id ? 'selected' : '' }}>
+                            {{ $user->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
                 <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">Attachment</label>
                 <input type="file" name="attachment[]" multiple class="w-full border rounded p-1.5 mt-1 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                 @if($order->hasMedia('attachments'))
@@ -99,10 +110,15 @@
                             <div class="font-bold text-gray-800 text-sm">
                                 {{ $item->product_name }}
                             </div>
-                            <div class="text-[10px] text-gray-500 font-mono">
+                            <div class="text-[10px] text-gray-500 font-mono mt-1">
                                 @if($item->product_id)
                                     SKU: {{ $item->variant->sku ?? ($item->product->sku ?? 'N/A') }}
-                                    @if($item->serial_numbers)
+                                    @if($item->product && $item->product->has_serial_number)
+                                        <div class="mt-2 p-1 bg-yellow-50 border border-yellow-100 rounded">
+                                            <label class="block text-[9px] font-bold text-yellow-800 uppercase tracking-tighter">Serial Number (SN)</label>
+                                            <input type="text" name="items[{{ $index }}][serial_numbers]" value="{{ $item->serial_numbers }}" class="w-full border-yellow-200 rounded px-1.5 py-0.5 text-[11px] font-mono focus:ring-1 focus:ring-yellow-500 bg-white" placeholder="Enter S/N...">
+                                        </div>
+                                    @elseif($item->serial_numbers)
                                         <span class="ml-2 font-bold text-emerald-600">SN: {{ $item->serial_numbers }}</span>
                                     @endif
                                 @else
@@ -157,6 +173,20 @@
                     <tr class="bg-emerald-600 text-white">
                         <td colspan="4" class="text-right p-4 font-black uppercase text-xl">Payable Total (AED):</td>
                         <td class="p-4 text-right font-black text-2xl" id="display_grand_total">0.00</td>
+                        <td></td>
+                    </tr>
+                    <!-- Advanced Payment: Paid & Due -->
+                    <tr class="bg-emerald-50">
+                        <td colspan="4" class="text-right p-3 font-bold text-emerald-800 uppercase tracking-tighter text-xs">Paid Amount (AED):</td>
+                        <td class="p-3 text-right">
+                            <input type="number" step="0.01" name="paid_amount" value="{{ $order->paid_amount }}" class="w-full border rounded p-2 text-right font-bold text-emerald-700 focus:ring-1 focus:ring-emerald-500" id="paid_amount_input" oninput="calculateDue()">
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr class="bg-red-50" id="due_row">
+                        <td colspan="4" class="text-right p-3 font-bold text-red-800 uppercase tracking-tighter text-xs">Balance Due (AED):</td>
+                        <td class="p-3 text-right font-bold text-red-700 text-lg" id="display_due">0.00</td>
+                        <input type="hidden" name="due_amount" id="due_amount_hidden" value="{{ $order->due_amount }}">
                         <td></td>
                     </tr>
                 </tfoot>
@@ -302,6 +332,12 @@
                 <td class="p-3 align-middle">
                     <div class="font-bold text-gray-800 text-sm">${item.name}</div>
                     <div class="text-[10px] text-gray-500 font-mono">SKU: ${item.sku}</div>
+                    ${item.has_serial_number ? `
+                        <div class="mt-2 p-1 bg-yellow-50 border border-yellow-100 rounded">
+                            <label class="block text-[9px] font-bold text-yellow-800 uppercase tracking-tighter">Serial Number (SN)</label>
+                            <input type="text" name="items[${rowIdx}][serial_numbers]" class="w-full border-yellow-200 rounded px-1.5 py-0.5 text-[11px] font-mono focus:ring-1 focus:ring-yellow-500 bg-white" placeholder="Enter S/N...">
+                        </div>
+                    ` : ''}
                 </td>
                 <td class="p-3 align-middle text-right">
                     <input type="number" step="0.01" name="items[${rowIdx}][price]" value="${item.price}" class="w-full border rounded p-1 price-input text-right font-bold text-gray-700 focus:ring-1 focus:ring-emerald-500" oninput="calculateTotal()" required>
@@ -439,6 +475,29 @@
             
             $('#display_tax').text(totalTax.toFixed(2));
             $('#display_grand_total').text(grandTotal.toFixed(2));
+            
+            calculateDue();
+        };
+
+        window.calculateDue = function() {
+            let payable = parseFloat($('#display_grand_total').text()) || 0;
+            let paidInput = $('#paid_amount_input');
+            
+            // If this is the first load and paid amount is 0 (or matches original), 
+            // we might want to keep it as is, but usually we want to show current due.
+            let paid = parseFloat(paidInput.val()) || 0;
+            let due = payable - paid;
+            
+            $('#display_due').text(due.toFixed(2));
+            $('#due_amount_hidden').val(due.toFixed(2));
+            
+            if (due <= 0) {
+                $('#due_row').removeClass('bg-red-50 text-red-800').addClass('bg-green-50 text-green-800');
+                $('#display_due').removeClass('text-red-700').addClass('text-green-700');
+            } else {
+                $('#due_row').removeClass('bg-green-50 text-green-800').addClass('bg-red-50 text-red-800');
+                $('#display_due').removeClass('text-green-700').addClass('text-red-700');
+            }
         };
 
         window.removeRow = function(id) {

@@ -165,6 +165,16 @@ class PurchaseOrderController extends Controller
             $this->logActivity('Purchase', 'Create', "Created Purchase Order #{$po->reference_no}", [
                 'purchase_order_id' => $po->id,
                 'reference_no' => $po->reference_no,
+                'supplier' => $po->supplier->name ?? 'N/A',
+                'total' => $po->total_cost,
+                'items' => $po->items->map(function($item) {
+                    return [
+                        'product' => $item->product->name ?? 'N/A',
+                        'qty' => $item->quantity,
+                        'cost' => $item->unit_cost,
+                        'subtotal' => $item->subtotal
+                    ];
+                })->toArray(),
             ]);
 
             return redirect()->route('purchases.index')->with('success', 'Purchase Order saved successfully.');
@@ -286,6 +296,16 @@ class PurchaseOrderController extends Controller
             $this->logActivity('Purchase', 'Edit', "Updated Purchase Order #{$po->reference_no}", [
                 'purchase_order_id' => $po->id,
                 'reference_no' => $po->reference_no,
+                'supplier' => $po->supplier->name ?? 'N/A',
+                'total' => $po->total_cost,
+                'items' => $po->items->map(function($item) {
+                    return [
+                        'product' => $item->product->name ?? 'N/A',
+                        'qty' => $item->quantity,
+                        'cost' => $item->unit_cost,
+                        'subtotal' => $item->subtotal
+                    ];
+                })->toArray(),
             ]);
 
             return redirect()->route('purchases.index')->with('success', 'Purchase Order updated successfully.');
@@ -610,6 +630,21 @@ class PurchaseOrderController extends Controller
             return back()->with('error', 'Cannot delete this purchase order because items have already been received or the order is marked as completed.');
         }
 
+        // Capture details before deletion
+        $logData = [
+            'reference_no' => $purchase->reference_no,
+            'supplier' => $purchase->supplier->name ?? 'N/A',
+            'total' => $purchase->total_cost,
+            'items' => $purchase->items->map(function($item) {
+                return [
+                    'product' => $item->product->name ?? 'N/A',
+                    'qty' => $item->quantity,
+                    'cost' => $item->unit_cost,
+                    'subtotal' => $item->subtotal
+                ];
+            })->toArray(),
+        ];
+
         try {
             DB::transaction(function () use ($purchase) {
                 // 1. Destock received items
@@ -651,9 +686,7 @@ class PurchaseOrderController extends Controller
                 $purchase->delete();
             });
 
-            $this->logActivity('Purchase', 'Delete', "Deleted Purchase Order #{$purchase->reference_no}", [
-                'reference_no' => $purchase->reference_no,
-            ]);
+            $this->logActivity('Purchase', 'Delete', "Deleted Purchase Order #{$purchase->reference_no}", $logData);
 
             return back()->with('success', 'Purchase order deleted successfully.');
         } catch (\Exception $e) {

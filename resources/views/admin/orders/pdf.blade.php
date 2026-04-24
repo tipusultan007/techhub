@@ -354,6 +354,14 @@
                     <td style="text-align: center; color: #64748B;">{{ $loop->iteration }}</td>
                     <td>
                         <div class="item-name">{{ $item->product_name }}</div>
+                        @if($item->serial_numbers)
+                            <div class="item-desc">
+                                <span style="font-weight: bold; color: #475569;">SN:</span> {{ $item->serial_numbers }}
+                                @if($item->warranty_end_date)
+                                    <br><span style="font-weight: bold; color: #475569;">Warranty:</span> {{ \Carbon\Carbon::parse($item->warranty_end_date)->format('d M Y') }}
+                                @endif
+                            </div>
+                        @endif
                     </td>
                     <td class="text-center" style="font-weight: 700; font-size: 12px;">{{ number_format($item->quantity, 0) }}</td>
                     <td class="text-right" style="color: #475569;">{{ number_format($item->unit_price, 2) }}</td>
@@ -403,6 +411,16 @@
                         <td class="grand-total-label">Total Amount</td>
                         <td class="grand-total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->total, 2) }}</td>
                     </tr>
+                    <tr class="total-row">
+                        <td class="total-label" style="padding-top: 10px;">Paid Amount</td>
+                        <td class="total-value" style="padding-top: 10px;"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->paid_amount, 2) }}</td>
+                    </tr>
+                    @if($order->due_amount > 0)
+                    <tr class="total-row">
+                        <td class="total-label" style="color: #E11D48; font-weight: 700;">Balance Due</td>
+                        <td class="total-value" style="color: #E11D48; font-weight: 700;"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->due_amount, 2) }}</td>
+                    </tr>
+                    @endif
                 </table>
             </div>
         </div>

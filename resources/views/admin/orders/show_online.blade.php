@@ -112,6 +112,22 @@
                                                 <span class="text-[10px] font-bold text-slate-600 font-mono bg-slate-100 px-1.5 py-0.5 rounded">{{ $item->product->sku }}</span>
                                             </div>
                                         @endif
+                                        @if($item->serial_numbers)
+                                            <div class="mt-2 flex flex-wrap gap-2 items-center">
+                                                <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">
+                                                    <i class="fas fa-barcode text-[10px] text-emerald-600"></i>
+                                                    <span class="text-[10px] font-bold text-emerald-700 font-mono">SN: {{ $item->serial_numbers }}</span>
+                                                </div>
+                                                @if($item->warranty_end_date)
+                                                    <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
+                                                        <i class="fas fa-shield-alt text-[10px] text-blue-600"></i>
+                                                        <span class="text-[10px] font-bold text-blue-700 uppercase tracking-tighter">
+                                                            Warranty: {{ \Carbon\Carbon::parse($item->warranty_end_date)->format('d M Y') }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

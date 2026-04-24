@@ -98,8 +98,8 @@ class OrderController extends Controller implements HasMiddleware
     {
         $order->load(['items.product', 'items.variant', 'customer']);
         $customers = \App\Models\Customer::orderBy('name')->get();
-
-        return view('admin.orders.edit', compact('order', 'customers'));
+        $users = \App\Models\User::orderBy('name')->get();
+        return view('admin.orders.edit', compact('order', 'customers', 'users'));
     }
 
     /**
@@ -117,8 +117,12 @@ class OrderController extends Controller implements HasMiddleware
             'items.*.qty' => 'required|numeric|min:0.01',
             'items.*.price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'required|numeric|min:0',
+            'items.*.serial_numbers' => 'nullable|string',
             'payment_method' => 'required|in:cash,card,transfer,advance,custom',
+            'user_id' => 'nullable|exists:users,id',
             'discount' => 'nullable|numeric|min:0',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'due_amount' => 'nullable|numeric',
             'attachment.*' => 'nullable|file|max:102400',
         ]);
 
@@ -144,6 +148,16 @@ class OrderController extends Controller implements HasMiddleware
                             'reference_type' => get_class($order),
                             'user_id' => auth()->id(),
                         ]);
+
+                        // Mark Serials as available again
+                        if ($oldItem->serial_numbers) {
+                            $serials = explode(',', $oldItem->serial_numbers);
+                            foreach ($serials as $sn) {
+                                \App\Models\ProductSerial::where('serial_number', trim($sn))
+                                    ->where('order_id', $order->id)
+                                    ->update(['status' => 'available', 'order_id' => null]);
+                            }
+                        }
                     }
                 }
 
@@ -190,7 +204,18 @@ class OrderController extends Controller implements HasMiddleware
                         'tax_rate' => $taxRate,
                         'tax_amount' => $rowTaxAmount,
                         'subtotal' => $rowNetSubtotal, // Row total exclusive
+                        'serial_numbers' => $itemData['serial_numbers'] ?? null,
                     ]);
+
+                    // Mark Serials as sold
+                    if (!empty($itemData['serial_numbers'])) {
+                        $serials = explode(',', $itemData['serial_numbers']);
+                        foreach ($serials as $sn) {
+                            \App\Models\ProductSerial::where('serial_number', trim($sn))
+                                ->where('product_id', $itemData['product_id'] ?? null)
+                                ->update(['status' => 'sold', 'order_id' => $order->id]);
+                        }
+                    }
 
                     // 4. Deduct New Stock
                     if ($orderItem->product_id) {
@@ -244,10 +269,14 @@ class OrderController extends Controller implements HasMiddleware
                     'customer_name' => $request->customer_id ? \App\Models\Customer::find($request->customer_id)->name : 'Guest/Walk-in',
                     'po_number' => $request->po_number,
                     'payment_method' => $request->payment_method,
+                    'user_id' => $request->user_id ?? $order->user_id,
                     'subtotal' => $finalGrand - $totalTax, 
                     'vat_amount' => $totalTax,
                     'discount' => $discount,
                     'total' => $finalGrand,
+                    'paid_amount' => $request->paid_amount ?? 0,
+                    'due_amount' => $request->due_amount ?? 0,
+                    'status' => ($request->due_amount > 0) ? 'partial' : 'completed',
                 ]);
 
                 // 6. Log History
@@ -260,7 +289,17 @@ class OrderController extends Controller implements HasMiddleware
                 $this->logActivity('Order', 'Edit', "Updated Order #{$order->invoice_no}", [
                     'order_id' => $order->id,
                     'invoice_no' => $order->invoice_no,
-                    'grand_total' => $finalGrand,
+                    'customer' => $order->customer_name,
+                    'total' => $order->total,
+                    'items' => $order->items->map(function($item) {
+                        return [
+                            'product' => $item->product_name,
+                            'qty' => $item->quantity,
+                            'price' => $item->unit_price,
+                            'subtotal' => $item->subtotal,
+                            'serials' => $item->serial_numbers
+                        ];
+                    })->toArray(),
                 ]);
 
                 // Handle Attachment (Replace existing)
@@ -316,7 +355,7 @@ class OrderController extends Controller implements HasMiddleware
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:pending,processing,shipped,completed,cancelled,returned',
+            'status' => 'required|in:pending,processing,shipped,completed,cancelled,returned,partial',
             'comment' => 'nullable|string',
         ]);
 
@@ -362,7 +401,25 @@ class OrderController extends Controller implements HasMiddleware
         }
 
         try {
+            // Capture detailed info before deletion for audit log
+            $logData = [
+                'order_id' => $order->id,
+                'invoice_no' => $order->invoice_no,
+                'customer' => $order->customer_name,
+                'total' => $order->total,
+                'items' => $order->items->map(function($item) {
+                    return [
+                        'product' => $item->product_name,
+                        'qty' => $item->quantity,
+                        'price' => $item->unit_price,
+                        'subtotal' => $item->subtotal,
+                        'serials' => $item->serial_numbers
+                    ];
+                })->toArray(),
+            ];
+
             DB::transaction(function () use ($order) {
+                // ... same transaction logic ...
                 // 0. Delete Related Returns & Revert their stock addition
                 $returns = \App\Models\ReturnOrder::with('items')->where('order_id', $order->id)->get();
                 foreach ($returns as $return) {
@@ -414,9 +471,6 @@ class OrderController extends Controller implements HasMiddleware
                 }
 
                 // 2. Delete Related Data (History/Logs)
-                // Note: Order Items are usually deleted automatically via database
-                // cascading if you used ->cascadeOnDelete() in migrations.
-                // But we delete explicitly here to be safe and trigger model events if any.
                 $order->items()->delete();
 
                 if (method_exists($order, 'history')) {
@@ -427,9 +481,7 @@ class OrderController extends Controller implements HasMiddleware
                 $order->delete();
             });
 
-            $this->logActivity('Order', 'Delete', "Deleted Order #{$order->invoice_no}", [
-                'invoice_no' => $order->invoice_no,
-            ]);
+            $this->logActivity('Order', 'Delete', "Deleted Order #{$order->invoice_no}", $logData);
 
             return back()->with('success', 'Order deleted and items restocked successfully.');
 

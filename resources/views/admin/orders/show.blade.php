@@ -219,6 +219,18 @@
                     <span>Grand Total</span>
                     <span>AED {{ number_format($order->total, 2) }}</span>
                 </div>
+
+                <!-- Payment Tracking -->
+                <div class="flex justify-between text-sm text-emerald-600 font-bold pt-2">
+                    <span>Paid Amount</span>
+                    <span>AED {{ number_format($order->paid_amount, 2) }}</span>
+                </div>
+                @if($order->due_amount > 0)
+                <div class="flex justify-between text-sm text-red-600 font-bold border-t border-dashed border-red-200 mt-2 pt-2">
+                    <span>Balance Due</span>
+                    <span>AED {{ number_format($order->due_amount, 2) }}</span>
+                </div>
+                @endif
             </div>
         </div>
 

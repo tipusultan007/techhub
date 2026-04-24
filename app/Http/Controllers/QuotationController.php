@@ -244,6 +244,16 @@ class QuotationController extends Controller
             $this->logActivity('Quotation', 'Create', "Created Quotation #{$quotation->quotation_no}", [
                 'quotation_id' => $quotation->id,
                 'quotation_no' => $quotation->quotation_no,
+                'customer' => $quotation->customer_name,
+                'total' => $quotation->total,
+                'items' => $quotation->items->map(function($item) {
+                    return [
+                        'product' => $item->product_name,
+                        'qty' => $item->quantity,
+                        'price' => $item->unit_price,
+                        'subtotal' => $item->subtotal
+                    ];
+                })->toArray(),
             ]);
 
             return response()->json([
@@ -361,6 +371,16 @@ class QuotationController extends Controller
             $this->logActivity('Quotation', 'Edit', "Updated Quotation #{$quotation->quotation_no}", [
                 'quotation_id' => $quotation->id,
                 'quotation_no' => $quotation->quotation_no,
+                'customer' => $quotation->customer_name,
+                'total' => $quotation->total,
+                'items' => $quotation->items->map(function($item) {
+                    return [
+                        'product' => $item->product_name,
+                        'qty' => $item->quantity,
+                        'price' => $item->unit_price,
+                        'subtotal' => $item->subtotal
+                    ];
+                })->toArray(),
             ]);
 
             return response()->json([
@@ -516,15 +536,28 @@ class QuotationController extends Controller
             return back()->with('error', 'Cannot delete a quotation that has already been converted to a sale.');
         }
         
+        // Capture details before deletion
+        $logData = [
+            'quotation_no' => $quotation->quotation_no,
+            'customer' => $quotation->customer_name,
+            'total' => $quotation->total,
+            'items' => $quotation->items->map(function($item) {
+                return [
+                    'product' => $item->product_name,
+                    'qty' => $item->quantity,
+                    'price' => $item->unit_price,
+                    'subtotal' => $item->subtotal
+                ];
+            })->toArray(),
+        ];
+
         // Delete related delivery challans
         foreach ($quotation->deliveryChallans as $challan) {
             $challan->items()->delete();
             $challan->delete();
         }
 
-        $this->logActivity('Quotation', 'Delete', "Deleted Quotation #{$quotation->quotation_no}", [
-            'quotation_no' => $quotation->quotation_no,
-        ]);
+        $this->logActivity('Quotation', 'Delete', "Deleted Quotation #{$quotation->quotation_no}", $logData);
         
         $quotation->delete();
         return back()->with('success', 'Quotation deleted successfully');

@@ -403,6 +403,16 @@
                         <td class="grand-total-label">Total</td>
                         <td class="grand-total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->total, 2) }}</td>
                     </tr>
+                    <tr>
+                        <td class="total-label" style="padding-top: 10px;">Paid Amount</td>
+                        <td class="total-value" style="padding-top: 10px;">AED {{ number_format($order->paid_amount, 2) }}</td>
+                    </tr>
+                    @if($order->due_amount > 0)
+                    <tr>
+                        <td class="total-label" style="color: #e11d48; font-weight: 800;">Balance Due</td>
+                        <td class="total-value" style="color: #e11d48; font-weight: 800;">AED {{ number_format($order->due_amount, 2) }}</td>
+                    </tr>
+                    @endif
                 </table>
             </div>
         </div>

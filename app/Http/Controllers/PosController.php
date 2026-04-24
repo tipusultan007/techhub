@@ -98,11 +98,12 @@ class PosController extends Controller
     {
         $customers = Customer::select('id', 'name', 'phone')->latest()->get();
         $categories = Category::select('id', 'name')->orderBy('name')->get();
+        $users = User::select('id', 'name')->orderBy('name')->get();
 
         // Load initial 30 products for instant display
         $initialProducts = $this->getPosProducts('');
 
-        return view('admin.pos.index', compact('customers', 'categories', 'initialProducts'));
+        return view('admin.pos.index', compact('customers', 'categories', 'initialProducts', 'users'));
     }
 
     public function duplicate(Order $order)
@@ -110,10 +111,12 @@ class PosController extends Controller
         $order->load(['items.product', 'items.variant']);
         $customers = Customer::select(['id', 'name', 'phone'])->latest('created_at')->get();
         $categories = Category::select(['id', 'name'])->orderBy('name')->get();
+        $users = User::select(['id', 'name'])->orderBy('name')->get();
         $initialProducts = $this->getPosProducts('');
 
         $duplicateData = [
             'customer_id' => $order->customer_id,
+            'user_id' => $order->user_id,
             'po_number' => $order->po_number,
             'discount' => $order->discount,
             'payment_method' => $order->payment_method,
@@ -133,7 +136,7 @@ class PosController extends Controller
             })
         ];
 
-        return view('admin.pos.index', compact('customers', 'categories', 'initialProducts', 'duplicateData'));
+        return view('admin.pos.index', compact('customers', 'categories', 'initialProducts', 'duplicateData', 'users'));
     }
 
     /**
@@ -141,14 +144,14 @@ class PosController extends Controller
      */
     public function search(Request $request)
     {
-        $products = $this->getPosProducts($request->term);
+        $products = $this->getPosProducts($request->term, $request->category_id);
         return response()->json($products);
     }
 
     /**
      * Helper: Unified Query Logic for Simple + Variable Products
      */
-    private function getPosProducts($term)
+    private function getPosProducts($term, $category_id = null)
     {
         $queryLimit = 30;
 
@@ -157,6 +160,9 @@ class PosController extends Controller
             ->where(function ($q) {
                 $q->where('stock_quantity', '>', 0)
                     ->orWhere('type', 'service'); // Services don't need stock
+            })
+            ->when($category_id, function ($q) use ($category_id) {
+                $q->where('category_id', $category_id);
             })
             ->when($term, function ($q) use ($term) {
                 $q->where(function($sub) use ($term) {
@@ -172,6 +178,9 @@ class PosController extends Controller
         // 2. Search Variants (Variable Products)
         $variants = ProductVariant::with('product')
             ->where('stock_quantity', '>', 0) // Only in stock
+            ->when($category_id, function ($q) use ($category_id) {
+                $q->whereHas('product', fn($p) => $p->where('category_id', $category_id));
+            })
             ->when($term, function ($q) use ($term) {
                 $q->where(function($sub) use ($term) {
                     $sub->where('variant_name', 'LIKE', "%$term%") // Search "Red / 128GB"
@@ -231,9 +240,12 @@ class PosController extends Controller
     $request->validate([
         'items' => 'required|array|min:1',
         'amount_paid' => 'required|numeric|min:0', // This is the Final Total (after discount)
+        'paid_amount' => 'required|numeric|min:0', // Actual amount paid by customer
+        'due_amount' => 'required|numeric',
         'discount' => 'nullable|numeric|min:0',
         'payment_method' => 'required|string',
         'customer_id' => 'nullable|exists:customers,id',
+        'user_id' => 'nullable|exists:users,id',
         'attachment.*' => 'nullable|file|max:102400', // Max 100MB
     ]);
 
@@ -300,12 +312,14 @@ class PosController extends Controller
             'subtotal' => $netAmount,   // Amount before Tax
             'vat_amount' => $vatAmount, // Tax Amount
             'discount' => $discount,    // Discount applied
-            'total' => $finalPayable,   // Final Amount Paid
+            'total' => $finalPayable,   // Final Order Total
+            'paid_amount' => $request->paid_amount,
+            'due_amount' => $request->due_amount,
             
             'payment_method' => $request->payment_method,
-            'status' => 'completed',
+            'status' => $request->due_amount > 0 ? 'partial' : 'completed',
             'channel' => 'pos',
-            'user_id' => Auth::id()
+            'user_id' => $request->user_id ?? Auth::id(),
         ]);
 
         // Handle Attachment
@@ -447,7 +461,17 @@ class PosController extends Controller
         $this->logActivity('POS', 'Create', "Created POS order #{$order->invoice_no}", [
             'order_id' => $order->id,
             'invoice_no' => $order->invoice_no,
+            'customer' => $order->customer_name,
             'total' => $order->total,
+            'items' => $order->items->map(function($item) {
+                return [
+                    'product' => $item->product_name,
+                    'qty' => $item->quantity,
+                    'price' => $item->unit_price,
+                    'subtotal' => $item->subtotal,
+                    'serials' => $item->serial_numbers
+                ];
+            })->toArray(),
         ]);
         
         return response()->json([
