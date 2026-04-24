@@ -8,7 +8,7 @@
         "framework"
     ],
     "license": "MIT",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "require": {
         "php": "^8.2",
         "bacon/bacon-qr-code": "^3.0",
