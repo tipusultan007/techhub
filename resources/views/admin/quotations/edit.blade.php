@@ -157,9 +157,10 @@
 
             <!-- Cart Header -->
             <div class="grid grid-cols-12 bg-slate-100 text-gray-600 text-xs font-bold uppercase p-2 border-b">
-                <div class="col-span-4 pl-2">Item</div>
+                <div class="col-span-3 pl-2 text-left">Item</div>
                 <div class="col-span-2 text-center">Qty</div>
-                <div class="col-span-2 text-center">Tax %</div>
+                <div class="col-span-2 text-right">Rate</div>
+                <div class="col-span-1 text-right">Tax %</div>
                 <div class="col-span-2 text-right">Tax</div>
                 <div class="col-span-2 text-right pr-2">Total</div>
             </div>
@@ -177,7 +178,7 @@
             <div class="bg-slate-50 p-4 border-t border-slate-200">
                 <div class="space-y-1 mb-4 text-sm">
                     <div class="flex justify-between text-gray-600">
-                        <span>Subtotal</span>
+                        <span>Subtotal (Excl. VAT)</span>
                         <span class="font-bold">AED <span id="lbl-cart-total">0.00</span></span>
                     </div>
 
@@ -345,9 +346,9 @@
 
                     html += `
                     <tr class="border-b">
-                        <td class="p-2 text-xs font-bold w-[35%]">
+                        <td class="p-2 text-xs font-bold w-[25%]">
                             ${item.type === 'service' ? 
-                                `<input type="text" value="${item.name}" class="w-full border rounded px-1 py-0.5 text-xs font-bold border-blue-300 focus:border-blue-500 outline-none" onchange="updateItemName(${index}, this.value)">` : 
+                                `<textarea rows="3" class="w-full border rounded px-1 py-0.5 text-xs font-bold border-blue-300 focus:border-blue-500 outline-none" onchange="updateItemName(${index}, this.value)">${item.name}</textarea>` : 
                                 item.name
                             }
                             <div class="text-[10px] text-gray-400 mt-1 font-mono">${item.sku || ''}</div>
@@ -359,23 +360,23 @@
                                 <button onclick="updateQty(${index}, 1)" class="w-8 h-8 flex items-center justify-center bg-white rounded-md shadow-sm hover:bg-gray-50 text-gray-600 font-bold transition">+</button>
                             </div>
                         </td>
-                        <td class="p-2 text-center w-[15%]">
-                            <select class="w-full border rounded p-1 text-xs" onchange="updateTax(${index}, this.value)">
+                        <td class="p-2 text-right w-[15%]">
+                            <input type="number" step="0.01" value="${item.price}" 
+                                class="w-full border rounded p-1 text-right text-xs font-bold text-blue-600 focus:outline-none focus:border-blue-500"
+                                onchange="updatePrice(${index}, this.value)">
+                        </td>
+                        <td class="p-2 text-right w-[10%]">
+                            <select class="w-full border rounded p-1 text-xs text-right" onchange="updateTax(${index}, this.value)">
                                 <option value="0" ${item.tax_rate == 0 ? 'selected' : ''}>0%</option>
                                 <option value="5" ${item.tax_rate == 5 ? 'selected' : ''}>5%</option>
                                 <option value="10" ${item.tax_rate == 10 ? 'selected' : ''}>10%</option>
                             </select>
                         </td>
                         <td class="p-2 text-right w-[15%]">
-                            <div class="text-xs font-mono text-gray-500">${taxAmount.toFixed(2)}</div>
+                            <div class="text-xs font-mono text-gray-500 text-right w-full">${taxAmount.toFixed(2)}</div>
                         </td>
                         <td class="p-2 text-right w-[20%]">
-                            <div class="mb-1">
-                                <input type="number" step="0.01" value="${item.price}" 
-                                    class="w-full border rounded p-1 text-right text-xs font-bold text-blue-600 focus:outline-none focus:border-blue-500"
-                                    onchange="updatePrice(${index}, this.value)">
-                            </div>
-                            <div class="font-bold text-gray-700 text-xs">${sub.toFixed(2)}</div>
+                            <div class="font-bold text-gray-700 text-xs">${(sub + taxAmount).toFixed(2)}</div>
                             <button onclick="removeItem(${index})" class="text-red-500 block ml-auto mt-1"><i class="fas fa-trash text-xs"></i></button>
                         </td>
                     </tr>`;

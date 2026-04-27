@@ -2,7 +2,23 @@
 
 All notable changes to this project will be documented in this file.
  
+## [1.4.1] - 2026-04-27
+
+### Added
+- **Quotation Enhancements**:
+    - Service items now support multi-line descriptions via textarea in the edit grid.
+    - Explicit "Subtotal (Excl. VAT)" labeling in View, PDF, and Print templates.
+
+### Fixed
+- **Quotation Logic**:
+    - Standardized default tax calculation to "Exclusive" to match frontend expectations.
+    - Reordered columns in quotation grid (Qty then Unit Rate) for better flow.
+    - Fixed bug where quotation rates were treated as VAT-inclusive during updates.
+- **Order Management**:
+    - Fixed misleading "Paid" status indicator for RAKBANK orders that are still pending payment.
+
 ## [1.4.0] - 2026-04-24
+
  
 ### Added
 - **Advanced Payment System**:

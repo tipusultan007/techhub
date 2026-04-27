@@ -184,7 +184,7 @@ class QuotationController extends Controller
                 $itemQty = (int) $item['qty'];
                 $rowSubtotal = $itemPrice * $itemQty;
 
-                if (($item['tax_method'] ?? 'inclusive') === 'exclusive') {
+                if (($item['tax_method'] ?? 'exclusive') === 'exclusive') {
                     $rowTax = $rowSubtotal * $itemTaxRate;
                     $rowPayable = $rowSubtotal + $rowTax;
                     $netUnitPrice = $itemPrice;
@@ -310,7 +310,7 @@ class QuotationController extends Controller
                 $itemQty = (int) $item['qty'];
                 $rowSubtotal = $itemPrice * $itemQty;
 
-                if (($item['tax_method'] ?? 'inclusive') === 'exclusive') {
+                if (($item['tax_method'] ?? 'exclusive') === 'exclusive') {
                     $rowTax = $rowSubtotal * $itemTaxRate;
                     $rowPayable = $rowSubtotal + $rowTax;
                     $netUnitPrice = $itemPrice;

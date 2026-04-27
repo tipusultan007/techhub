@@ -131,7 +131,7 @@
         <div class="flex justify-end">
             <div class="w-64 space-y-2">
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span>
+                    <span>Subtotal (Excl. VAT)</span>
                     <span class="font-bold">AED {{ number_format($quotation->subtotal, 2) }}</span>
                 </div>
                 @if($quotation->discount > 0)

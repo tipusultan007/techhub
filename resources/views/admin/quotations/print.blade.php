@@ -361,7 +361,7 @@
             <div class="totals-table">
                 <table style="width: 100%;">
                     <tr>
-                        <td class="total-label">Subtotal</td>
+                        <td class="total-label">Subtotal (Excl. VAT)</td>
                         <td class="total-value"><img src="{{ asset('images/aed.png') }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->subtotal, 2) }}</td>
                     </tr>
                     @if($quotation->discount > 0)
