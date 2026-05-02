@@ -28,6 +28,11 @@ class RakbankPaymentService
         $url = "{$this->baseUrl}/merchant/{$this->merchantId}/session";
 
         try {
+            Log::debug('RAKBANK Request Details', [
+                'url' => $url,
+                'merchant_id' => $this->merchantId,
+            ]);
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Basic '.base64_encode("merchant.{$this->merchantId}:{$this->apiPassword}"),

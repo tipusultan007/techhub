@@ -117,10 +117,29 @@
                         <span class="info-value">{{ number_format($order->total, 2) }} AED</span>
                     </div>
                     <div>
-                        <span class="info-label">Payment</span>
+                        <span class="info-label">Payment Method</span>
                         <span class="info-value">{{ ucfirst($order->payment_method) }}</span>
                     </div>
                 </div>
+
+                @if($order->payment_method === 'rakbank')
+                <div class="rakbank-details" style="text-align: left; background: #eff6ff; padding: 20px; border-radius: 8px; border: 1px solid #dbeafe; margin-bottom: 40px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span class="info-label" style="color: #1e40af;">Payment Status</span>
+                            <span class="info-value" style="color: #1e40af; font-size: 1.1rem;">
+                                <i class="ri-checkbox-circle-fill" style="vertical-align: middle;"></i> Paid
+                            </span>
+                        </div>
+                        @if($order->transaction_id)
+                        <div style="text-align: right;">
+                            <span class="info-label" style="color: #1e40af;">Transaction ID</span>
+                            <span class="info-value" style="color: #1e40af; font-family: monospace;">{{ $order->transaction_id }}</span>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endif
 
                 <!-- Visual Progress -->
                 <div class="tracking-bar">

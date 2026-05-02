@@ -16,6 +16,7 @@ use App\Models\InventoryTransaction;
 use App\Notifications\NewOrderNotification;
 use App\Notifications\LowStockNotification;
 use App\Notifications\OrderConfirmationNotification;
+use App\Notifications\PosOrderNotification;
 use Illuminate\Support\Facades\Notification;
 
 use App\Traits\LogsActivity;
@@ -336,7 +337,7 @@ class PosController extends Controller
         $customer = $request->customer_id ? Customer::find($request->customer_id) : null;
         if ($customer && $customer->email) {
             $order->load('items'); // Ensure items are loaded for the email template
-            $customer->notify(new OrderConfirmationNotification($order));
+            $customer->notify(new \App\Notifications\PosOrderNotification($order));
         }
 
         // 7. Process Items

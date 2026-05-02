@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Services\RakbankPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\PaymentSuccessNotification;
+use Illuminate\Support\Facades\Notification;
 
 class RakbankPaymentController extends Controller
 {
@@ -59,7 +61,7 @@ class RakbankPaymentController extends Controller
 
         $successStatuses = ['CAPTURED', 'AUTHORIZED', 'PURCHASED'];
 
-        if ($orderData && in_array($gatewayStatus, $successStatuses)) {
+        if ($orderData && (in_array($gatewayStatus, $successStatuses) || $result === 'SUCCESS')) {
             // Payment Successful - update order only if still pending
             if ($order->status === 'pending') {
                 $transactionId  = $orderData['transaction'][0]['transaction']['id']
@@ -81,6 +83,18 @@ class RakbankPaymentController extends Controller
                 // Clear cart session for the user
                 \Illuminate\Support\Facades\Session::forget('cart');
                 \Illuminate\Support\Facades\Session::forget('coupon');
+
+                // Send Success Email Notification
+                if ($order->guest_email) {
+                    try {
+                        Notification::route('mail', $order->guest_email)
+                            ->notify(new PaymentSuccessNotification($order));
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send PaymentSuccessNotification for order ' . $order->invoice_no, [
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
             }
 
             session()->put('placed_order_id', $order->id);
@@ -130,8 +144,9 @@ class RakbankPaymentController extends Controller
 
         // 3. Update Order Status if Payment Success
         $gatewayStatus = $payload['order']['status'] ?? null;
+        $result        = $payload['result'] ?? null;
         
-        if ($gatewayStatus === 'CAPTURED' || $gatewayStatus === 'AUTHORIZED') {
+        if ($gatewayStatus === 'CAPTURED' || $gatewayStatus === 'AUTHORIZED' || $result === 'SUCCESS') {
             // Only update if not already processed
             if ($order->status === 'pending') {
                 $transactionId  = $payload['transaction']['id'] ?? null;
@@ -148,9 +163,17 @@ class RakbankPaymentController extends Controller
                         . "RAKBANK Webhook: {$gatewayStatus}. Txn: {$transactionId}",
                 ]);
 
-                // Clear cart if we can identify the session?
-                // Webhooks are server-to-server, they don't have the user's session.
-                // The cart is cleared in the manual callback as well.
+                // Send Success Email Notification
+                if ($order->guest_email) {
+                    try {
+                        Notification::route('mail', $order->guest_email)
+                            ->notify(new PaymentSuccessNotification($order));
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send PaymentSuccessNotification via Webhook for order ' . $order->invoice_no, [
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
             }
         }
 
