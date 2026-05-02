@@ -378,7 +378,7 @@
                         <i class="ri-truck-line t-icon"></i>
                         <div class="t-text"><h4>Fast Delivery</h4><p>By Next Business Day.</p></div>
                     </div>
-                    <div class="trust-item">
+                    {{-- <div class="trust-item">
                         <i class="ri-shield-check-line t-icon"></i>
                         <div class="t-text">
                             <h4>Official Warranty</h4>
@@ -388,7 +388,7 @@
                                 <p>No Official Warranty</p>
                             @endif
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
