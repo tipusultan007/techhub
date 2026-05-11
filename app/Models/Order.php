@@ -35,6 +35,10 @@ class Order extends Model implements HasMedia
         parent::boot();
 
         static::creating(function ($order) {
+            if ($order->invoice_no) {
+                return;
+            }
+
             $year = now()->year;
             $lastOrder = Order::whereYear('created_at', $year)->latest('id')->first();
 
@@ -67,14 +71,24 @@ class Order extends Model implements HasMedia
     {
         // Format: INV-YYYYMMDD-XXXX (e.g., INV-20240212-0001)
         $prefix = 'INV-' . date('Ymd') . '-';
+        
+        // Check both Order and IncompleteOrder tables for the latest sequence
         $lastOrder = self::where('invoice_no', 'like', $prefix . '%')->latest('id')->first();
+        $lastIncomplete = \App\Models\IncompleteOrder::where('invoice_no', 'like', $prefix . '%')->latest('id')->first();
 
-        if ($lastOrder) {
-            $lastNumber = intval(substr($lastOrder->invoice_no, -4));
-            return $prefix . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        $lastOrderNum = $lastOrder ? intval(substr($lastOrder->invoice_no, -4)) : 0;
+        $lastIncompleteNum = $lastIncomplete ? intval(substr($lastIncomplete->invoice_no, -4)) : 0;
+
+        $sequence = max($lastOrderNum, $lastIncompleteNum) + 1;
+        $invoiceNo = $prefix . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+
+        // Double check for existence in both tables to avoid collisions
+        while (self::where('invoice_no', $invoiceNo)->exists() || \App\Models\IncompleteOrder::where('invoice_no', $invoiceNo)->exists()) {
+            $sequence++;
+            $invoiceNo = $prefix . str_pad($sequence, 4, '0', STR_PAD_LEFT);
         }
 
-        return $prefix . '0001';
+        return $invoiceNo;
     }
 
     public function history()
