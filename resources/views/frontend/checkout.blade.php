@@ -141,22 +141,9 @@
                     <div class="section-head">3. Payment Method</div>
                     <div class="payment-options">
 
-                        <!-- COD -->
-                        <div>
-                            <input type="radio" name="payment_method" id="pay-cod" value="cod" class="pay-radio" checked>
-                            <label for="pay-cod" class="pay-card">
-                                <div class="radio-circle"><div class="radio-dot"></div></div>
-                                <div style="flex:1;">
-                                    <span style="font-weight:700; color:var(--text-main); display:block;">Cash on Delivery</span>
-                                    <span style="font-size:0.85rem; color:#64748b;">Pay with cash upon delivery</span>
-                                </div>
-                                <i class="ri-hand-coin-line" style="font-size:1.5rem; color:#64748b;"></i>
-                            </label>
-                        </div>
-
                         <!-- Card (RAKBANK) -->
                         <div>
-                            <input type="radio" name="payment_method" id="pay-card" value="rakbank" class="pay-radio">
+                            <input type="radio" name="payment_method" id="pay-card" value="rakbank" class="pay-radio" checked>
                             <label for="pay-card" class="pay-card">
                                 <div class="radio-circle"><div class="radio-dot"></div></div>
                                 <div style="flex:1;">
@@ -169,6 +156,10 @@
                                 </div>
                             </label>
                         </div>
+
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px; text-align: center;">
+                            <i class="ri-information-line"></i> We accept credit and debit cards only.
+                        </p>
 
                     </div>
                 </div>
@@ -220,7 +211,13 @@
 
                         <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.95rem; color:#64748b;">
                             <span>Shipping</span>
-                            <span class="text-green-600 font-bold">Free</span>
+                            <span class="{{ $shipping > 0 ? '' : 'text-green-600 font-bold' }}">
+                                {{ $shipping > 0 ? number_format($shipping, 2) . ' AED' : 'Free' }}
+                            </span>
+                        </div>
+
+                        <div style="font-size: 0.8rem; color: #16a34a; margin-bottom: 15px; text-align: right;">
+                            <i class="ri-truck-line"></i> Delivered on the next business day
                         </div>
 
                         <div style="border-top:1px solid #e2e8f0; padding-top:20px; margin-top:20px; font-size:1.3rem; font-weight:800; color:var(--brand-deep-blue); display:flex; justify-content:space-between; align-items:center;">

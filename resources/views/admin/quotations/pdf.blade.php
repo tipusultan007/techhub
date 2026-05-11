@@ -417,7 +417,9 @@
                     <td style="width: 60%; vertical-align: top;">
                         <div class="notes-section">
                             <div class="notes-title">Notes / Terms</div>
-                            @if(settings('quotation_notes'))
+                            @if($quotation->quotation_notes)
+                                {!! nl2br(e($quotation->quotation_notes)) !!}
+                            @elseif(settings('quotation_notes'))
                                 {!! nl2br(e(settings('quotation_notes'))) !!}
                             @else
                                 <ul style="padding-left: 15px; margin: 0;">

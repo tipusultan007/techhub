@@ -21,6 +21,7 @@ class CartController extends Controller
             'cart' => $cart,
             'subtotal' => $totals['subtotal'], 
             'vat' => $totals['vat'],
+            'shipping' => $totals['shipping'],
             'total' => $totals['total'], 
             'crossSellProducts' => $crossSellProducts,
             'discount' => $totals['discount'],
@@ -33,6 +34,7 @@ class CartController extends Controller
         $netSubtotal = 0;
         $vatAmount = 0;
         $grossTotal = 0;
+        $hasService = false;
 
         foreach ($cart as $item) {
             $price = $item['price'];
@@ -55,6 +57,12 @@ class CartController extends Controller
             $netSubtotal += $itemNet;
             $vatAmount += $itemVat;
             $grossTotal += $itemGross;
+
+            // Check if product is a service (Installation/Project)
+            $product = \App\Models\Product::find($item['product_id']);
+            if ($product && $product->type === 'service') {
+                $hasService = true;
+            }
         }
 
         $discount = 0;
@@ -70,10 +78,14 @@ class CartController extends Controller
             }
         }
 
+        // Delivery Charge Logic: Free if total >= 250 or has a service
+        $shippingCharge = ($grossTotal >= 250 || $hasService) ? 0 : 15;
+
         return [
             'subtotal' => $netSubtotal,
             'vat' => $vatAmount,
-            'total' => $grossTotal - $discount,
+            'shipping' => $shippingCharge,
+            'total' => $grossTotal - $discount + $shippingCharge,
             'discount' => $discount
         ];
     }
@@ -204,6 +216,7 @@ class CartController extends Controller
                 'subtotal' => number_format($totals['subtotal'], 2),
                 'discount' => number_format($totals['discount'], 2),
                 'vat' => number_format($totals['vat'], 2),
+                'shipping' => number_format($totals['shipping'], 2),
                 'total' => number_format($totals['total'], 2),
                 'itemTotal' => number_format($cart[$key]['price'] * $request->quantity, 2),
                 'couponRemoved' => !$coupon && Session::has('coupon_temp_removed')
@@ -233,6 +246,7 @@ class CartController extends Controller
             'cart' => $cart,
             'subtotal' => $totals['subtotal'], 
             'vat' => $totals['vat'],
+            'shipping' => $totals['shipping'],
             'total' => $totals['total'] 
         ]);
     }

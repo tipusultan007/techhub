@@ -2,29 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\IncompleteOrder;
 use App\Models\Order;
 use App\Services\RakbankPaymentService;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\PaymentSuccessNotification;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\DB;
 
 class RakbankPaymentController extends Controller
 {
     protected $rakbankService;
+    protected $orderService;
 
-    public function __construct(RakbankPaymentService $rakbankService)
+    public function __construct(RakbankPaymentService $rakbankService, OrderService $orderService)
     {
         $this->rakbankService = $rakbankService;
+        $this->orderService = $orderService;
     }
 
     /**
      * Show the checkout bridge page
      */
-    public function pay(Order $order)
+    public function pay($incompleteOrderId)
     {
+        $incompleteOrder = IncompleteOrder::findOrFail($incompleteOrderId);
+
         // 1. Initiate Checkout Session
-        $sessionData = $this->rakbankService->initiateCheckout($order);
+        // Note: initiateCheckout expects an object with invoice_no and total
+        $sessionData = $this->rakbankService->initiateCheckout($incompleteOrder);
 
         if (!$sessionData || !isset($sessionData['session']['id'])) {
             return redirect()->route('checkout.index')->with('error', 'Unable to initiate payment. Please try again or choose another method.');
@@ -33,7 +41,11 @@ class RakbankPaymentController extends Controller
         $sessionId = $sessionData['session']['id'];
         $merchantId = config('services.rakbank.merchant_id');
 
-        return view('frontend.rakbank.pay', compact('order', 'sessionId', 'merchantId'));
+        return view('frontend.rakbank.pay', [
+            'order' => $incompleteOrder, // The view might expect 'order' variable
+            'sessionId' => $sessionId,
+            'merchantId' => $merchantId
+        ]);
     }
 
     /**
@@ -41,46 +53,65 @@ class RakbankPaymentController extends Controller
      */
     public function callback(Request $request)
     {
-        $orderId = $request->query('order_id');
-        $order = Order::findOrFail($orderId);
+        $incompleteOrderId = $request->query('order_id'); // This is the ID we passed to the gateway
+        $incompleteOrder = IncompleteOrder::findOrFail($incompleteOrderId);
 
-        // Query the API to confirm payment status (more secure than trusting URL params)
-        $orderData = $this->rakbankService->retrieveOrder($order->invoice_no);
+        // Query the API to confirm payment status
+        $orderData = $this->rakbankService->retrieveOrder($incompleteOrder->invoice_no);
 
-        // RAKBANK nests status under order.status (not top-level)
-        // e.g. { "order": { "status": "CAPTURED", ... }, "result": "SUCCESS" }
         $gatewayStatus = $orderData['order']['status'] ?? null;
         $result        = $orderData['result'] ?? null;
 
         Log::info('RAKBANK Callback Received', [
-            'order_id'       => $order->id,
-            'gateway_status' => $gatewayStatus,
-            'result'         => $result,
-            'full_response'  => $orderData,
+            'incomplete_order_id' => $incompleteOrder->id,
+            'gateway_status'      => $gatewayStatus,
+            'result'              => $result,
+            'full_response'       => $orderData,
         ]);
 
         $successStatuses = ['CAPTURED', 'AUTHORIZED', 'PURCHASED'];
 
         if ($orderData && (in_array($gatewayStatus, $successStatuses) || $result === 'SUCCESS')) {
-            // Payment Successful - update order only if still pending
-            if ($order->status === 'pending') {
-                $transactionId  = $orderData['transaction'][0]['transaction']['id']
-                    ?? $orderData['transaction']['id']
-                    ?? null;
-                $gatewayOrderId = $orderData['order']['id'] ?? null;
+            
+            // Payment Successful - Create real order if not already created
+            if ($incompleteOrder->status === 'pending') {
+                $order = DB::transaction(function () use ($incompleteOrder, $orderData, $gatewayStatus) {
+                    $transactionId  = $orderData['transaction'][0]['transaction']['id']
+                        ?? $orderData['transaction']['id']
+                        ?? null;
+                    $gatewayOrderId = $orderData['order']['id'] ?? null;
 
-                $order->update([
-                    'status'          => 'processing',
-                    'payment_method'  => 'rakbank',
-                    'paid_amount'     => $order->total,
-                    'due_amount'      => 0,
-                    'transaction_id'  => $transactionId,
-                    'gateway_order_id'=> $gatewayOrderId,
-                    'notes'           => ($order->notes ? $order->notes . "\n" : "")
-                        . "RAKBANK Payment {$gatewayStatus}. Txn: {$transactionId}",
-                ]);
+                    // 1. Create real order
+                    $order = $this->orderService->createOrder(
+                        $incompleteOrder->customer_data,
+                        $incompleteOrder->cart_data,
+                        $incompleteOrder->totals_data,
+                        'rakbank',
+                        $incompleteOrder->coupon_data,
+                        $incompleteOrder->user_id
+                    );
 
-                // Clear cart session for the user
+                    // 2. Update order with payment details
+                    $order->update([
+                        'status'          => 'processing',
+                        'paid_amount'     => $order->total,
+                        'due_amount'      => 0,
+                        'transaction_id'  => $transactionId,
+                        'gateway_order_id'=> $gatewayOrderId,
+                        'notes'           => ($order->notes ? $order->notes . "\n" : "")
+                            . "RAKBANK Payment {$gatewayStatus}. Txn: {$transactionId}",
+                    ]);
+
+                    // 3. Mark incomplete order as completed
+                    $incompleteOrder->update([
+                        'status'   => 'completed',
+                        'order_id' => $order->id
+                    ]);
+
+                    return $order;
+                });
+
+                // Clear cart session
                 \Illuminate\Support\Facades\Session::forget('cart');
                 \Illuminate\Support\Facades\Session::forget('coupon');
 
@@ -95,17 +126,21 @@ class RakbankPaymentController extends Controller
                         ]);
                     }
                 }
-            }
 
-            session()->put('placed_order_id', $order->id);
-            return redirect()->route('checkout.success', $order->id)->with('success', 'Payment successful!');
+                session()->put('placed_order_id', $order->id);
+                return redirect()->route('checkout.success', $order->id)->with('success', 'Payment successful!');
+            } else {
+                // Already processed (maybe by webhook)
+                $orderId = $incompleteOrder->order_id;
+                return redirect()->route('checkout.success', $orderId)->with('success', 'Payment successful!');
+            }
         }
 
         Log::warning('RAKBANK Payment Verification Failed or Cancelled', [
-            'order_id'       => $order->id,
-            'gateway_status' => $gatewayStatus,
-            'result'         => $result,
-            'gateway_data'   => $orderData,
+            'incomplete_order_id' => $incompleteOrder->id,
+            'gateway_status'      => $gatewayStatus,
+            'result'              => $result,
+            'gateway_data'        => $orderData,
         ]);
 
         return redirect()->route('checkout.index')->with('error', 'Payment failed or was cancelled. Please try again.');
@@ -127,19 +162,18 @@ class RakbankPaymentController extends Controller
         }
 
         $payload = $request->all();
-        
         Log::info('RAKBANK Webhook Received', $payload);
 
-        // 2. Extract Order ID and Status
+        // 2. Extract Invoice Number and Status
         $invoiceNo = $payload['order']['id'] ?? null;
         if (!$invoiceNo) {
             return response()->json(['status' => 'error', 'message' => 'Invoice number missing'], 400);
         }
 
-        $order = Order::where('invoice_no', $invoiceNo)->first();
-        if (!$order) {
-            Log::error('RAKBANK Webhook: Order not found', ['invoice_no' => $invoiceNo]);
-            return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+        $incompleteOrder = IncompleteOrder::where('invoice_no', $invoiceNo)->first();
+        if (!$incompleteOrder) {
+            Log::error('RAKBANK Webhook: Incomplete Order not found', ['invoice_no' => $invoiceNo]);
+            return response()->json(['status' => 'error', 'message' => 'Incomplete Order not found'], 404);
         }
 
         // 3. Update Order Status if Payment Success
@@ -148,20 +182,40 @@ class RakbankPaymentController extends Controller
         
         if ($gatewayStatus === 'CAPTURED' || $gatewayStatus === 'AUTHORIZED' || $result === 'SUCCESS') {
             // Only update if not already processed
-            if ($order->status === 'pending') {
-                $transactionId  = $payload['transaction']['id'] ?? null;
-                $gatewayOrderId = $payload['order']['id'] ?? null;
+            if ($incompleteOrder->status === 'pending') {
+                $order = DB::transaction(function () use ($incompleteOrder, $payload, $gatewayStatus) {
+                    $transactionId  = $payload['transaction']['id'] ?? null;
+                    $gatewayOrderId = $payload['order']['id'] ?? null;
 
-                $order->update([
-                    'status'          => 'processing',
-                    'payment_method'  => 'rakbank',
-                    'paid_amount'     => $order->total,
-                    'due_amount'      => 0,
-                    'transaction_id'  => $transactionId,
-                    'gateway_order_id'=> $gatewayOrderId,
-                    'notes'           => ($order->notes ? $order->notes . "\n" : "")
-                        . "RAKBANK Webhook: {$gatewayStatus}. Txn: {$transactionId}",
-                ]);
+                    // 1. Create real order
+                    $order = $this->orderService->createOrder(
+                        $incompleteOrder->customer_data,
+                        $incompleteOrder->cart_data,
+                        $incompleteOrder->totals_data,
+                        'rakbank',
+                        $incompleteOrder->coupon_data,
+                        $incompleteOrder->user_id
+                    );
+
+                    // 2. Update order with payment details
+                    $order->update([
+                        'status'          => 'processing',
+                        'paid_amount'     => $order->total,
+                        'due_amount'      => 0,
+                        'transaction_id'  => $transactionId,
+                        'gateway_order_id'=> $gatewayOrderId,
+                        'notes'           => ($order->notes ? $order->notes . "\n" : "")
+                            . "RAKBANK Webhook: {$gatewayStatus}. Txn: {$transactionId}",
+                    ]);
+
+                    // 3. Mark incomplete order as completed
+                    $incompleteOrder->update([
+                        'status'   => 'completed',
+                        'order_id' => $order->id
+                    ]);
+
+                    return $order;
+                });
 
                 // Send Success Email Notification
                 if ($order->guest_email) {

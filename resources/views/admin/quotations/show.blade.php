@@ -163,9 +163,11 @@
 
         <!-- Footer Notes -->
         <div class="mt-20 border-t pt-8">
-            <h5 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Notes</h5>
+            <h5 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Notes / Terms</h5>
             <div class="text-[10px] text-gray-500 space-y-1 font-bold leading-relaxed">
-                @if(settings('quotation_notes'))
+                @if($quotation->quotation_notes)
+                    {!! nl2br(e($quotation->quotation_notes)) !!}
+                @elseif(settings('quotation_notes'))
                     {!! nl2br(e(settings('quotation_notes'))) !!}
                 @else
                     <ul class="space-y-1">

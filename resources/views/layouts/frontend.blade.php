@@ -202,18 +202,48 @@
 
 <!-- Top Bar -->
 <div class="top-bar">
-    <div class="container">
-        <div class="top-links">
+    <div class="container top-bar-wrapper">
+        <div class="top-links left">
             <a href="tel:{{ $settings['contact_phone'] ?? '+971 4 000 0000' }}"><i class="ri-phone-line"></i> {{ $settings['contact_phone'] ?? '+971 4 000 0000' }}</a>
-            <a href="mailto:{{ $settings['contact_email'] ?? 'sales@techhub.ae' }}"><i class="ri-mail-line"></i> {{ $settings['contact_email'] ?? 'sales@techhub.ae' }}</a>
         </div>
-        <div class="top-links">
+        <div class="top-delivery-info">
+            <i class="ri-truck-line"></i> Free Next Day Delivery on orders over <b>AED 250</b>
+        </div>
+        <div class="top-links right">
             <a href="{{ route('store.locator') }}">Store Locator</a>
             <a href="{{ url('/track-order') }}">Track Order</a>
             <a href="#"><b>AED</b></a>
         </div>
     </div>
 </div>
+
+<style>
+    .top-bar-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    .top-delivery-info {
+        font-size: 12px;
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px 15px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .top-delivery-info i {
+        font-size: 16px;
+        color: #fbbf24;
+    }
+    @media (max-width: 768px) {
+        .top-delivery-info {
+            display: none;
+        }
+    }
+</style>
 
 <!-- Header -->
 <header>

@@ -17,8 +17,11 @@ class Order extends Model implements HasMedia
     }
 
     protected $casts = [
-        'total' => 'decimal:2',
+        'subtotal' => 'decimal:2',
         'vat_amount' => 'decimal:2',
+        'shipping_charge' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'total' => 'decimal:2',
         'created_at' => 'datetime',
         'channel' => 'string',
         'status' => 'string',

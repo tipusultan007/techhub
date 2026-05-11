@@ -207,6 +207,10 @@
                    class="sidebar-item {{ request()->routeIs('orders*') ? 'active' : '' }}">
                     <i class="fas fa-shopping-bag"></i> <span>Invoices</span>
                 </a>
+                <a href="{{ route('incomplete-orders.index') }}"
+                   class="sidebar-item {{ request()->routeIs('incomplete-orders*') ? 'active' : '' }}">
+                    <i class="fas fa-user-clock"></i> <span>Abandoned Orders</span>
+                </a>
                 @endcan
                 @can('view purchases')
                 <a href="{{ route('purchases.index') }}"

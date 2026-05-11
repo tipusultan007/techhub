@@ -82,7 +82,7 @@ Route::group(['middleware' => ['maintenance']], function () {
     Route::get('/order/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
     // RAKBANK Payment Routes
-    Route::get('/rakbank/pay/{order}', [App\Http\Controllers\RakbankPaymentController::class, 'pay'])->name('rakbank.pay');
+    Route::get('/rakbank/pay/{incomplete_order}', [App\Http\Controllers\RakbankPaymentController::class, 'pay'])->name('rakbank.pay');
     Route::get('/rakbank/callback', [App\Http\Controllers\RakbankPaymentController::class, 'callback'])->name('rakbank.callback');
     Route::post('/rakbank/webhook', [App\Http\Controllers\RakbankPaymentController::class, 'webhook'])->name('rakbank.webhook');
 
@@ -252,6 +252,11 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
         Route::get('/orders/{order}/print', [OrderController::class, 'print'])->name('orders.print');
         Route::get('/orders/{order}/download-pdf', [OrderController::class, 'downloadPdf'])->name('orders.download-pdf');
         Route::resource('orders', OrderController::class);
+
+        // Incomplete / Abandoned Orders
+        Route::get('/incomplete-orders', [App\Http\Controllers\IncompleteOrderController::class, 'index'])->name('incomplete-orders.index');
+        Route::get('/incomplete-orders/{id}', [App\Http\Controllers\IncompleteOrderController::class, 'show'])->name('incomplete-orders.show');
+        Route::delete('/incomplete-orders/{id}', [App\Http\Controllers\IncompleteOrderController::class, 'destroy'])->name('incomplete-orders.destroy');
     });
 
     // --- SYSTEM ADMINISTRATION ---

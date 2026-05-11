@@ -199,6 +199,12 @@
                 </table>
             </div>
 
+            <!-- Quotation Notes / Terms -->
+            <div class="p-4 border-t bg-gray-50">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Terms & Conditions / Notes</label>
+                <textarea id="quotation_notes" rows="3" class="w-full border border-gray-300 rounded p-2 text-sm focus:border-blue-500 outline-none" placeholder="Enter terms or notes here...">{{ settings('quotation_notes') }}</textarea>
+            </div>
+
             <!-- Totals Section -->
             <div class="bg-slate-50 p-4 border-t border-slate-200">
                 <div class="space-y-1 mb-4 text-sm">
@@ -313,6 +319,7 @@
                 $('#customer_id').val("{{ $duplicateData['customer_id'] }}").trigger('change');
                 $('#po_number').val("{{ $duplicateData['po_number'] }}");
                 $('#discount_input').val("{{ $duplicateData['discount'] }}");
+                $('#quotation_notes').val(`{!! $duplicateData['quotation_notes'] !!}`);
                 renderCart();
             @endisset
         });
@@ -535,6 +542,7 @@
                     date: $('#quotation_date').val(),
                     expiry_date: $('#expiry_date').val(),
                     discount: $('#discount_input').val(),
+                    quotation_notes: $('#quotation_notes').val(),
                     amount_paid: $('#lbl-payable').text(),
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },

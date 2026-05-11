@@ -35,6 +35,7 @@ class CheckoutController extends Controller
             'cart' => $cart,
             'subtotal' => $totals['subtotal'],
             'vat' => $totals['vat'],
+            'shipping' => $totals['shipping'],
             'total' => $totals['total'],
             'discount' => $totals['discount'],
             'coupon' => $coupon
@@ -46,6 +47,7 @@ class CheckoutController extends Controller
         $netSubtotal = 0;
         $vatAmount = 0;
         $grossTotal = 0;
+        $hasService = false;
 
         foreach ($cart as $item) {
             $price = $item['price'];
@@ -68,6 +70,12 @@ class CheckoutController extends Controller
             $netSubtotal += $itemNet;
             $vatAmount += $itemVat;
             $grossTotal += $itemGross;
+
+            // Check if product is a service (Installation/Project)
+            $product = \App\Models\Product::find($item['product_id']);
+            if ($product && $product->type === 'service') {
+                $hasService = true;
+            }
         }
 
         $discount = 0;
@@ -82,10 +90,14 @@ class CheckoutController extends Controller
             }
         }
 
+        // Delivery Charge Logic: Free if total >= 250 or has a service
+        $shippingCharge = ($grossTotal >= 250 || $hasService) ? 0 : 15;
+
         return [
             'subtotal' => $netSubtotal,
             'vat' => $vatAmount,
-            'total' => $grossTotal - $discount,
+            'shipping' => $shippingCharge,
+            'total' => $grossTotal - $discount + $shippingCharge,
             'discount' => $discount
         ];
     }
@@ -99,7 +111,7 @@ class CheckoutController extends Controller
             'phone' => 'required|string',
             'address' => 'required|string',
             'city' => 'required|string',
-            'payment_method' => 'required|in:cod,rakbank'
+            'payment_method' => 'required|in:rakbank' // Only RAKBANK (Card) accepted
         ]);
 
         $cart = Session::get('cart', []);
@@ -108,139 +120,31 @@ class CheckoutController extends Controller
         $coupon = Session::get('coupon');
         $totals = $this->getCartTotals($cart, $coupon);
 
-        $order = DB::transaction(function () use ($request, $cart, $totals, $coupon) {
-            $subtotal = $totals['subtotal'];
-            $vat_amount = $totals['vat'];
-            $total = $totals['total'];
-            $discount = $totals['discount'];
+        // Capture IP Addresses
+        $customerIp = $request->ip();
+        $visitorIp = $request->header('X-Forwarded-For') ?? $request->ip();
 
-            // 1. CRM LOGIC
-            $customer = Customer::where('phone', $request->phone)
-                ->orWhere('email', $request->email)
-                ->first();
-
-            $fullName = $request->first_name . ' ' . $request->last_name;
-
-            if (!$customer) {
-                $customer = Customer::create([
-                    'name' => $fullName,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
-                    'address' => $request->address . ', ' . $request->city,
-                ]);
-
-                // Notify Admin about new customer registration
-                User::role(['Admin', 'Super Admin'])->get()->each->notify(new NewCustomerNotification($customer));
-            } else {
-                $customer->update([
-                    'address' => $request->address . ', ' . $request->city
-                ]);
-            }
-
-            // 2. CREATE ORDER
-            $order = Order::create([
-                'invoice_no'       => Order::generateInvoiceNumber(),
-                'channel'          => 'online',
-                'user_id'          => auth()->id(),
-                'customer_id'      => $customer->id,
-                'customer_name'    => $fullName,
-                'guest_email'      => $request->email,
-                'guest_phone'      => $request->phone,
-                'shipping_address' => $request->address,
-                'shipping_city'    => $request->city,
-                'shipping_area'    => $request->area,
-                'subtotal'         => $subtotal, // Net
-                'vat_amount'       => $vat_amount,
-                'discount'         => $discount,
-                'total'            => $total,
-                'payment_method'   => $request->payment_method,
-                'paid_amount'      => 0,
-                'due_amount'       => $total,
-                'status'           => 'pending',
-                'notes'            => $coupon ? 'Coupon: ' . $coupon['code'] : null,
-            ]);
-
-            // Notify Admin about new order
-            User::role(['Admin', 'Super Admin'])->get()->each->notify(new NewOrderNotification($order));
-
-            // Notify Customer about new order
-            if ($request->email) {
-                Notification::route('mail', $request->email)
-                    ->notify(new OrderConfirmationNotification($order));
-            }
-
-            // Increment Coupon Usage
-            if ($coupon) {
-                \App\Models\Coupon::where('id', $coupon['id'])->increment('uses');
-            }
-
-            // 3. CREATE ORDER ITEMS
-            foreach ($cart as $item) {
-                $itemPrice = $item['price'];
-                $itemQty = $item['quantity'];
-                $itemRate = $item['tax_rate'] ?? 5;
-                $itemMethod = $item['tax_method'] ?? 'inclusive';
-
-                $itemGrossBase = $itemPrice * $itemQty;
-
-                if ($itemMethod === 'exclusive') {
-                    $itemVat = $itemGrossBase * ($itemRate / 100);
-                    $itemNet = $itemGrossBase;
-                    $itemGross = $itemGrossBase + $itemVat;
-                    $unitPrice = $itemPrice;
-                } else {
-                    $itemVat = $itemGrossBase - ($itemGrossBase / (1 + ($itemRate / 100)));
-                    $itemNet = $itemGrossBase - $itemVat;
-                    $itemGross = $itemGrossBase;
-                    $unitPrice = $itemPrice / (1 + ($itemRate / 100));
-                }
-
-                OrderItem::create([
-                    'order_id'           => $order->id,
-                    'product_id'         => $item['product_id'],
-                    'product_variant_id' => $item['variant_id'] ?? null,
-                    'product_name'       => $item['name'],
-                    'quantity'           => $item['quantity'],
-                    'unit_price'         => $unitPrice,
-                    'subtotal'           => $itemNet,
-                    'tax_rate'           => $itemRate,
-                    'tax_amount'         => $itemVat,
-                ]);
-
-                // Deduct Stock
-                if (isset($item['variant_id'])) {
-                    $variant = ProductVariant::find($item['variant_id']);
-                    $variant->decrement('stock_quantity', $item['quantity']);
-                    
-                    if ($variant->stock_quantity <= $variant->alert_quantity) {
-                        User::role(['Admin', 'Super Admin'])->get()->each->notify(new LowStockNotification($variant->product, $variant->stock_quantity));
-                    }
-                } else {
-                    $product = Product::find($item['product_id']);
-                    $product->decrement('stock_quantity', $item['quantity']);
-
-                    if ($product->stock_quantity <= $product->alert_quantity) {
-                        User::role(['Admin', 'Super Admin'])->get()->each->notify(new LowStockNotification($product, $product->stock_quantity));
-                    }
-                }
-            }
-
-            if ($request->payment_method === 'cod') {
-                Session::forget('cart');
-                Session::forget('coupon');
-            }
-
-            return $order;
-        });
-
-        session()->put('placed_order_id', $order->id);
+        // Create Incomplete Order
+        $incompleteOrder = \App\Models\IncompleteOrder::create([
+            'invoice_no'     => \App\Models\Order::generateInvoiceNumber(),
+            'user_id'        => auth()->id(),
+            'customer_data'  => $request->only(['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'area']),
+            'cart_data'      => $cart,
+            'totals_data'    => $totals,
+            'coupon_data'    => $coupon,
+            'payment_method' => $request->payment_method,
+            'customer_ip'    => $customerIp,
+            'visitor_ip'     => $visitorIp,
+            'status'         => 'pending',
+        ]);
 
         if ($request->payment_method === 'rakbank') {
-            return redirect()->route('rakbank.pay', $order->id);
+            return redirect()->route('rakbank.pay', $incompleteOrder->id);
         }
 
-        return redirect()->route('checkout.success', $order->id);
-
+        // This part is currently not reachable as per user's feedback (No COD), 
+        // but kept as fallback or for future use with OrderService.
+        return redirect()->route('checkout.index')->with('error', 'Invalid payment method.');
     }
 
     public function success($orderId)

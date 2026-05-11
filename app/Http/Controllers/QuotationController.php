@@ -75,6 +75,7 @@ class QuotationController extends Controller
             'customer_id' => $quotation->customer_id,
             'po_number' => $quotation->po_number,
             'discount' => $quotation->discount,
+            'quotation_notes' => $quotation->quotation_notes,
             'items' => $quotation->items->map(function($item) {
                 return [
                     'id' => $item->product_id,
@@ -170,6 +171,7 @@ class QuotationController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
             'po_number' => 'nullable|string|max:100',
+            'quotation_notes' => 'nullable|string',
         ]);
 
         try {
@@ -220,7 +222,8 @@ class QuotationController extends Controller
                 'total' => $finalPayable,
                 'status' => 'submitted',
                 'user_id' => Auth::id(),
-                'expiry_date' => $request->expiry_date ?? now()->addDays(15) // Use manual date or default
+                'expiry_date' => $request->expiry_date ?? now()->addDays(15), // Use manual date or default
+                'quotation_notes' => $request->quotation_notes
             ]);
 
             foreach ($request->items as $index => $item) {
@@ -296,6 +299,7 @@ class QuotationController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
             'po_number' => 'nullable|string|max:100',
+            'quotation_notes' => 'nullable|string',
         ]);
 
         try {
@@ -345,6 +349,7 @@ class QuotationController extends Controller
                 'discount' => $discount,
                 'total' => $finalPayable,
                 'expiry_date' => $request->expiry_date ?? $quotation->expiry_date,
+                'quotation_notes' => $request->quotation_notes,
             ]);
 
             // Delete old items and create new ones

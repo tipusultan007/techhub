@@ -397,14 +397,16 @@
             <table style="width: 100%;">
                 <tr>
                     <td style="width: 60%; vertical-align: top;">
-                        <div class="terms-title">Notes</div>
-                        <ul class="terms-list">
-                            @if(settings('quotation_notes'))
+                        <div class="terms-title">Notes / Terms</div>
+                        <div class="terms-list">
+                            @if($quotation->quotation_notes)
+                                {!! nl2br(e($quotation->quotation_notes)) !!}
+                            @elseif(settings('quotation_notes'))
                                 {!! nl2br(e(settings('quotation_notes'))) !!}
                             @else
                                
                             @endif
-                        </ul>
+                        </div>
                     </td>
                     <td style="width: 40%; vertical-align: bottom; text-align: right;">
                         <div style="font-size: 8px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;">

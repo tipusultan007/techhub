@@ -189,8 +189,15 @@
 
                     <div class="summary-row">
                         <span>Shipping</span>
-                        <span class="text-green-600 font-bold">Free</span>
+                        <span :class="shipping > 0 ? '' : 'text-green-600 font-bold'" x-text="shipping > 0 ? shipping + ' AED' : 'Free'">
+                            {{ $shipping > 0 ? number_format($shipping, 2) . ' AED' : 'Free' }}
+                        </span>
                     </div>
+
+                    <div class="summary-row" style="font-size: 0.8rem; color: #16a34a; margin-top: -10px;">
+                        <i class="ri-calendar-check-line"></i> Delivered on the next business day
+                    </div>
+
                     <div class="summary-row">
                         <span>VAT (5%)</span>
                         <span x-text="vat + ' AED'">{{ number_format($vat, 2) }} AED</span>
@@ -232,12 +239,12 @@
 
                     <!-- Payment Icons -->
                     <div class="payment-methods">
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px;">We Accept:</p>
-                        <div class="pm-icons" style="display:flex; justify-content:center; gap:10px; font-size:1.5rem; color:#94a3b8; margin-top:5px;">
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 15px; font-weight: 600;">Payment: Credit & Debit Cards Only</p>
+                        <div class="pm-icons" style="display:flex; justify-content:center; gap:10px; font-size:1.8rem; color:#0038A8; margin-top:5px;">
                             <i class="ri-visa-line"></i>
                             <i class="ri-mastercard-line"></i>
-                            <i class="ri-paypal-line"></i>
                         </div>
+                        <p style="font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 5px;">Securely processed by RAKBANK</p>
                     </div>
                 </div>
             </div>
@@ -275,11 +282,12 @@
             Alpine.data('cartPage', () => ({
                 // Initialize with PHP data
                 cart: @json($cart),
-                subtotal: '{{ number_format($subtotal, 2) }}',
-                discount: '{{ number_format($discount ?? 0, 2) }}',
+                subtotal: '{{ number_format($subtotal, 2, '.', '') }}',
+                discount: '{{ number_format($discount ?? 0, 2, '.', '') }}',
                 coupon: @json($coupon ?? null),
-                vat: '{{ number_format($vat, 2) }}',
-                total: '{{ number_format($total, 2) }}',
+                vat: '{{ number_format($vat, 2, '.', '') }}',
+                shipping: '{{ number_format($shipping ?? 0, 2, '.', '') }}',
+                total: '{{ number_format($total, 2, '.', '') }}',
 
                 updateQty(key, change) {
                     // Parse current quantity
@@ -309,6 +317,7 @@
                                 this.subtotal = data.subtotal;
                                 this.discount = data.discount;
                                 this.vat = data.vat;
+                                this.shipping = data.shipping;
                                 this.total = data.total;
                                 // Handle automatic coupon removal if conditions not met
                                 if (data.couponRemoved) {
