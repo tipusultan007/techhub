@@ -94,11 +94,11 @@ class CheckoutController extends Controller
         $shippingCharge = ($grossTotal >= 250 || $hasService) ? 0 : 15;
 
         return [
-            'subtotal' => $netSubtotal,
-            'vat' => $vatAmount,
+            'subtotal' => round($netSubtotal, 2),
+            'vat' => round($vatAmount, 2),
             'shipping' => $shippingCharge,
-            'total' => $grossTotal - $discount + $shippingCharge,
-            'discount' => $discount
+            'total' => round($grossTotal - $discount + $shippingCharge, 2),
+            'discount' => round($discount, 2)
         ];
     }
 

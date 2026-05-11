@@ -20,9 +20,9 @@ class OrderService
     /**
      * Create a real order from checkout data.
      */
-    public function createOrder(array $customerData, array $cartData, array $totalsData, string $paymentMethod, ?array $couponData = null, ?int $userId = null)
+    public function createOrder(array $customerData, array $cartData, array $totalsData, string $paymentMethod, ?array $couponData = null, ?int $userId = null, ?string $invoiceNo = null)
     {
-        return DB::transaction(function () use ($customerData, $cartData, $totalsData, $paymentMethod, $couponData, $userId) {
+        return DB::transaction(function () use ($customerData, $cartData, $totalsData, $paymentMethod, $couponData, $userId, $invoiceNo) {
             $subtotal = $totalsData['subtotal'];
             $vat_amount = $totalsData['vat'];
             $shipping_charge = $totalsData['shipping'];
@@ -54,7 +54,7 @@ class OrderService
 
             // 2. CREATE ORDER
             $order = Order::create([
-                'invoice_no'       => Order::generateInvoiceNumber(),
+                'invoice_no'       => $invoiceNo ?? Order::generateInvoiceNumber(),
                 'channel'          => 'online',
                 'user_id'          => $userId,
                 'customer_id'      => $customer->id,

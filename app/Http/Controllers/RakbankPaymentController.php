@@ -88,7 +88,8 @@ class RakbankPaymentController extends Controller
                         $incompleteOrder->totals_data,
                         'rakbank',
                         $incompleteOrder->coupon_data,
-                        $incompleteOrder->user_id
+                        $incompleteOrder->user_id,
+                        $incompleteOrder->invoice_no
                     );
 
                     // 2. Update order with payment details
@@ -194,7 +195,8 @@ class RakbankPaymentController extends Controller
                         $incompleteOrder->totals_data,
                         'rakbank',
                         $incompleteOrder->coupon_data,
-                        $incompleteOrder->user_id
+                        $incompleteOrder->user_id,
+                        $incompleteOrder->invoice_no
                     );
 
                     // 2. Update order with payment details
