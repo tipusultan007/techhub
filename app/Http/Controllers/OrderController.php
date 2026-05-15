@@ -118,7 +118,7 @@ class OrderController extends Controller implements HasMiddleware
             'items.*.price' => 'required|numeric|min:0',
             'items.*.tax_rate' => 'required|numeric|min:0',
             'items.*.serial_numbers' => 'nullable|string',
-            'payment_method' => 'required|in:cash,card,transfer,advance,custom',
+            'payment_method' => 'required|in:cash,card,transfer,advance,custom,rakbank',
             'user_id' => 'nullable|exists:users,id',
             'discount' => 'nullable|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',

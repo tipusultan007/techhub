@@ -70,6 +70,7 @@
                     <option value="card" {{ request('payment_method') == 'card' ? 'selected' : '' }}>Card</option>
                     <option value="transfer" {{ request('payment_method') == 'transfer' ? 'selected' : '' }}>Bank</option>
                     <option value="advance" {{ request('payment_method') == 'advance' ? 'selected' : '' }}>Advance</option>
+                    <option value="rakbank" {{ request('payment_method') == 'rakbank' ? 'selected' : '' }}>Rakbank</option>
                     <option value="custom" {{ request('payment_method') == 'custom' ? 'selected' : '' }}>Custom</option>
                 </select>
             </div>

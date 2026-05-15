@@ -445,8 +445,13 @@
                                 <div class="tl-item">
                                     <div class="tl-dot"></div>
                                     <div class="tl-time">{{ $order->created_at->addMinutes(30)->format('M d, h:i A') }}</div>
-                                    <div class="tl-status">Payment Confirmed</div>
-                                    <div class="tl-desc">Payment verified via {{ ucfirst($order->payment_method) }}.</div>
+                                    @if($order->payment_method == 'cash')
+                                        <div class="tl-status">Order Confirmed</div>
+                                        <div class="tl-desc">Payment to be collected on delivery (Cash on Delivery).</div>
+                                    @else
+                                        <div class="tl-status">Payment Confirmed</div>
+                                        <div class="tl-desc">Payment verified via {{ $order->payment_method === 'rakbank' ? 'Credit/Debit Card' : ucfirst($order->payment_method) }}.</div>
+                                    @endif
                                 </div>
                             @endif
 

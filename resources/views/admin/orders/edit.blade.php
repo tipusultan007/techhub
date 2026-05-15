@@ -36,6 +36,7 @@
                     <option value="card" {{ $order->payment_method == 'card' ? 'selected' : '' }}>💳 Card</option>
                     <option value="transfer" {{ $order->payment_method == 'transfer' ? 'selected' : '' }}>🏦 Bank Transfer</option>
                     <option value="advance" {{ $order->payment_method == 'advance' ? 'selected' : '' }}>💰 Advance</option>
+                    <option value="rakbank" {{ $order->payment_method == 'rakbank' ? 'selected' : '' }}>🌐 Rakbank (Online)</option>
                     <option value="custom" {{ $order->payment_method == 'custom' ? 'selected' : '' }}>⚙️ Custom</option>
                 </select>
             </div>
