@@ -270,6 +270,7 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
             Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit_loss');
             Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
             Route::get('/reports/vat', [ReportController::class, 'vat'])->name('reports.vat');
+            Route::get('/reports/vat/pdf', [ReportController::class, 'vatPdf'])->name('reports.vat.pdf');
             Route::get('/reports/low-stock', [ReportController::class, 'lowStock'])->name('reports.low-stock');
             Route::get('/reports/expenses', [ReportController::class, 'expenses'])->name('reports.expenses');
             Route::get('/reports/expenses/pdf', [ReportController::class, 'expensesPdf'])->name('reports.expenses.pdf');

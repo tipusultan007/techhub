@@ -163,6 +163,12 @@
                                 </div>
                                 <span class="font-bold text-slate-700">{{ number_format($order->vat_amount, 2) }} <span class="text-[10px] text-slate-400 ml-1">AED</span></span>
                             </div>
+                            @if($order->shipping_charge > 0)
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="font-bold text-slate-400 uppercase tracking-widest text-[10px]">Shipping</span>
+                                <span class="font-bold text-slate-700">{{ number_format($order->shipping_charge, 2) }} <span class="text-[10px] text-slate-400 ml-1">AED</span></span>
+                            </div>
+                            @endif
                             <div class="pt-4 mt-2 border-t-2 border-slate-200 flex justify-between items-end">
                                 <div>
                                     <span class="block font-black text-slate-900 uppercase tracking-[0.2em] text-[11px]">Total Amount</span>

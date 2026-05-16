@@ -387,6 +387,12 @@
                         <td class="total-value" style="color: #E11D48;">- <img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->discount, 2) }}</td>
                     </tr>
                     @endif
+                    @if($order->shipping_charge > 0)
+                    <tr class="total-row">
+                        <td class="total-label">Shipping</td>
+                        <td class="total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->shipping_charge, 2) }}</td>
+                    </tr>
+                    @endif
                     <tr class="total-row">
                         <td class="total-label" style="color: #64748B;">Net Amount</td>
                         <td class="total-value" style="color: #64748B;"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($order->subtotal, 2) }}</td>

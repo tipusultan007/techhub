@@ -93,11 +93,29 @@ class CheckoutController extends Controller
         // Delivery Charge Logic: Free if total >= 250 or has a service
         $shippingCharge = ($grossTotal >= 250 || $hasService) ? 0 : 15;
 
+        // VAT on Shipping (5% inclusive)
+        $shippingVat = ($shippingCharge > 0) ? ($shippingCharge - ($shippingCharge / 1.05)) : 0;
+        
+        // Total VAT before discount
+        $totalVatBeforeDiscount = $vatAmount + $shippingVat;
+        $totalGrossBeforeDiscount = $grossTotal + $shippingCharge;
+
+        // Final Total (Gross)
+        $finalTotal = $totalGrossBeforeDiscount - $discount;
+
+        // Proportional VAT Adjustment (if discount applied)
+        $finalVat = ($totalGrossBeforeDiscount > 0) ? ($totalVatBeforeDiscount * ($finalTotal / $totalGrossBeforeDiscount)) : 0;
+        
+        // Final Net Subtotal (for the order header)
+        $finalNetTotal = $finalTotal - $finalVat;
+
         return [
-            'subtotal' => round($netSubtotal, 2),
-            'vat' => round($vatAmount, 2),
+            // The formula used elsewhere: subtotal + vat + shipping - discount = total
+            // To satisfy this: subtotal = total - vat - shipping + discount
+            'subtotal' => round($finalTotal - $finalVat - $shippingCharge + $discount, 2),
+            'vat' => round($finalVat, 2),
             'shipping' => $shippingCharge,
-            'total' => round($grossTotal - $discount + $shippingCharge, 2),
+            'total' => round($finalTotal, 2),
             'discount' => round($discount, 2)
         ];
     }

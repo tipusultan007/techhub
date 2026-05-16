@@ -171,6 +171,13 @@
                         </td>
                         <td></td>
                     </tr>
+                    <tr class="bg-white">
+                        <td colspan="4" class="text-right p-3 font-bold text-blue-700 border-r border-gray-100 uppercase tracking-tighter text-xs">Shipping Charge (AED):</td>
+                        <td class="p-3 text-right">
+                            <input type="number" step="0.01" name="shipping_charge" value="{{ $order->shipping_charge }}" class="w-full border rounded p-2 text-right font-bold text-blue-600 focus:ring-1 focus:ring-blue-500" id="shipping_input" oninput="calculateTotal()">
+                        </td>
+                        <td></td>
+                    </tr>
                     <tr class="bg-emerald-600 text-white">
                         <td colspan="4" class="text-right p-4 font-black uppercase text-xl">Payable Total (AED):</td>
                         <td class="p-4 text-right font-black text-2xl" id="display_grand_total">0.00</td>
@@ -467,7 +474,8 @@
             
             let totalInclusive = totalNet + totalTax;
             let discount = parseFloat($('#discount_input').val()) || 0;
-            let grandTotal = Math.max(0, totalInclusive - discount);
+            let shipping = parseFloat($('#shipping_input').val()) || 0;
+            let grandTotal = Math.max(0, totalInclusive - discount + shipping);
 
             // Proportional tax reduction if discount is applied to total
             if (totalInclusive > 0) {

@@ -53,8 +53,45 @@ class RakbankPaymentController extends Controller
      */
     public function callback(Request $request)
     {
-        $incompleteOrderId = $request->query('order_id'); // This is the ID we passed to the gateway
-        $incompleteOrder = IncompleteOrder::findOrFail($incompleteOrderId);
+        $incompleteOrderId = $request->query('order_id'); 
+        $invoiceNo = $request->query('invoice_no');
+        
+        $incompleteOrder = IncompleteOrder::find($incompleteOrderId);
+        
+        if (!$incompleteOrder) {
+            // Check if real order already exists (probably created by webhook)
+            $existingOrder = \App\Models\Order::with('items')->where('invoice_no', $invoiceNo)->first();
+            
+            if ($existingOrder) {
+                // Thorough integrity check as requested by USER
+                $hasItems = $existingOrder->items->count() > 0;
+                $calculatedTotal = $existingOrder->subtotal + $existingOrder->vat_amount + $existingOrder->shipping_charge - $existingOrder->discount;
+                $isTotalConsistent = abs($calculatedTotal - $existingOrder->total) < 0.01;
+                $hasValidSubtotal = $existingOrder->subtotal > 0;
+
+                if ($hasItems && $isTotalConsistent && $hasValidSubtotal) {
+                    \Illuminate\Support\Facades\Log::info('RAKBANK Callback: Trace deleted, verified deep data integrity.', [
+                        'invoice_no' => $invoiceNo,
+                        'order_id' => $existingOrder->id,
+                        'subtotal' => $existingOrder->subtotal,
+                        'vat' => $existingOrder->vat_amount,
+                        'shipping' => $existingOrder->shipping_charge,
+                        'total' => $existingOrder->total
+                    ]);
+                    return redirect()->route('checkout.success', $existingOrder->id)->with('success', 'Payment successful!');
+                }
+                
+                \Illuminate\Support\Facades\Log::error('RAKBANK Callback: Deep integrity check failed for existing order.', [
+                    'invoice_no' => $invoiceNo,
+                    'is_consistent' => $isTotalConsistent,
+                    'items_count' => $existingOrder->items->count(),
+                    'data' => $existingOrder->only(['subtotal', 'vat_amount', 'shipping_charge', 'total'])
+                ]);
+            }
+            
+            \Illuminate\Support\Facades\Log::error('RAKBANK Callback: Order not found or trace missing.', ['invoice_no' => $invoiceNo]);
+            return redirect()->route('checkout.index')->with('error', 'Order details not found. Please contact support.');
+        }
 
         // Query the API to confirm payment status
         $orderData = $this->rakbankService->retrieveOrder($incompleteOrder->invoice_no);
@@ -76,6 +113,11 @@ class RakbankPaymentController extends Controller
             // Payment Successful - Create real order if not already created
             if ($incompleteOrder->status === 'pending') {
                 $order = DB::transaction(function () use ($incompleteOrder, $orderData, $gatewayStatus) {
+                    \Illuminate\Support\Facades\Log::info('Creating order from IncompleteOrder', [
+                        'incomplete_order_id' => $incompleteOrder->id,
+                        'totals_data' => $incompleteOrder->totals_data
+                    ]);
+
                     $transactionId  = $orderData['transaction'][0]['transaction']['id']
                         ?? $orderData['transaction']['id']
                         ?? null;
@@ -103,11 +145,28 @@ class RakbankPaymentController extends Controller
                             . "RAKBANK Payment {$gatewayStatus}. Txn: {$transactionId}",
                     ]);
 
-                    // 3. Mark incomplete order as completed
-                    $incompleteOrder->update([
-                        'status'   => 'completed',
-                        'order_id' => $order->id
-                    ]);
+                    // 3. Data Integrity Verification before Deletion
+                    $traceTotals = $incompleteOrder->totals_data;
+                    $mismatch = [];
+                    
+                    if (abs($order->total - ($traceTotals['total'] ?? 0)) > 0.01) $mismatch[] = "Total";
+                    if (abs($order->subtotal - ($traceTotals['subtotal'] ?? 0)) > 0.01) $mismatch[] = "Subtotal";
+                    if (abs($order->vat_amount - ($traceTotals['vat'] ?? 0)) > 0.01) $mismatch[] = "VAT";
+                    if (abs($order->shipping_charge - ($traceTotals['shipping'] ?? 0)) > 0.01) $mismatch[] = "Shipping";
+                    if ($order->items()->count() !== count($incompleteOrder->cart_data)) $mismatch[] = "Items Count";
+
+                    if (!empty($mismatch)) {
+                        \Illuminate\Support\Facades\Log::critical('Order Integrity Check Failed during conversion!', [
+                            'invoice_no' => $order->invoice_no,
+                            'mismatches' => $mismatch,
+                            'expected' => $traceTotals,
+                            'actual' => $order->only(['total', 'subtotal', 'vat_amount', 'shipping_charge'])
+                        ]);
+                        throw new \Exception('Data integrity check failed for ' . implode(', ', $mismatch));
+                    }
+
+                    // 4. Delete incomplete order trace
+                    $incompleteOrder->delete();
 
                     return $order;
                 });
@@ -173,6 +232,10 @@ class RakbankPaymentController extends Controller
 
         $incompleteOrder = IncompleteOrder::where('invoice_no', $invoiceNo)->first();
         if (!$incompleteOrder) {
+            // Check if real order already exists (callback might have finished first)
+            if (\App\Models\Order::where('invoice_no', $invoiceNo)->exists()) {
+                return response()->json(['status' => 'success', 'message' => 'Order already processed'], 200);
+            }
             Log::error('RAKBANK Webhook: Incomplete Order not found', ['invoice_no' => $invoiceNo]);
             return response()->json(['status' => 'error', 'message' => 'Incomplete Order not found'], 404);
         }
@@ -210,11 +273,28 @@ class RakbankPaymentController extends Controller
                             . "RAKBANK Webhook: {$gatewayStatus}. Txn: {$transactionId}",
                     ]);
 
-                    // 3. Mark incomplete order as completed
-                    $incompleteOrder->update([
-                        'status'   => 'completed',
-                        'order_id' => $order->id
-                    ]);
+                    // 3. Data Integrity Verification before Deletion
+                    $traceTotals = $incompleteOrder->totals_data;
+                    $mismatch = [];
+                    
+                    if (abs($order->total - ($traceTotals['total'] ?? 0)) > 0.01) $mismatch[] = "Total";
+                    if (abs($order->subtotal - ($traceTotals['subtotal'] ?? 0)) > 0.01) $mismatch[] = "Subtotal";
+                    if (abs($order->vat_amount - ($traceTotals['vat'] ?? 0)) > 0.01) $mismatch[] = "VAT";
+                    if (abs($order->shipping_charge - ($traceTotals['shipping'] ?? 0)) > 0.01) $mismatch[] = "Shipping";
+                    if ($order->items()->count() !== count($incompleteOrder->cart_data)) $mismatch[] = "Items Count";
+
+                    if (!empty($mismatch)) {
+                        \Illuminate\Support\Facades\Log::critical('Order Integrity Check Failed during Webhook conversion!', [
+                            'invoice_no' => $order->invoice_no,
+                            'mismatches' => $mismatch,
+                            'expected' => $traceTotals,
+                            'actual' => $order->only(['total', 'subtotal', 'vat_amount', 'shipping_charge'])
+                        ]);
+                        throw new \Exception('Data integrity check failed for ' . implode(', ', $mismatch));
+                    }
+
+                    // 4. Delete incomplete order trace
+                    $incompleteOrder->delete();
 
                     return $order;
                 });

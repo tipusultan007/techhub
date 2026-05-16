@@ -18,8 +18,15 @@
                 <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="w-full border rounded p-2 text-sm">
             </div>
             <div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 font-bold">Generate</button>
-                <button type="button" onclick="window.print()" class="bg-gray-800 text-white px-6 py-2 rounded shadow hover:bg-gray-700 font-bold ml-2">Print</button>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 font-bold">
+                    <i class="fas fa-sync-alt mr-2"></i> Generate
+                </button>
+                <a href="{{ route('reports.vat.pdf', request()->all()) }}" class="bg-red-600 text-white px-6 py-2 rounded shadow hover:bg-red-700 font-bold ml-2">
+                    <i class="fas fa-file-pdf mr-2"></i> Download PDF
+                </a>
+                <button type="button" onclick="window.print()" class="bg-gray-800 text-white px-6 py-2 rounded shadow hover:bg-gray-700 font-bold ml-2">
+                    <i class="fas fa-print mr-2"></i> Print
+                </button>
             </div>
         </form>
     </div>
@@ -62,6 +69,46 @@
                         <span class="font-mono text-green-700">{{ number_format($finalOutputVat, 2) }}</span>
                     </div>
                 </div>
+
+                <!-- UAE FTA Box 1: Supplies by Emirate -->
+                <div class="mt-8">
+                    <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                        <i class="fas fa-map-marker-alt mr-2"></i> Standard Rated Supplies by Emirate (Box 1)
+                    </h4>
+                    <div class="border rounded-lg overflow-hidden shadow-sm">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-50 border-b">
+                                <tr>
+                                    <th class="p-3 text-slate-700">Emirate</th>
+                                    <th class="p-3 text-right text-slate-700">Amount (AED) - Net</th>
+                                    <th class="p-3 text-right text-slate-700">VAT Amount (AED) - 5%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($emirateSales as $emirate => $data)
+                                <tr class="border-b hover:bg-slate-50">
+                                    <td class="p-3 font-semibold text-slate-800">{{ $emirate }}</td>
+                                    <td class="p-3 text-right font-mono">{{ number_format($data['net'], 2) }}</td>
+                                    <td class="p-3 text-right font-mono font-bold text-green-700">{{ number_format($data['vat'], 2) }}</td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="3" class="p-8 text-center text-gray-500 italic">No sales found for this period.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                            @if(count($emirateSales) > 0)
+                            <tfoot class="bg-slate-100 font-bold">
+                                <tr>
+                                    <td class="p-3 text-slate-800">Total Standard Rated Supplies</td>
+                                    <td class="p-3 text-right">{{ number_format(collect($emirateSales)->sum('net'), 2) }}</td>
+                                    <td class="p-3 text-right text-green-700">{{ number_format(collect($emirateSales)->sum('vat'), 2) }}</td>
+                                </tr>
+                            </tfoot>
+                            @endif
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- 2. INPUT VAT SECTION -->
@@ -89,7 +136,7 @@
     </div>
 
     <!-- === DETAILED BREAKDOWN TABLES (NEW) === -->
-    <div class="mt-8 space-y-8" x-data="{ openSales: false, openReturns: false, openPurchases: false }">
+    <div class="mt-8 space-y-8 no-print" x-data="{ openSales: false, openReturns: false, openPurchases: false }">
 
         <!-- 1. Sales Breakdown -->
         <div class="bg-white rounded-lg shadow border">
@@ -175,12 +222,36 @@
 <style>
     @media print {
         .no-print { display: none !important; }
-        body { background-color: white !important; }
-        #print-area { box-shadow: none !important; border: 1px solid #ccc !important; }
-        .bg-slate-800 { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; }
-        .bg-gray-50 { background-color: #f9fafb !important; -webkit-print-color-adjust: exact; }
-        /* Optionally hide breakdown tables on print */
-        [x-data] { display: none; } 
+        body { background-color: white !important; font-size: 11pt; color: black; }
+        
+        #print-area { 
+            box-shadow: none !important; 
+            border: none !important; 
+            width: 100% !important; 
+            margin: 0 !important; 
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+
+        /* Match PDF Aesthetic */
+        .bg-slate-800 { background-color: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .bg-gray-50, .bg-slate-50, .bg-slate-100 { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .border-l-4 { border-left: 4px solid #ccc !important; }
+        
+        .text-green-700 { color: #15803d !important; }
+        .text-red-700 { color: #b91c1c !important; }
+        .text-green-300 { color: #86efac !important; }
+        
+        /* Ensure tables look professional */
+        table { width: 100% !important; border-collapse: collapse !important; }
+        th, td { border: 1px solid #e2e8f0 !important; padding: 8px !important; }
+        thead { display: table-header-group; }
+        
+        /* Final Summary Box Fix for Print */
+        .bg-slate-800.text-white {
+            border: 1px solid #1e293b !important;
+            padding: 2rem !important;
+        }
     }
 </style>
 @endsection

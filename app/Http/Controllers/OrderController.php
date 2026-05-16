@@ -121,6 +121,7 @@ class OrderController extends Controller implements HasMiddleware
             'payment_method' => 'required|in:cash,card,transfer,advance,custom,rakbank',
             'user_id' => 'nullable|exists:users,id',
             'discount' => 'nullable|numeric|min:0',
+            'shipping_charge' => 'nullable|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'due_amount' => 'nullable|numeric',
             'attachment.*' => 'nullable|file|max:102400',
@@ -257,7 +258,8 @@ class OrderController extends Controller implements HasMiddleware
 
                 // 5. Update Order Header
                 $discount = $request->discount ?? 0;
-                $finalGrand = $totalGrand - $discount;
+                $shippingCharge = $request->shipping_charge ?? 0;
+                $finalGrand = $totalGrand - $discount + $shippingCharge;
 
                 // Adjust tax proportionally if discount is applied to total
                 if ($totalGrand > 0) {
@@ -270,8 +272,9 @@ class OrderController extends Controller implements HasMiddleware
                     'po_number' => $request->po_number,
                     'payment_method' => $request->payment_method,
                     'user_id' => $request->user_id ?? $order->user_id,
-                    'subtotal' => $finalGrand - $totalTax, 
+                    'subtotal' => ($totalGrand - $discount) - $totalTax, 
                     'vat_amount' => $totalTax,
+                    'shipping_charge' => $shippingCharge,
                     'discount' => $discount,
                     'total' => $finalGrand,
                     'paid_amount' => $request->paid_amount ?? 0,

@@ -25,7 +25,9 @@ class IncompleteOrderController extends Controller implements HasMiddleware
             $query->where('invoice_no', 'LIKE', '%'.$request->invoice_no.'%');
         }
 
-        if ($request->filled('status')) {
+        if (!$request->has('status')) {
+            $query->where('status', 'pending');
+        } elseif ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 

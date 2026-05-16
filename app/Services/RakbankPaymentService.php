@@ -40,7 +40,7 @@ class RakbankPaymentService
                 'apiOperation' => 'INITIATE_CHECKOUT',
                 'interaction' => [
                     'operation' => 'PURCHASE',
-                    'returnUrl' => route('rakbank.callback', ['order_id' => $order->id]),
+                    'returnUrl' => route('rakbank.callback', ['order_id' => $order->id, 'invoice_no' => $order->invoice_no]),
                     'cancelUrl' => route('checkout.index'),
                     'timeoutUrl' => route('checkout.index'),
                     'merchant' => [

@@ -93,22 +93,50 @@ class ReportController extends Controller
 
     public function vat(Request $request)
     {
+        $data = $this->getVatReportData($request);
+        return view('admin.reports.vat', $data);
+    }
+
+    public function vatPdf(Request $request)
+    {
+        $data = $this->getVatReportData($request);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.vat_pdf', $data);
+        
+        $filename = 'VAT-Return-' . $data['startDate']->format('d-M-Y') . '-to-' . $data['endDate']->format('d-M-Y') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    private function getVatReportData(Request $request)
+    {
         // Default to Current Quarter
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->firstOfQuarter();
         $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
 
-        // 1. OUTPUT VAT (Sales)
-        $sales = Order::whereBetween('created_at', [$startDate, $endDate])->get();
+        // 1. OUTPUT VAT (Sales) - Grouped by Emirate for Box 1
+        $sales = Order::whereBetween('created_at', [$startDate, $endDate])
+                      ->where('status', '!=', 'cancelled')
+                      ->get();
         
         $grossSalesTotal = $sales->sum('total');
         $grossOutputVat = $sales->sum('vat_amount');
 
-        // 2. CREDIT NOTES (Returns) --- THIS IS THE NEW PART ---
+        // Group by Emirate (City) for Box 1 UAE VAT Return
+        $emirateSales = [];
+        foreach ($sales as $sale) {
+            $city = $sale->channel === 'online' ? ($sale->shipping_city ?: 'Dubai') : 'Dubai';
+            $city = ucwords(strtolower(trim($city)));
+            
+            if (!isset($emirateSales[$city])) {
+                $emirateSales[$city] = ['net' => 0, 'vat' => 0];
+            }
+            $emirateSales[$city]['net'] += ($sale->total - $sale->vat_amount);
+            $emirateSales[$city]['vat'] += $sale->vat_amount;
+        }
+
+        // 2. CREDIT NOTES (Returns)
         $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])->get();
-        
         $totalRefunds = $returns->sum('total_refund');
         
-        // Back-calculate the VAT from the refunded amount (assuming inclusive VAT)
         $taxRate = 0.05;
         $vatOnReturns = $returns->sum(function($return) use ($taxRate) {
             $net = $return->total_refund / (1 + $taxRate);
@@ -130,14 +158,26 @@ class ReportController extends Controller
         // 5. FINAL CALCULATION
         $netVatPayable = $finalOutputVat - $inputVat;
 
-        return view('admin.reports.vat', compact(
-            'startDate', 'endDate', 
-            'grossSalesTotal', 'grossOutputVat',
-            'returns', 'totalRefunds', 'vatOnReturns',
-            'finalOutputVat',
-            'purchases', 'purchasesTotal', 'purchasesNet', 'inputVat',
-            'netVatPayable','sales','purchases'
-        ));
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+
+        return [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'grossSalesTotal' => $grossSalesTotal,
+            'grossOutputVat' => $grossOutputVat,
+            'emirateSales' => $emirateSales,
+            'returns' => $returns,
+            'totalRefunds' => $totalRefunds,
+            'vatOnReturns' => $vatOnReturns,
+            'finalOutputVat' => $finalOutputVat,
+            'purchases' => $purchases,
+            'purchasesTotal' => $purchasesTotal,
+            'purchasesNet' => $purchasesNet,
+            'inputVat' => $inputVat,
+            'netVatPayable' => $netVatPayable,
+            'sales' => $sales,
+            'settings' => $settings
+        ];
     }
 
     /**

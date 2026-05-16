@@ -23,11 +23,18 @@ class OrderService
     public function createOrder(array $customerData, array $cartData, array $totalsData, string $paymentMethod, ?array $couponData = null, ?int $userId = null, ?string $invoiceNo = null)
     {
         return DB::transaction(function () use ($customerData, $cartData, $totalsData, $paymentMethod, $couponData, $userId, $invoiceNo) {
-            $subtotal = $totalsData['subtotal'];
-            $vat_amount = $totalsData['vat'];
-            $shipping_charge = $totalsData['shipping'];
-            $total = $totalsData['total'];
-            $discount = $totalsData['discount'];
+            $subtotal = $totalsData['subtotal'] ?? 0;
+            $vat_amount = $totalsData['vat'] ?? 0;
+            $shipping_charge = $totalsData['shipping'] ?? ($totalsData['shipping_charge'] ?? 0);
+            $total = $totalsData['total'] ?? 0;
+            $discount = $totalsData['discount'] ?? 0;
+
+            // Sanity check: If total is less than subtotal + vat + shipping, 
+            // and no discount was applied, the input total might be wrong.
+            // But we'll trust the explicit total if provided, unless it's 0.
+            if ($total == 0 && ($subtotal + $vat_amount + $shipping_charge) > 0) {
+                $total = ($subtotal + $vat_amount + $shipping_charge) - $discount;
+            }
 
             // 1. CRM LOGIC
             $customer = Customer::where('phone', $customerData['phone'])
