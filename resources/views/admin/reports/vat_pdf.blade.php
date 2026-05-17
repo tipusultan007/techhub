@@ -2,130 +2,30 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>VAT Return Report - {{ $startDate->format('d M Y') }} to {{ $endDate->format('d M Y') }}</title>
+    <title>VAT Return (UAE Form 201) - {{ $startDate->format('d M Y') }} to {{ $endDate->format('d M Y') }}</title>
     <style>
-        body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            font-size: 12px;
-            color: #333;
-            line-height: 1.5;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            padding: 30px;
-        }
-        .header {
-            border-bottom: 2px solid #1e293b;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .header table {
-            width: 100%;
-        }
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1e293b;
-            text-transform: uppercase;
-        }
-        .company-info {
-            text-align: right;
-        }
-        .company-name {
-            font-size: 16px;
-            font-weight: bold;
-            display: block;
-        }
-        .trn {
-            color: #4b5563;
-            font-size: 13px;
-        }
-        .report-meta {
-            margin-bottom: 30px;
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #e2e8f0;
-        }
-        .section-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #1e293b;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #e2e8f0;
-            text-transform: uppercase;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-        th {
-            background-color: #f1f5f9;
-            color: #475569;
-            font-weight: bold;
-            text-align: left;
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-        }
-        td {
-            padding: 10px;
-            border: 1px solid #e2e8f0;
-            vertical-align: top;
-        }
-        .text-right {
-            text-align: right;
-        }
-        .font-bold {
-            font-weight: bold;
-        }
-        .font-mono {
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .summary-box {
-            background-color: #1e293b;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px;
-            margin-top: 30px;
-        }
-        .summary-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        .summary-amount {
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .footer {
-            margin-top: 50px;
-            font-size: 10px;
-            color: #64748b;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 10px;
-        }
-        .emirate-row td {
-            background-color: #fff;
-        }
-        .total-row td {
-            background-color: #f8fafc;
-            font-weight: bold;
-        }
-        .text-green {
-            color: #15803d;
-        }
-        .text-red {
-            color: #b91c1c;
-        }
-        .page-break {
-            page-break-after: always;
-        }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; color: #333; line-height: 1.4; margin: 0; padding: 0; }
+        .container { padding: 20px; }
+        .header { border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 20px; }
+        .header table { width: 100%; }
+        .title { font-size: 20px; font-weight: bold; color: #1e293b; text-transform: uppercase; }
+        .company-info { text-align: right; }
+        .company-name { font-size: 14px; font-weight: bold; display: block; }
+        .trn { color: #4b5563; font-size: 12px; }
+        .report-meta { margin-bottom: 20px; background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; }
+        .section-header { background-color: #1e293b; color: white; padding: 8px 12px; font-weight: bold; text-transform: uppercase; margin-top: 20px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th { background-color: #f1f5f9; color: #475569; font-weight: bold; text-align: left; padding: 8px; border: 1px solid #cbd5e1; }
+        td { padding: 8px; border: 1px solid #cbd5e1; vertical-align: top; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .font-mono { font-family: 'Courier New', Courier, monospace; }
+        .summary-box { background-color: #f8fafc; border: 2px solid #1e293b; padding: 15px; margin-top: 20px; }
+        .total-row { background-color: #f1f5f9; font-weight: bold; }
+        .box-num { width: 50px; background: #e2e8f0; text-align: center; font-weight: bold; }
+        .footer { margin-top: 30px; font-size: 9px; color: #64748b; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        .text-green { color: #15803d; }
+        .text-red { color: #b91c1c; }
     </style>
 </head>
 <body>
@@ -134,117 +34,158 @@
             <table>
                 <tr>
                     <td>
-                        <div class="title">VAT Return Summary</div>
-                        <div style="margin-top: 5px;">UAE Federal Tax Authority Compliance</div>
+                        <div class="title">VAT Return Summary (Form 201)</div>
+                        <div style="margin-top: 3px;">UAE Federal Tax Authority Compliance Report</div>
                     </td>
                     <td class="company-info">
                         <span class="company-name">{{ $settings['shop_name'] ?? 'Tech Hub UAE' }}</span>
-                        <span class="trn">TRN: {{ $settings['shop_trn'] ?? 'Not Set' }}</span><br>
-                        <span style="font-size: 11px; color: #64748b;">{{ $settings['shop_address'] ?? '' }}</span>
+                        <span class="trn">TRN: {{ $settings['shop_trn'] ?? 'Not Set' }}</span>
                     </td>
                 </tr>
             </table>
         </div>
 
         <div class="report-meta">
-            <table>
-                <tr>
-                    <td style="border: none; padding: 0;">
-                        <strong>Reporting Period:</strong> {{ $startDate->format('d M, Y') }} - {{ $endDate->format('d M, Y') }}
-                    </td>
-                    <td style="border: none; padding: 0;" class="text-right">
-                        <strong>Generated At:</strong> {{ now()->format('d M, Y h:i A') }}
-                    </td>
+            <table style="width: 100%; border: none;">
+                <tr style="border: none;">
+                    <td style="border: none; padding: 0;"><strong>Period:</strong> {{ $startDate->format('d M, Y') }} - {{ $endDate->format('d M, Y') }}</td>
+                    <td style="border: none; padding: 0;" class="text-right"><strong>Generated:</strong> {{ now()->format('d M, Y h:i A') }}</td>
                 </tr>
             </table>
         </div>
 
-        <!-- 1. OUTPUT VAT -->
-        <div class="section-title">1. VAT on Sales (Output Tax)</div>
+        <!-- OUTPUT VAT SECTION -->
+        <div class="section-header">VAT on Sales (Output Tax)</div>
         <table>
             <thead>
                 <tr>
+                    <th class="box-num">Box</th>
                     <th>Description</th>
                     <th class="text-right">Amount (AED)</th>
+                    <th class="text-right">VAT (AED)</th>
                 </tr>
             </thead>
             <tbody>
+                <!-- Box 1 -->
                 <tr>
-                    <td>Gross VAT from Standard Rated Supplies</td>
-                    <td class="text-right font-mono">{{ number_format($grossOutputVat, 2) }}</td>
+                    <td class="box-num">1a-g</td>
+                    <td>Standard Rated Supplies (Sales)</td>
+                    <td class="text-right font-mono">{{ number_format($standardRatedNet, 2) }}</td>
+                    <td class="text-right font-mono font-bold">{{ number_format($standardRatedVat, 2) }}</td>
                 </tr>
+                <!-- Box 2 -->
                 <tr>
-                    <td>Less: VAT reversed on Returns (Credit Notes)</td>
+                    <td class="box-num">2</td>
+                    <td>Zero Rated Supplies (Exports/Services)</td>
+                    <td class="text-right font-mono">{{ number_format($zeroRatedNet, 2) }}</td>
+                    <td class="text-right font-mono">0.00</td>
+                </tr>
+                <!-- Box 3 -->
+                <tr>
+                    <td class="box-num">3</td>
+                    <td>Exempt Supplies</td>
+                    <td class="text-right font-mono">{{ number_format($exemptNet, 2) }}</td>
+                    <td class="text-right font-mono">0.00</td>
+                </tr>
+                <!-- Box 5 -->
+                <tr>
+                    <td class="box-num">5</td>
+                    <td>Adjustments (Returns / Credit Notes)</td>
+                    <td class="text-right font-mono text-red">- {{ number_format($totalRefunds - $vatOnReturns, 2) }}</td>
                     <td class="text-right font-mono text-red">- {{ number_format($vatOnReturns, 2) }}</td>
                 </tr>
                 <tr class="total-row">
-                    <td>Net Output VAT Due</td>
+                    <td colspan="2">Total Output VAT Due</td>
+                    <td class="text-right font-mono">{{ number_format($grossSalesTotal - $totalRefunds, 2) }}</td>
                     <td class="text-right font-mono text-green">{{ number_format($finalOutputVat, 2) }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <!-- 2. BREAKDOWN BY EMIRATE -->
-        <div class="section-title">Box 1: Standard Rated Supplies by Emirate</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Emirate</th>
-                    <th class="text-right">Net Amount (AED)</th>
-                    <th class="text-right">VAT Amount (AED)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($emirateSales as $emirate => $data)
-                <tr class="emirate-row">
-                    <td>{{ $emirate }}</td>
-                    <td class="text-right font-mono">{{ number_format($data['net'], 2) }}</td>
-                    <td class="text-right font-mono font-bold">{{ number_format($data['vat'], 2) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td>Total</td>
-                    <td class="text-right font-mono">{{ number_format(collect($emirateSales)->sum('net'), 2) }}</td>
-                    <td class="text-right font-mono">{{ number_format(collect($emirateSales)->sum('vat'), 2) }}</td>
-                </tr>
-            </tfoot>
-        </table>
+        <!-- Box 1 Breakdown -->
+        <div style="margin-left: 50px; font-size: 10px;">
+            <p><strong>Box 1: Breakdown by Emirate</strong></p>
+            <table style="width: 80%;">
+                <thead>
+                    <tr>
+                        <th>Emirate</th>
+                        <th class="text-right">Net Amount</th>
+                        <th class="text-right">VAT (5%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($emirateSales as $emirate => $data)
+                    <tr>
+                        <td>{{ $emirate }}</td>
+                        <td class="text-right font-mono">{{ number_format($data['net'], 2) }}</td>
+                        <td class="text-right font-mono">{{ number_format($data['vat'], 2) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-        <!-- 3. INPUT VAT -->
-        <div class="section-title">2. VAT on Expenses (Input Tax)</div>
+        <!-- INPUT VAT SECTION -->
+        <div class="section-header">VAT on Expenses (Input Tax)</div>
         <table>
             <thead>
                 <tr>
+                    <th class="box-num">Box</th>
                     <th>Description</th>
                     <th class="text-right">Amount (AED)</th>
+                    <th class="text-right">Recoverable VAT (AED)</th>
                 </tr>
             </thead>
             <tbody>
+                <!-- Box 9a -->
                 <tr>
-                    <td>VAT on Purchases / Received Inventory</td>
-                    <td class="text-right font-mono">{{ number_format($inputVat, 2) }}</td>
+                    <td class="box-num">9a</td>
+                    <td>Standard Rated Purchases (Stock)</td>
+                    <td class="text-right font-mono">{{ number_format($purchasesNet, 2) }}</td>
+                    <td class="text-right font-mono font-bold">{{ number_format($purchaseVat, 2) }}</td>
+                </tr>
+                <!-- Box 9b -->
+                <tr>
+                    <td class="box-num">9b</td>
+                    <td>Standard Rated Expenses (General)</td>
+                    <td class="text-right font-mono">{{ number_format($expensesNet, 2) }}</td>
+                    <td class="text-right font-mono font-bold">{{ number_format($expenseVat, 2) }}</td>
+                </tr>
+                <!-- Box 10 -->
+                <tr>
+                    <td class="box-num">10</td>
+                    <td>Supplies subject to Reverse Charge (Imports)</td>
+                    <td class="text-right font-mono">0.00</td>
+                    <td class="text-right font-mono">0.00</td>
                 </tr>
                 <tr class="total-row">
-                    <td class="text-red">Total Recoverable Input VAT</td>
+                    <td colspan="2">Total Recoverable Input VAT</td>
+                    <td class="text-right font-mono">{{ number_format($purchasesNet + $expensesNet, 2) }}</td>
                     <td class="text-right font-mono text-red">{{ number_format($inputVat, 2) }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <!-- FINAL SUMMARY -->
+        <!-- NET VAT POSITION -->
         <div class="summary-box">
-            <div class="summary-title">Net VAT Payable to FTA</div>
-            <div class="summary-amount">AED {{ number_format($netVatPayable, 2) }}</div>
+            <table style="width: 100%; border: none; margin-bottom: 0;">
+                <tr style="border: none;">
+                    <td style="border: none; padding: 0;">
+                        <span style="font-size: 14px; font-weight: bold;">Net VAT Payable / (Refundable)</span>
+                    </td>
+                    <td style="border: none; padding: 0;" class="text-right">
+                        <span style="font-size: 24px; font-weight: bold; color: #1e293b;">AED {{ number_format($netVatPayable, 2) }}</span>
+                    </td>
+                </tr>
+            </table>
             @if($netVatPayable < 0)
-                <div style="margin-top: 5px; font-size: 14px;">(Refundable)</div>
+                <p class="text-green" style="margin-top: 5px; font-weight: bold; text-align: right;">Refundable from FTA</p>
             @endif
         </div>
 
         <div class="footer">
-            This is a computer-generated report and does not require a signature.<br>
-            © {{ date('Y') }} {{ $settings['shop_name'] ?? 'Tech Hub' }}. All rights reserved.
+            Generated by Electromart ERP. This report is intended for VAT Return filing assistance.<br>
+            © {{ date('Y') }} {{ $settings['shop_name'] ?? 'Tech Hub UAE' }}.
         </div>
     </div>
 </body>

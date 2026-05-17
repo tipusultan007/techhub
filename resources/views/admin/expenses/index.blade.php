@@ -23,6 +23,14 @@
                             <input type="number" step="0.01" name="amount" class="w-full border p-2 rounded mt-1" placeholder="0.00" required>
                         </div>
                         <div>
+                            <label class="block text-sm font-bold text-gray-700 text-xs uppercase tracking-wider">Tax Method</label>
+                            <select name="tax_method" class="w-full border p-2 rounded mt-1 bg-white text-sm" required>
+                                <option value="inclusive">Tax Inclusive (5% Inside)</option>
+                                <option value="exclusive">Tax Exclusive (+ 5% VAT)</option>
+                                <option value="no_tax">No Tax (Govt. Fees / Exempt)</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-sm font-bold text-gray-700">Category</label>
                             <div class="flex gap-2">
                                 <select name="expense_category_id" class="w-full border p-2 rounded mt-1 bg-white" required>
@@ -151,6 +159,14 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700">Amount (AED)</label>
                             <input type="number" step="0.01" name="amount" x-model="editData.amount" class="w-full border p-2 rounded mt-1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Tax Method</label>
+                            <select name="tax_method" x-model="editData.tax_method" class="w-full border p-2 rounded mt-1 bg-white">
+                                <option value="inclusive">Tax Inclusive</option>
+                                <option value="exclusive">Tax Exclusive</option>
+                                <option value="no_tax">No Tax / Exempt</option>
+                            </select>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-700">Category</label>

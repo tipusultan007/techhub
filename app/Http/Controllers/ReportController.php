@@ -112,7 +112,7 @@ class ReportController extends Controller
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->firstOfQuarter();
         $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
 
-        // 1. OUTPUT VAT (Sales) - Grouped by Emirate for Box 1
+        // 1. OUTPUT VAT (Sales)
         $sales = Order::whereBetween('created_at', [$startDate, $endDate])
                       ->where('status', '!=', 'cancelled')
                       ->get();
@@ -120,20 +120,36 @@ class ReportController extends Controller
         $grossSalesTotal = $sales->sum('total');
         $grossOutputVat = $sales->sum('vat_amount');
 
-        // Group by Emirate (City) for Box 1 UAE VAT Return
+        // Box 1: Standard Rated Supplies (Breakdown by Emirate)
         $emirateSales = [];
+        $standardRatedNet = 0;
+        $standardRatedVat = 0;
+
+        // Box 2 & 3: Zero Rated and Exempt (If VAT is 0)
+        $zeroRatedNet = 0;
+        $exemptNet = 0;
+
         foreach ($sales as $sale) {
-            $city = $sale->channel === 'online' ? ($sale->shipping_city ?: 'Dubai') : 'Dubai';
-            $city = ucwords(strtolower(trim($city)));
-            
-            if (!isset($emirateSales[$city])) {
-                $emirateSales[$city] = ['net' => 0, 'vat' => 0];
+            if ($sale->vat_amount > 0) {
+                $city = $sale->channel === 'online' ? ($sale->shipping_city ?: 'Dubai') : 'Dubai';
+                $city = ucwords(strtolower(trim($city)));
+                
+                if (!isset($emirateSales[$city])) {
+                    $emirateSales[$city] = ['net' => 0, 'vat' => 0];
+                }
+                $net = ($sale->total - $sale->vat_amount);
+                $emirateSales[$city]['net'] += $net;
+                $emirateSales[$city]['vat'] += $sale->vat_amount;
+                
+                $standardRatedNet += $net;
+                $standardRatedVat += $sale->vat_amount;
+            } else {
+                // For now, group all 0% VAT under Zero Rated (common for e-commerce exports)
+                $zeroRatedNet += $sale->total;
             }
-            $emirateSales[$city]['net'] += ($sale->total - $sale->vat_amount);
-            $emirateSales[$city]['vat'] += $sale->vat_amount;
         }
 
-        // 2. CREDIT NOTES (Returns)
+        // Box 5: Adjustments (Returns / Credit Notes)
         $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])->get();
         $totalRefunds = $returns->sum('total_refund');
         
@@ -143,19 +159,27 @@ class ReportController extends Controller
             return $return->total_refund - $net;
         });
 
-        // 3. NET OUTPUT VAT (Sales minus Returns)
+        // Net Output VAT
         $finalOutputVat = $grossOutputVat - $vatOnReturns;
 
-        // 4. INPUT VAT (Purchases)
+        // 2. INPUT VAT (Purchases & Expenses)
         $purchases = \App\Models\PurchaseOrder::whereBetween('date', [$startDate, $endDate])
-            ->where('status', 'received')
+            ->whereIn('status', ['received', 'completed', 'partial_received'])
             ->get();
 
-        $purchasesTotal = $purchases->sum('total_cost');
-        $inputVat = $purchases->sum('tax_amount');
-        $purchasesNet = $purchasesTotal - $inputVat;
+        $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])->get();
 
-        // 5. FINAL CALCULATION
+        $purchasesTotal = $purchases->sum('total_cost');
+        $purchaseVat = $purchases->sum('tax_amount');
+        $purchasesNet = $purchasesTotal - $purchaseVat;
+
+        $expensesTotal = $expenses->sum('amount');
+        $expenseVat = $expenses->sum('tax_amount');
+        $expensesNet = $expensesTotal - $expenseVat;
+
+        $inputVat = $purchaseVat + $expenseVat;
+
+        // 3. FINAL CALCULATION
         $netVatPayable = $finalOutputVat - $inputVat;
 
         $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
@@ -166,6 +190,10 @@ class ReportController extends Controller
             'grossSalesTotal' => $grossSalesTotal,
             'grossOutputVat' => $grossOutputVat,
             'emirateSales' => $emirateSales,
+            'standardRatedNet' => $standardRatedNet,
+            'standardRatedVat' => $standardRatedVat,
+            'zeroRatedNet' => $zeroRatedNet,
+            'exemptNet' => $exemptNet,
             'returns' => $returns,
             'totalRefunds' => $totalRefunds,
             'vatOnReturns' => $vatOnReturns,
@@ -173,6 +201,10 @@ class ReportController extends Controller
             'purchases' => $purchases,
             'purchasesTotal' => $purchasesTotal,
             'purchasesNet' => $purchasesNet,
+            'purchaseVat' => $purchaseVat,
+            'expensesTotal' => $expensesTotal,
+            'expensesNet' => $expensesNet,
+            'expenseVat' => $expenseVat,
             'inputVat' => $inputVat,
             'netVatPayable' => $netVatPayable,
             'sales' => $sales,

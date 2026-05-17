@@ -18,6 +18,15 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-bold text-gray-700">Tax Method <span class="text-red-500">*</span></label>
+                    <select name="tax_method" class="w-full border p-2 rounded mt-1 bg-white" required>
+                        <option value="inclusive">Tax Inclusive (5% VAT inside)</option>
+                        <option value="exclusive">Tax Exclusive (Add 5% VAT)</option>
+                    </select>
+                    <p class="text-[10px] text-gray-500 mt-1 italic">Note: System will automatically calculate UAE VAT amount.</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-bold text-gray-700">Category <span class="text-red-500">*</span></label>
                     <div class="flex gap-2">
                         <select name="expense_category_id" class="w-full border p-2 rounded mt-1 bg-white" required>

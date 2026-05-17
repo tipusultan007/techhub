@@ -45,9 +45,30 @@ class ExpenseController extends Controller
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0',
             'expense_category_id' => 'required|exists:expense_categories,id',
+            'tax_method' => 'required|in:inclusive,exclusive,no_tax',
         ]);
 
-        $expense = Expense::create($request->except('attachment') + ['user_id' => Auth::id()]);
+        $amount = $request->amount;
+        $taxMethod = $request->tax_method;
+        $taxRate = 0.05; // UAE Standard VAT
+
+        if ($taxMethod === 'inclusive') {
+            $netAmount = $amount / (1 + $taxRate);
+            $taxAmount = $amount - $netAmount;
+        } elseif ($taxMethod === 'exclusive') {
+            $netAmount = $amount;
+            $taxAmount = $amount * $taxRate;
+        } else {
+            // No Tax / Exempt / Out of Scope
+            $netAmount = $amount;
+            $taxAmount = 0;
+        }
+
+        $expense = Expense::create($request->except('attachment') + [
+            'user_id' => Auth::id(),
+            'tax_amount' => $taxAmount,
+            'net_amount' => $netAmount,
+        ]);
 
         if ($request->hasFile('attachment')) {
             $expense->addMediaFromRequest('attachment')->toMediaCollection('attachment');
@@ -56,6 +77,8 @@ class ExpenseController extends Controller
         $this->logActivity('Expense', 'Create', "Recorded Expense of {$expense->amount} for category {$expense->category->name}", [
             'expense_id' => $expense->id,
             'amount' => $expense->amount,
+            'tax_method' => $taxMethod,
+            'tax_amount' => $taxAmount,
             'category' => $expense->category->name,
         ]);
 
@@ -74,9 +97,28 @@ class ExpenseController extends Controller
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0',
             'expense_category_id' => 'required|exists:expense_categories,id',
+            'tax_method' => 'required|in:inclusive,exclusive,no_tax',
         ]);
 
-        $expense->update($request->except('attachment'));
+        $amount = $request->amount;
+        $taxMethod = $request->tax_method;
+        $taxRate = 0.05;
+
+        if ($taxMethod === 'inclusive') {
+            $netAmount = $amount / (1 + $taxRate);
+            $taxAmount = $amount - $netAmount;
+        } elseif ($taxMethod === 'exclusive') {
+            $netAmount = $amount;
+            $taxAmount = $amount * $taxRate;
+        } else {
+            $netAmount = $amount;
+            $taxAmount = 0;
+        }
+
+        $expense->update($request->except('attachment') + [
+            'tax_amount' => $taxAmount,
+            'net_amount' => $netAmount,
+        ]);
 
         if ($request->hasFile('attachment')) {
             $expense->clearMediaCollection('attachment');
@@ -86,6 +128,8 @@ class ExpenseController extends Controller
         $this->logActivity('Expense', 'Edit', "Updated Expense of {$expense->amount} for category {$expense->category->name}", [
             'expense_id' => $expense->id,
             'amount' => $expense->amount,
+            'tax_method' => $taxMethod,
+            'tax_amount' => $taxAmount,
             'category' => $expense->category->name,
         ]);
 

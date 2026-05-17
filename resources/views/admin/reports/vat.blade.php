@@ -52,86 +52,157 @@
         </div>
 
         <div class="p-8 space-y-8">
-            <!-- 1. OUTPUT VAT SECTION -->
+            <!-- 1. OUTPUT VAT SECTION (Sales) -->
             <div>
-                <h3 class="text-lg font-bold text-gray-700 mb-3 border-l-4 border-green-500 pl-3">VAT on Sales (Output Tax)</h3>
-                <div class="space-y-4 bg-gray-50 p-6 rounded-lg border">
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="text-gray-600">A. Total VAT from Sales</span>
-                        <span class="font-mono font-bold text-gray-800">{{ number_format($grossOutputVat, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="text-gray-600">B. Less: VAT on Returns</span>
-                        <span class="font-mono font-bold text-yellow-600">- {{ number_format($vatOnReturns, 2) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center text-xl font-bold border-t-2 border-gray-300 pt-4 mt-4">
-                        <span class="text-green-700">Net Output VAT Due (A - B)</span>
-                        <span class="font-mono text-green-700">{{ number_format($finalOutputVat, 2) }}</span>
-                    </div>
+                <h3 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-slate-800 pl-3 uppercase tracking-tight">VAT on Sales (Output Tax)</h3>
+                <div class="overflow-hidden border rounded-lg">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3 w-16 text-center font-bold text-gray-500">Box</th>
+                                <th class="p-3 text-gray-700">Description</th>
+                                <th class="p-3 text-right text-gray-700">Amount (AED)</th>
+                                <th class="p-3 text-right text-gray-700">VAT (AED)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <!-- Box 1 -->
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 text-center bg-gray-50 font-bold border-r">1a-g</td>
+                                <td class="p-3">
+                                    <span class="font-semibold block">Standard Rated Supplies</span>
+                                    <span class="text-xs text-gray-500 italic">Local sales within UAE Emirates</span>
+                                </td>
+                                <td class="p-3 text-right font-mono">{{ number_format($standardRatedNet, 2) }}</td>
+                                <td class="p-3 text-right font-mono font-bold text-green-700">{{ number_format($standardRatedVat, 2) }}</td>
+                            </tr>
+                            <!-- Box 2 -->
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 text-center bg-gray-50 font-bold border-r">2</td>
+                                <td class="p-3 font-semibold text-gray-700">Tax Repayment / Zero Rated Supplies</td>
+                                <td class="p-3 text-right font-mono">{{ number_format($zeroRatedNet, 2) }}</td>
+                                <td class="p-3 text-right font-mono">0.00</td>
+                            </tr>
+                            <!-- Box 3 -->
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 text-center bg-gray-50 font-bold border-r">3</td>
+                                <td class="p-3 font-semibold text-gray-700">Exempt Supplies</td>
+                                <td class="p-3 text-right font-mono">{{ number_format($exemptNet, 2) }}</td>
+                                <td class="p-3 text-right font-mono">0.00</td>
+                            </tr>
+                            <!-- Box 5 -->
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 text-center bg-gray-50 font-bold border-r">5</td>
+                                <td class="p-3 font-semibold text-gray-700">Adjustments (Returns / Credit Notes)</td>
+                                <td class="p-3 text-right font-mono text-red-600">- {{ number_format($totalRefunds - $vatOnReturns, 2) }}</td>
+                                <td class="p-3 text-right font-mono text-red-600">- {{ number_format($vatOnReturns, 2) }}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-slate-100 font-bold">
+                            <tr>
+                                <td colspan="2" class="p-3 text-gray-800 uppercase">Total Output VAT Due</td>
+                                <td class="p-3 text-right font-mono">{{ number_format($grossSalesTotal - $totalRefunds, 2) }}</td>
+                                <td class="p-3 text-right font-mono text-green-700">{{ number_format($finalOutputVat, 2) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
 
-                <!-- UAE FTA Box 1: Supplies by Emirate -->
-                <div class="mt-8">
-                    <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
-                        <i class="fas fa-map-marker-alt mr-2"></i> Standard Rated Supplies by Emirate (Box 1)
-                    </h4>
-                    <div class="border rounded-lg overflow-hidden shadow-sm">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-slate-50 border-b">
+                <!-- Box 1 Breakdown (Mini Table) -->
+                <div class="mt-4 ml-8">
+                    <h5 class="text-xs font-bold text-gray-500 uppercase mb-2">Box 1 Breakdown by Emirate</h5>
+                    <div class="border rounded overflow-hidden max-w-2xl">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-gray-50 border-b">
                                 <tr>
-                                    <th class="p-3 text-slate-700">Emirate</th>
-                                    <th class="p-3 text-right text-slate-700">Amount (AED) - Net</th>
-                                    <th class="p-3 text-right text-slate-700">VAT Amount (AED) - 5%</th>
+                                    <th class="p-2">Emirate</th>
+                                    <th class="p-2 text-right">Net Amount</th>
+                                    <th class="p-2 text-right">VAT (5%)</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($emirateSales as $emirate => $data)
-                                <tr class="border-b hover:bg-slate-50">
-                                    <td class="p-3 font-semibold text-slate-800">{{ $emirate }}</td>
-                                    <td class="p-3 text-right font-mono">{{ number_format($data['net'], 2) }}</td>
-                                    <td class="p-3 text-right font-mono font-bold text-green-700">{{ number_format($data['vat'], 2) }}</td>
+                                @foreach($emirateSales as $emirate => $data)
+                                <tr class="border-b last:border-0">
+                                    <td class="p-2 font-medium">{{ $emirate }}</td>
+                                    <td class="p-2 text-right font-mono">{{ number_format($data['net'], 2) }}</td>
+                                    <td class="p-2 text-right font-mono">{{ number_format($data['vat'], 2) }}</td>
                                 </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="3" class="p-8 text-center text-gray-500 italic">No sales found for this period.</td>
-                                </tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
-                            @if(count($emirateSales) > 0)
-                            <tfoot class="bg-slate-100 font-bold">
-                                <tr>
-                                    <td class="p-3 text-slate-800">Total Standard Rated Supplies</td>
-                                    <td class="p-3 text-right">{{ number_format(collect($emirateSales)->sum('net'), 2) }}</td>
-                                    <td class="p-3 text-right text-green-700">{{ number_format(collect($emirateSales)->sum('vat'), 2) }}</td>
-                                </tr>
-                            </tfoot>
-                            @endif
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. INPUT VAT SECTION -->
+            <!-- 2. INPUT VAT SECTION (Purchases) -->
             <div>
-                <h3 class="text-lg font-bold text-gray-700 mb-3 border-l-4 border-red-500 pl-3">VAT on Expenses (Input Tax)</h3>
-                <div class="bg-gray-50 p-6 rounded-lg border">
-                    <div class="flex justify-between items-center text-xl font-bold">
-                        <span class="text-red-700">Total Input VAT Recoverable</span>
-                        <span class="font-mono text-red-700">{{ number_format($inputVat, 2) }}</span>
-                    </div>
+                <h3 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-slate-800 pl-3 uppercase tracking-tight">VAT on Expenses (Input Tax)</h3>
+                <div class="overflow-hidden border rounded-lg">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3 w-16 text-center font-bold text-gray-500">Box</th>
+                                <th class="p-3 text-gray-700">Description</th>
+                                <th class="p-3 text-right text-gray-700">Amount (AED)</th>
+                                <th class="p-3 text-right text-gray-700">Recoverable VAT (AED)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <!-- Box 9a -->
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 text-center bg-gray-50 font-bold border-r">9a</td>
+                                <td class="p-3">
+                                    <span class="font-semibold block">Standard Rated Purchases</span>
+                                    <span class="text-xs text-gray-500 italic">Inventory / Stock from Suppliers</span>
+                                </td>
+                                <td class="p-3 text-right font-mono">{{ number_format($purchasesNet, 2) }}</td>
+                                <td class="p-3 text-right font-mono font-bold text-red-600">{{ number_format($purchaseVat, 2) }}</td>
+                            </tr>
+                            <!-- Box 9b -->
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 text-center bg-gray-50 font-bold border-r">9b</td>
+                                <td class="p-3">
+                                    <span class="font-semibold block">Standard Rated Expenses</span>
+                                    <span class="text-xs text-gray-500 italic">Office bills, rent, petrol, etc.</span>
+                                </td>
+                                <td class="p-3 text-right font-mono">{{ number_format($expensesNet, 2) }}</td>
+                                <td class="p-3 text-right font-mono font-bold text-red-600">{{ number_format($expenseVat, 2) }}</td>
+                            </tr>
+                            <!-- Box 10 -->
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-3 text-center bg-gray-50 font-bold border-r">10</td>
+                                <td class="p-3 font-semibold text-gray-700">Supplies subject to Reverse Charge (Imports)</td>
+                                <td class="p-3 text-right font-mono">0.00</td>
+                                <td class="p-3 text-right font-mono text-gray-400">0.00</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-slate-100 font-bold">
+                            <tr>
+                                <td colspan="2" class="p-3 text-gray-800 uppercase">Total Recoverable Input VAT</td>
+                                <td class="p-3 text-right font-mono">{{ number_format($purchasesNet + $expensesNet, 2) }}</td>
+                                <td class="p-3 text-right font-mono text-red-700">{{ number_format($inputVat, 2) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
 
             <!-- 3. FINAL SUMMARY -->
-            <div class="bg-slate-800 text-white p-8 rounded-lg shadow-xl text-center">
-                <p class="text-sm font-bold uppercase tracking-wider mb-2">Net VAT Payable to FTA</p>
-                <div class="text-5xl font-mono font-bold">
-                    AED {{ number_format($netVatPayable, 2) }}
+            <div class="bg-slate-800 text-white p-8 rounded-lg shadow-xl flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+                <div>
+                    <p class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-1">Net VAT Position</p>
+                    <h2 class="text-2xl font-bold uppercase">Payable to FTA / (Refundable)</h2>
                 </div>
-                @if($netVatPayable < 0)
-                    <p class="mt-2 text-lg font-semibold text-green-300">(Refundable from FTA)</p>
-                @endif
+                <div class="mt-4 md:mt-0 text-right">
+                    <div class="text-5xl font-mono font-bold">
+                        AED {{ number_format($netVatPayable, 2) }}
+                    </div>
+                    @if($netVatPayable < 0)
+                        <p class="mt-2 text-lg font-semibold text-green-300 italic">Refundable from Federal Tax Authority</p>
+                    @endif
+                </div>
             </div>
+        </div>
         </div>
     </div>
 
