@@ -48,21 +48,47 @@
         </div>
 
         <!-- Details Grid -->
-        <div class="px-8 py-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="px-8 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
                 <h4 class="text-xs font-bold text-gray-400 uppercase mb-4 py-1 border-b">Expense Information</h4>
                 <div class="space-y-4">
                     <div class="flex justify-between">
                         <span class="text-sm text-gray-500 font-medium">Category:</span>
-                        <span class="text-sm text-gray-900 font-bold">{{ $expense->category->name }}</span>
+                        <span class="text-sm text-gray-900 font-bold text-right">{{ $expense->category->name }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-sm text-gray-500 font-medium">Recorded By:</span>
-                        <span class="text-sm text-gray-900 font-bold">{{ $expense->user->name ?? 'System' }}</span>
+                        <span class="text-sm text-gray-900 font-bold text-right">{{ $expense->user->name ?? 'System' }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-sm text-gray-500 font-medium">Timestamp:</span>
-                        <span class="text-sm text-gray-900 font-bold">{{ $expense->created_at->format('d M Y, h:i A') }}</span>
+                        <span class="text-sm text-gray-900 font-bold text-right">{{ $expense->created_at->format('d M Y, h:i A') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase mb-4 py-1 border-b">VAT & Tax Details</h4>
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-500 font-medium">Tax Method:</span>
+                        <span class="text-sm font-bold uppercase text-right {{ $expense->tax_method === 'no_tax' ? 'text-gray-500' : 'text-slate-800' }}">
+                            @if($expense->tax_method === 'inclusive')
+                                Tax Inclusive (5%)
+                            @elseif($expense->tax_method === 'exclusive')
+                                Tax Exclusive (5%)
+                            @else
+                                No Tax / Exempt
+                            @endif
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-500 font-medium">Net (Pre-Tax):</span>
+                        <span class="text-sm text-gray-900 font-mono font-bold text-right">AED {{ number_format($expense->net_amount ?? $expense->amount, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-gray-500 font-medium">VAT (5%):</span>
+                        <span class="text-sm text-red-600 font-mono font-bold text-right">AED {{ number_format($expense->tax_amount ?? 0, 2) }}</span>
                     </div>
                 </div>
             </div>
