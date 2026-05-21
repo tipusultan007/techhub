@@ -142,7 +142,7 @@
                         </span>
                     @endif
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-6 py-4 whitespace-wrap text-sm text-gray-900">
                     {{ $order->customer_name ?? 'Guest/Walk-in' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
