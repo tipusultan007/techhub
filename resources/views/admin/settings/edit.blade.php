@@ -764,7 +764,7 @@
                                                     <p class="text-sm font-bold text-slate-800 mb-1">App Registration</p>
                                                     <p class="text-xs text-slate-500 leading-relaxed">
                                                         Go to <a href="https://entra.microsoft.com/" target="_blank" class="text-[#2dae9a] hover:underline font-bold text-[11px] uppercase tracking-tighter">Microsoft Entra ID</a> &rarr; <strong>App registrations</strong> &rarr; <strong>New registration</strong>. 
-                                                        Name it "Electromart Mailer" and select "Single Tenant".
+                                                        Name it "Techhub Mailer" and select "Single Tenant".
                                                     </p>
                                                 </div>
                                             </div>

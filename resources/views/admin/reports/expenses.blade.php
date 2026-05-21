@@ -46,7 +46,7 @@
                 @if(settings('site_logo'))
                     <img src="{{ settings('site_logo') }}" alt="Logo" class="h-12 mb-2">
                 @else
-                    <h1 class="text-2xl font-black text-slate-800 uppercase">{{ settings('shop_name', 'ELECTROMART') }}</h1>
+                    <h1 class="text-2xl font-black text-slate-800 uppercase">{{ settings('shop_name', 'Techhub') }}</h1>
                 @endif
                 <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ settings('site_name') }}</p>
                 <div class="mt-2 text-[10px] text-gray-600 space-y-0.5 uppercase font-bold">

@@ -236,6 +236,9 @@ class ReportController extends Controller
     /**
      * Profit & Loss Report
      */
+    /**
+     * Profit & Loss Report
+     */
     public function profitLoss(Request $request)
     {
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
@@ -243,42 +246,272 @@ class ReportController extends Controller
 
         // 1. Revenue (Sales)
         $sales = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
             ->with('items')
             ->get();
+
         $totalRevenue = $sales->sum('total');
+        $totalDiscount = $sales->sum('discount');
+        $totalVAT = $sales->sum('vat_amount');
+        $totalShipping = 0;
+        $netSales = $sales->sum('subtotal');
+
+        // Revenue VAT Split Calculations
+        $standardRatedNet = 0;
+        $standardRatedVat = 0;
+        $zeroRatedNet = 0;
+        foreach ($sales as $sale) {
+            $actualShipping = max(0, round($sale->total - $sale->subtotal - $sale->vat_amount, 2));
+            $totalShipping += $actualShipping;
+            if ($sale->vat_amount > 0) {
+                // Exclude shipping and tax to get standard-rated net product sales
+                $standardRatedNet += $sale->subtotal;
+                $standardRatedVat += $sale->vat_amount;
+            } else {
+                // Exclude shipping to get zero-rated net product sales
+                $zeroRatedNet += $sale->subtotal;
+            }
+        }
+
+        // Channel Breakdown
+        $channelBreakdown = $sales->groupBy('channel')->map(function ($group) {
+            return [
+                'count' => $group->count(),
+                'total' => $group->sum('total'),
+                'subtotal' => $group->sum('subtotal'),
+                'vat' => $group->sum('vat_amount'),
+                'discount' => $group->sum('discount'),
+            ];
+        });
+
+        // Payment Method Breakdown
+        $paymentBreakdown = $sales->groupBy('payment_method')->map(function ($group) {
+            return [
+                'count' => $group->count(),
+                'total' => $group->sum('total'),
+            ];
+        });
 
         // 2. Returns (Credit Notes)
         $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])->get();
         $totalReturns = $returns->sum('total_refund');
+        $returnsCount = $returns->count();
+
+        // VAT on Returns
+        $taxRate = 0.05;
+        $vatOnReturns = $returns->sum(function($return) use ($taxRate) {
+            $net = $return->total_refund / (1 + $taxRate);
+            return $return->total_refund - $net;
+        });
+        $netReturns = $totalReturns - $vatOnReturns;
 
         // 3. COGS (Cost of Goods Sold)
-        // Calculated based on sales items' original costs at time of sale if possible, 
-        // or current product cost as fallback
         $cogs = 0;
+        $cogsSimple = 0;
+        $cogsVariant = 0;
+        $itemsCount = 0;
         foreach($sales as $order) {
             foreach($order->items as $item) {
-                // In a robust system, we'd store purchase_price at time of sale.
-                // Assuming it's available or fetching from product
                 $product = $item->product;
                 $cost = $item->purchase_price ?? ($product ? $product->cost_price : 0);
-                $cogs += ($cost * $item->quantity);
+                $itemCogs = ($cost * $item->quantity);
+                $cogs += $itemCogs;
+                $itemsCount += $item->quantity;
+                
+                if ($item->product_variant_id) {
+                    $cogsVariant += $itemCogs;
+                } else {
+                    $cogsSimple += $itemCogs;
+                }
             }
         }
 
-        // 4. Gross Profit
-        $grossProfit = ($totalRevenue - $totalReturns) - $cogs;
+        // 4. Stock Purchases (For Input VAT auditing side-by-side with COGS)
+        $purchases = \App\Models\PurchaseOrder::whereBetween('date', [$startDate, $endDate])
+            ->whereIn('status', ['received', 'completed', 'partial_received'])
+            ->get();
+        $purchasesTotal = $purchases->sum('total_cost');
+        $purchaseVat = $purchases->sum('tax_amount');
+        $purchasesNet = $purchasesTotal - $purchaseVat;
 
-        // 5. Operating Expenses
-        $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])->get();
-        $totalExpenses = $expenses->sum('amount');
+        // 5. Gross Profit (VAT-exclusive)
+        // Net Revenue (Excl. VAT) = Total revenue (Excl. VAT) - Net Returns (Excl. VAT)
+        $netRevenueExclVat = ($totalRevenue - $totalVAT) - $netReturns;
+        $grossProfit = $netRevenueExclVat - $cogs;
 
-        // 6. Net Profit
-        $netProfit = $grossProfit - $totalExpenses;
+        // 6. Operating Expenses
+        $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])
+            ->with('category')
+            ->get();
+        $expensesNet = $expenses->sum('net_amount');
+        $expensesTax = $expenses->sum('tax_amount');
+        $totalExpenses = $expensesNet + $expensesTax; // True gross expense
+
+        // Expenses Category Breakdown
+        $expenseCategories = $expenses->groupBy('expense_category_id')->map(function ($group) {
+            $net = $group->sum('net_amount');
+            $tax = $group->sum('tax_amount');
+            return [
+                'name' => $group->first()->category->name ?? 'Uncategorized',
+                'count' => $group->count(),
+                'total' => $net + $tax,
+                'net' => $net,
+                'tax' => $tax,
+            ];
+        })->sortByDesc('total');
+
+        // 7. Net Profit
+        // Net Profit = Gross Profit - Net Expenses (since VAT input tax is recoverable, not an expense)
+        $netProfit = $grossProfit - $expensesNet;
 
         return view('admin.reports.profit_loss', compact(
-            'totalRevenue', 'totalReturns', 'cogs', 'grossProfit', 
-            'totalExpenses', 'netProfit', 'startDate', 'endDate'
+            'totalRevenue', 'totalDiscount', 'totalVAT', 'totalShipping', 'netSales',
+            'standardRatedNet', 'standardRatedVat', 'zeroRatedNet',
+            'channelBreakdown', 'paymentBreakdown', 'totalReturns', 'returnsCount',
+            'netReturns', 'vatOnReturns',
+            'cogs', 'cogsSimple', 'cogsVariant', 'itemsCount', 'grossProfit',
+            'purchases', 'purchasesTotal', 'purchaseVat', 'purchasesNet',
+            'totalExpenses', 'expensesNet', 'expensesTax', 'expenseCategories',
+            'netProfit', 'startDate', 'endDate'
         ));
+    }
+
+    /**
+     * Generate Profit & Loss Report PDF
+     */
+    public function profitLossPdf(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+
+        // 1. Revenue (Sales)
+        $sales = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', '!=', 'cancelled')
+            ->with('items')
+            ->get();
+
+        $totalRevenue = $sales->sum('total');
+        $totalDiscount = $sales->sum('discount');
+        $totalVAT = $sales->sum('vat_amount');
+        $totalShipping = 0;
+        $netSales = $sales->sum('subtotal');
+
+        // Revenue VAT Split Calculations
+        $standardRatedNet = 0;
+        $standardRatedVat = 0;
+        $zeroRatedNet = 0;
+        foreach ($sales as $sale) {
+            $actualShipping = max(0, round($sale->total - $sale->subtotal - $sale->vat_amount, 2));
+            $totalShipping += $actualShipping;
+            if ($sale->vat_amount > 0) {
+                $standardRatedNet += $sale->subtotal;
+                $standardRatedVat += $sale->vat_amount;
+            } else {
+                $zeroRatedNet += $sale->subtotal;
+            }
+        }
+
+        // Channel Breakdown
+        $channelBreakdown = $sales->groupBy('channel')->map(function ($group) {
+            return [
+                'count' => $group->count(),
+                'total' => $group->sum('total'),
+                'subtotal' => $group->sum('subtotal'),
+                'vat' => $group->sum('vat_amount'),
+                'discount' => $group->sum('discount'),
+            ];
+        });
+
+        // Payment Method Breakdown
+        $paymentBreakdown = $sales->groupBy('payment_method')->map(function ($group) {
+            return [
+                'count' => $group->count(),
+                'total' => $group->sum('total'),
+            ];
+        });
+
+        // 2. Returns (Credit Notes)
+        $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])->get();
+        $totalReturns = $returns->sum('total_refund');
+        $returnsCount = $returns->count();
+
+        // VAT on Returns
+        $taxRate = 0.05;
+        $vatOnReturns = $returns->sum(function($return) use ($taxRate) {
+            $net = $return->total_refund / (1 + $taxRate);
+            return $return->total_refund - $net;
+        });
+        $netReturns = $totalReturns - $vatOnReturns;
+
+        // 3. COGS (Cost of Goods Sold)
+        $cogs = 0;
+        $cogsSimple = 0;
+        $cogsVariant = 0;
+        $itemsCount = 0;
+        foreach($sales as $order) {
+            foreach($order->items as $item) {
+                $product = $item->product;
+                $cost = $item->purchase_price ?? ($product ? $product->cost_price : 0);
+                $itemCogs = ($cost * $item->quantity);
+                $cogs += $itemCogs;
+                $itemsCount += $item->quantity;
+                
+                if ($item->product_variant_id) {
+                    $cogsVariant += $itemCogs;
+                } else {
+                    $cogsSimple += $itemCogs;
+                }
+            }
+        }
+
+        // 4. Stock Purchases (For Input VAT auditing side-by-side with COGS)
+        $purchases = \App\Models\PurchaseOrder::whereBetween('date', [$startDate, $endDate])
+            ->whereIn('status', ['received', 'completed', 'partial_received'])
+            ->get();
+        $purchasesTotal = $purchases->sum('total_cost');
+        $purchaseVat = $purchases->sum('tax_amount');
+        $purchasesNet = $purchasesTotal - $purchaseVat;
+
+        // 5. Gross Profit (VAT-exclusive)
+        $netRevenueExclVat = ($totalRevenue - $totalVAT) - $netReturns;
+        $grossProfit = $netRevenueExclVat - $cogs;
+
+        // 6. Operating Expenses
+        $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])
+            ->with('category')
+            ->get();
+        $expensesNet = $expenses->sum('net_amount');
+        $expensesTax = $expenses->sum('tax_amount');
+        $totalExpenses = $expensesNet + $expensesTax;
+
+        // Expenses Category Breakdown
+        $expenseCategories = $expenses->groupBy('expense_category_id')->map(function ($group) {
+            $net = $group->sum('net_amount');
+            $tax = $group->sum('tax_amount');
+            return [
+                'name' => $group->first()->category->name ?? 'Uncategorized',
+                'count' => $group->count(),
+                'total' => $net + $tax,
+                'net' => $net,
+                'tax' => $tax,
+            ];
+        })->sortByDesc('total');
+
+        // 7. Net Profit
+        $netProfit = $grossProfit - $expensesNet;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.profit_loss_pdf', compact(
+            'sales', 'totalRevenue', 'totalDiscount', 'totalVAT', 'totalShipping', 'netSales',
+            'standardRatedNet', 'standardRatedVat', 'zeroRatedNet',
+            'channelBreakdown', 'paymentBreakdown', 'returns', 'totalReturns', 'returnsCount',
+            'netReturns', 'vatOnReturns',
+            'cogs', 'cogsSimple', 'cogsVariant', 'itemsCount', 'grossProfit',
+            'purchases', 'purchasesTotal', 'purchaseVat', 'purchasesNet',
+            'expenses', 'totalExpenses', 'expensesNet', 'expensesTax', 'expenseCategories',
+            'netProfit', 'startDate', 'endDate'
+        ));
+
+        return $pdf->download('Profit-Loss-Statement-' . $startDate->format('d-M-Y') . '-to-' . $endDate->format('d-M-Y') . '.pdf');
     }
 
     /**

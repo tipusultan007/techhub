@@ -126,7 +126,7 @@
                     @if(settings('site_logo'))
                         <img src="{{ public_path(parse_url(settings('site_logo'), PHP_URL_PATH)) }}" style="max-height: 40px;">
                     @else
-                        <h2 class="shop-name">{{ settings('shop_name', 'ELECTROMART') }}</h2>
+                        <h2 class="shop-name">{{ settings('shop_name', 'Techhub') }}</h2>
                     @endif
                     <p class="site-name">{{ settings('site_name') }}</p>
                     <div class="shop-info">

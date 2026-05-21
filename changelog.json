@@ -13,7 +13,6 @@
             "Added payment status badges in Admin Order management."
         ]
     },
-
     {
         "version": "1.3.0",
         "date": "2026-04-04",
@@ -127,7 +126,7 @@
         "type": "Release",
         "title": "Initial Launch",
         "changes": [
-            "Initial release of Electromart Platform.",
+            "Initial release of Techhub Platform.",
             "Core modules: POS, Inventory, Sales, CRM, and Settings."
         ]
     }

@@ -165,7 +165,7 @@
         <!-- Visual Sidebar -->
         <div class="visual-side">
             <div class="visual-content">
-                <h1>ELECTROMART Admin</h1>
+                <h1>Techhub Admin</h1>
                 <p>Securely reset your password and regain access to your administrative command center.</p>
             </div>
         </div>

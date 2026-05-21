@@ -19,7 +19,7 @@
 @section('header', 'Sales Orders')
 
 @section('content')
-<div class="max-w-7xl mx-auto bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+<div class="w-full bg-white rounded-lg shadow overflow-hidden border border-gray-200">
     <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
         <h3 class="font-bold text-gray-700">All Transactions</h3>
         <span class="text-xs text-gray-500">Showing latest sales first</span>
@@ -118,6 +118,7 @@
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Customer</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Date</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Payment</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Total (AED)</th>
                 <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Actions</th>
             </tr>
@@ -151,6 +152,22 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 uppercase">
                         {{ $order->payment_method }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    @php
+                        $statusColors = [
+                            'pending' => 'bg-amber-50 text-amber-700 border-amber-200',
+                            'processing' => 'bg-blue-50 text-blue-700 border-blue-200',
+                            'shipped' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                            'completed' => 'bg-green-50 text-green-700 border-green-200',
+                            'cancelled' => 'bg-rose-50 text-rose-700 border-rose-200',
+                            'returned' => 'bg-slate-50 text-slate-700 border-slate-200',
+                        ];
+                        $statusColor = $statusColors[$order->status] ?? 'bg-gray-50 text-gray-700 border-gray-200';
+                    @endphp
+                    <span class="px-2 py-0.5 inline-flex text-[10px] leading-5 font-bold rounded-full border {{ $statusColor }} uppercase">
+                        {{ $order->status }}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">

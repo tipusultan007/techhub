@@ -18,7 +18,7 @@ class GoogleFeedController extends Controller
             ->with(['brand', 'media'])
             ->get();
 
-        $siteName = settings('site_name', 'Electromart');
+        $siteName = settings('site_name', 'Techhub');
         $siteUrl = url('/');
         $siteDescription = settings('meta_description', 'Your one-stop shop for electronics.');
         $currency = settings('currency_symbol', 'AED');

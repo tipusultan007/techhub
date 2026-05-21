@@ -61,7 +61,7 @@ class FacebookFeedController extends Controller
                     $price,
                     route('product.show', $product->slug),
                     $product->getFirstMediaUrl('product_image') ?: asset('images/placeholder.jpg'),
-                    $product->brand->name ?? settings('site_name', 'Electromart')
+                    $product->brand->name ?? settings('site_name', 'Techhub')
                 ]);
             }
 

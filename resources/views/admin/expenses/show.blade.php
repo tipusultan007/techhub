@@ -142,7 +142,7 @@
                 Last Updated: {{ $expense->updated_at->diffForHumans() }}
             </div>
             <div>
-                 Electromart Expense Module
+                 Techhub Expense Module
             </div>
         </div>
     </div>
