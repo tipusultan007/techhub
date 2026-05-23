@@ -247,7 +247,7 @@ class ReportController extends Controller
         // 1. Revenue (Sales)
         $sales = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
-            ->with('items')
+            ->with(['items.product', 'items.variant'])
             ->get();
 
         $totalRevenue = $sales->sum('total');
@@ -293,7 +293,9 @@ class ReportController extends Controller
         });
 
         // 2. Returns (Credit Notes)
-        $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])->get();
+        $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])
+            ->with(['items.product', 'items.variant'])
+            ->get();
         $totalReturns = $returns->sum('total_refund');
         $returnsCount = $returns->count();
 
@@ -313,7 +315,12 @@ class ReportController extends Controller
         foreach($sales as $order) {
             foreach($order->items as $item) {
                 $product = $item->product;
-                $cost = $item->purchase_price ?? ($product ? $product->cost_price : 0);
+                if ($item->product_variant_id) {
+                    $variant = $item->variant;
+                    $cost = $variant ? $variant->cost_price : ($product ? $product->cost_price : 0);
+                } else {
+                    $cost = $product ? $product->cost_price : 0;
+                }
                 $itemCogs = ($cost * $item->quantity);
                 $cogs += $itemCogs;
                 $itemsCount += $item->quantity;
@@ -323,6 +330,25 @@ class ReportController extends Controller
                 } else {
                     $cogsSimple += $itemCogs;
                 }
+            }
+        }
+
+        // Adjust COGS for Returned Items
+        foreach($returns as $return) {
+            foreach($return->items as $item) {
+                if ($item->product_variant_id) {
+                    $variant = $item->variant;
+                    $cost = $variant ? $variant->cost_price : 0;
+                    $itemCost = $cost * $item->quantity;
+                    $cogsVariant -= $itemCost;
+                } else {
+                    $product = $item->product;
+                    $cost = $product ? $product->cost_price : 0;
+                    $itemCost = $cost * $item->quantity;
+                    $cogsSimple -= $itemCost;
+                }
+                $cogs -= $itemCost;
+                $itemsCount -= $item->quantity;
             }
         }
 
@@ -343,13 +369,17 @@ class ReportController extends Controller
         $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])
             ->with('category')
             ->get();
-        $expensesNet = $expenses->sum('net_amount');
+        $expensesNet = $expenses->sum(function($e) {
+            return $e->net_amount ?? $e->amount;
+        });
         $expensesTax = $expenses->sum('tax_amount');
         $totalExpenses = $expensesNet + $expensesTax; // True gross expense
 
         // Expenses Category Breakdown
         $expenseCategories = $expenses->groupBy('expense_category_id')->map(function ($group) {
-            $net = $group->sum('net_amount');
+            $net = $group->sum(function($e) {
+                return $e->net_amount ?? $e->amount;
+            });
             $tax = $group->sum('tax_amount');
             return [
                 'name' => $group->first()->category->name ?? 'Uncategorized',
@@ -387,7 +417,7 @@ class ReportController extends Controller
         // 1. Revenue (Sales)
         $sales = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
-            ->with('items')
+            ->with(['items.product', 'items.variant'])
             ->get();
 
         $totalRevenue = $sales->sum('total');
@@ -431,7 +461,9 @@ class ReportController extends Controller
         });
 
         // 2. Returns (Credit Notes)
-        $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])->get();
+        $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])
+            ->with(['items.product', 'items.variant'])
+            ->get();
         $totalReturns = $returns->sum('total_refund');
         $returnsCount = $returns->count();
 
@@ -451,7 +483,12 @@ class ReportController extends Controller
         foreach($sales as $order) {
             foreach($order->items as $item) {
                 $product = $item->product;
-                $cost = $item->purchase_price ?? ($product ? $product->cost_price : 0);
+                if ($item->product_variant_id) {
+                    $variant = $item->variant;
+                    $cost = $variant ? $variant->cost_price : ($product ? $product->cost_price : 0);
+                } else {
+                    $cost = $product ? $product->cost_price : 0;
+                }
                 $itemCogs = ($cost * $item->quantity);
                 $cogs += $itemCogs;
                 $itemsCount += $item->quantity;
@@ -461,6 +498,25 @@ class ReportController extends Controller
                 } else {
                     $cogsSimple += $itemCogs;
                 }
+            }
+        }
+
+        // Adjust COGS for Returned Items
+        foreach($returns as $return) {
+            foreach($return->items as $item) {
+                if ($item->product_variant_id) {
+                    $variant = $item->variant;
+                    $cost = $variant ? $variant->cost_price : 0;
+                    $itemCost = $cost * $item->quantity;
+                    $cogsVariant -= $itemCost;
+                } else {
+                    $product = $item->product;
+                    $cost = $product ? $product->cost_price : 0;
+                    $itemCost = $cost * $item->quantity;
+                    $cogsSimple -= $itemCost;
+                }
+                $cogs -= $itemCost;
+                $itemsCount -= $item->quantity;
             }
         }
 
@@ -480,13 +536,17 @@ class ReportController extends Controller
         $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])
             ->with('category')
             ->get();
-        $expensesNet = $expenses->sum('net_amount');
+        $expensesNet = $expenses->sum(function($e) {
+            return $e->net_amount ?? $e->amount;
+        });
         $expensesTax = $expenses->sum('tax_amount');
         $totalExpenses = $expensesNet + $expensesTax;
 
         // Expenses Category Breakdown
         $expenseCategories = $expenses->groupBy('expense_category_id')->map(function ($group) {
-            $net = $group->sum('net_amount');
+            $net = $group->sum(function($e) {
+                return $e->net_amount ?? $e->amount;
+            });
             $tax = $group->sum('tax_amount');
             return [
                 'name' => $group->first()->category->name ?? 'Uncategorized',
