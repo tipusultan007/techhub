@@ -154,6 +154,10 @@
                         <span class="font-bold">AED {{ number_format($taxAmount, 2) }}</span>
                     </div>
                 @endforeach
+                <div class="flex justify-between text-sm text-gray-600 border-t border-dashed pt-1 mt-1 font-semibold">
+                    <span>Subtotal (Incl. VAT)</span>
+                    <span class="font-bold">AED {{ number_format($quotation->subtotal + $quotation->items->sum('tax_amount'), 2) }}</span>
+                </div>
                 <div class="flex justify-between text-xl font-black text-slate-900 border-t pt-2 mt-2">
                     <span>Total</span>
                     <span class="text-blue-600">AED {{ number_format($quotation->total, 2) }}</span>

@@ -481,6 +481,7 @@
                 $('#user_id').val("{{ $duplicateData['user_id'] }}").trigger('change');
                 $('input[name="po_number"]').val("{{ $duplicateData['po_number'] ?? '' }}");
                 $('#discount-input').val("{{ $duplicateData['discount'] }}");
+                $('#payment_method').val("{{ $duplicateData['payment_method'] ?? 'cash' }}");
                 renderCart();
             @endisset
         });
@@ -903,7 +904,7 @@
         }
 
         // --- 4. CHECKOUT ---
-        function processSale(method = 'cash') { // Default to cash if clicked via shortcut
+        function processSale(method = null) { // Default to cash if clicked via shortcut
     if (cart.length === 0) {
         toastr.error('Cart is empty!');
         return;

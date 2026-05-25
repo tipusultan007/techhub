@@ -213,16 +213,21 @@
                         <span class="font-bold">AED <span id="lbl-cart-total">0.00</span></span>
                     </div>
 
+                    <div id="tax-details-container" class="space-y-1">
+                        <!-- Grouped taxes will be injected here -->
+                    </div>
+
+                    <div class="flex justify-between text-gray-600 border-t border-dashed border-gray-200 pt-1 mt-1 font-semibold">
+                        <span>Subtotal (Incl. VAT)</span>
+                        <span>AED <span id="lbl-total-incl-vat">0.00</span></span>
+                    </div>
+
                     <div class="flex justify-between items-center text-red-600 my-2">
                         <span class="font-bold flex items-center text-xs uppercase"><i class="fas fa-tags mr-1"></i> Discount</span>
                         <div class="flex items-center">
                             <span class="mr-1">-</span>
                             <input type="number" id="discount_input" value="0" min="0" class="w-20 border border-gray-300 rounded p-1 text-right text-sm focus:outline-none focus:border-red-500 text-red-600 font-bold bg-white" oninput="renderCart()">
                         </div>
-                    </div>
-
-                    <div id="tax-details-container" class="space-y-1">
-                        <!-- Grouped taxes will be injected here -->
                     </div>
 
                     <div class="flex justify-between text-2xl font-bold text-slate-900 border-t border-gray-300 pt-2 mt-2">
@@ -452,6 +457,7 @@
             let payable = (total + totalTax) - discount;
 
             $('#lbl-cart-total').text(total.toFixed(2));
+            $('#lbl-total-incl-vat').text((total + totalTax).toFixed(2));
             $('#lbl-payable').text(payable.toFixed(2));
         }
 

@@ -402,6 +402,11 @@
                         </tr>
                     @endforeach
                     
+                    <tr class="total-row">
+                        <td class="total-label" style="border-top: 1px dashed #CBD5E1; padding-top: 5px; font-weight: 700;">Subtotal (Incl. VAT)</td>
+                        <td class="total-value" style="border-top: 1px dashed #CBD5E1; padding-top: 5px; font-weight: 700;"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->subtotal + $quotation->items->sum('tax_amount'), 2) }}</td>
+                    </tr>
+                    
                     <tr class="grand-total">
                         <td class="grand-total-label">Total Amount</td>
                         <td class="grand-total-value"><img src="{{ $currencyBase64 }}" alt="UAE Dirham" width="12" height="12"> {{ number_format($quotation->total, 2) }}</td>
