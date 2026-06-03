@@ -735,4 +735,146 @@ class ReportController extends Controller
 
         return $pdf->download('Sales-by-Person-' . $startDate->format('d-M-Y') . '.pdf');
     }
+
+    /**
+     * Balance Sheet Report
+     */
+    public function balanceSheet(Request $request)
+    {
+        $data = $this->getBalanceSheetData($request);
+        return view('admin.reports.balance_sheet', $data);
+    }
+
+    /**
+     * Balance Sheet PDF
+     */
+    public function balanceSheetPdf(Request $request)
+    {
+        $data = $this->getBalanceSheetData($request);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.balance_sheet_pdf', $data);
+        return $pdf->download('Balance-Sheet-As-Of-' . $data['asOfDate']->format('d-M-Y') . '.pdf');
+    }
+
+    private function getBalanceSheetData(Request $request)
+    {
+        $asOfDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        
+        // --- 1. ASSETS ---
+        // Accounts Receivable (Orders due amount)
+        $accountsReceivable = Order::where('created_at', '<=', $asOfDate)
+            ->where('status', '!=', 'cancelled')
+            ->sum('due_amount');
+            
+        // Inventory Asset (Current stock value)
+        $simpleProducts = Product::where('type', 'simple')->get();
+        $inventoryAsset = $simpleProducts->sum(function ($p) {
+            return $p->stock_quantity * $p->cost_price;
+        });
+        $variants = ProductVariant::with('product')->get();
+        $inventoryAsset += $variants->sum(function ($v) {
+            return $v->stock_quantity * $v->cost_price;
+        });
+
+        // Cash and Cash Equivalents (Calculated Cash Flow)
+        $totalPaidSales = Order::where('created_at', '<=', $asOfDate)
+            ->where('status', '!=', 'cancelled')
+            ->sum('paid_amount');
+            
+        $totalPurchases = \App\Models\PurchaseOrder::where('date', '<=', $asOfDate)
+            ->whereIn('status', ['received', 'completed', 'partial_received'])
+            ->sum('total_cost');
+            
+        $expenses = \App\Models\Expense::where('date', '<=', $asOfDate)->get();
+        $totalExpensesPaid = $expenses->sum(function($e) {
+            $net = $e->net_amount ?? $e->amount;
+            return $net + ($e->tax_amount ?? 0);
+        });
+
+        $calculatedCash = $totalPaidSales - $totalPurchases - $totalExpensesPaid;
+        $totalAssets = $calculatedCash + $accountsReceivable + $inventoryAsset;
+
+        // --- 2. LIABILITIES ---
+        // VAT Payable = Output VAT - Input VAT
+        $sales = Order::where('created_at', '<=', $asOfDate)
+            ->where('status', '!=', 'cancelled')
+            ->get();
+        $outputVat = $sales->sum('vat_amount');
+        
+        $returns = ReturnOrder::where('created_at', '<=', $asOfDate)->get();
+        $taxRate = 0.05;
+        $vatOnReturns = $returns->sum(function($return) use ($taxRate) {
+            $net = $return->total_refund / (1 + $taxRate);
+            return $return->total_refund - $net;
+        });
+        $outputVat -= $vatOnReturns;
+
+        $purchases = \App\Models\PurchaseOrder::where('date', '<=', $asOfDate)
+            ->whereIn('status', ['received', 'completed', 'partial_received'])
+            ->get();
+        $inputVat = $purchases->sum('tax_amount') + $expenses->sum('tax_amount');
+        
+        $vatPayable = $outputVat - $inputVat;
+        $totalLiabilities = $vatPayable; // Accounts Payable skipped as requested
+
+        // --- 3. EQUITIES ---
+        $startOfCurrentYear = Carbon::now()->startOfYear();
+        if ($asOfDate->lessThan($startOfCurrentYear)) {
+            $startOfCurrentYear = $asOfDate->copy()->startOfYear();
+        }
+        
+        $calculateNetProfit = function($startDate, $endDate) {
+            $sales = Order::whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', '!=', 'cancelled')
+                ->with(['items.product', 'items.variant'])
+                ->get();
+            $totalRevenue = $sales->sum('total');
+            $totalVAT = $sales->sum('vat_amount');
+            
+            $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])
+                ->with(['items.product', 'items.variant'])
+                ->get();
+            $totalReturns = $returns->sum('total_refund');
+            $taxRate = 0.05;
+            $vatOnReturns = $returns->sum(function($r) use ($taxRate) {
+                return $r->total_refund - ($r->total_refund / (1 + $taxRate));
+            });
+            $netReturns = $totalReturns - $vatOnReturns;
+            
+            $cogs = 0;
+            foreach($sales as $order) {
+                foreach($order->items as $item) {
+                    $product = $item->product;
+                    $cost = $item->variant ? $item->variant->cost_price : ($product ? $product->cost_price : 0);
+                    $cogs += ($cost * $item->quantity);
+                }
+            }
+            foreach($returns as $return) {
+                foreach($return->items as $item) {
+                    $product = $item->product;
+                    $cost = $item->variant ? $item->variant->cost_price : ($product ? $product->cost_price : 0);
+                    $cogs -= ($cost * $item->quantity);
+                }
+            }
+            
+            $netRevenueExclVat = ($totalRevenue - $totalVAT) - $netReturns;
+            $grossProfit = $netRevenueExclVat - $cogs;
+            
+            $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])->get();
+            $expensesNet = $expenses->sum(function($e) {
+                return $e->net_amount ?? $e->amount;
+            });
+            
+            return $grossProfit - $expensesNet;
+        };
+
+        $retainedEarnings = $calculateNetProfit(Carbon::create(2000, 1, 1), $startOfCurrentYear->copy()->subSecond());
+        $currentYearEarnings = $calculateNetProfit($startOfCurrentYear, $asOfDate);
+        $historicalAdjustments = $totalAssets - $totalLiabilities - $retainedEarnings - $currentYearEarnings;
+        $totalEquities = $retainedEarnings + $currentYearEarnings + $historicalAdjustments;
+
+        return compact(
+            'asOfDate', 'calculatedCash', 'accountsReceivable', 'inventoryAsset', 'totalAssets',
+            'vatPayable', 'totalLiabilities', 'retainedEarnings', 'currentYearEarnings', 'historicalAdjustments', 'totalEquities'
+        );
+    }
 }

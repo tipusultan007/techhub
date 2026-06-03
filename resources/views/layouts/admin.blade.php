@@ -353,6 +353,11 @@
                     <i class="fas fa-file-invoice-dollar"></i> <span>Profit & Loss Statement</span>
                 </a>
 
+                <a href="{{ route('reports.balance_sheet') }}"
+                   class="sidebar-item {{ request()->routeIs('reports.balance_sheet') ? 'active' : '' }}">
+                    <i class="fas fa-balance-scale"></i> <span>Balance Sheet</span>
+                </a>
+
                 <a href="{{ route('reports.inventory') }}"
                    class="sidebar-item {{ request()->routeIs('reports.inventory') ? 'active' : '' }}">
                     <i class="fas fa-cubes"></i> <span>Stock Evaluation</span>
