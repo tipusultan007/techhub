@@ -122,6 +122,29 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
+        // --- ANTI-BOT MEASURES ---
+        // 1. Honeypot Check: if this hidden field is filled, it's a bot
+        if (!empty($request->input('_website_url'))) {
+            \Illuminate\Support\Facades\Log::warning('Bot blocked by honeypot at checkout.', ['ip' => $request->ip()]);
+            return redirect()->route('cart.index')->with('error', 'Invalid request.');
+        }
+
+        // 2. Block Known Bot Email Domains
+        $email = $request->input('email');
+        if ($email) {
+            $emailDomain = strtolower(substr(strrchr($email, "@"), 1));
+            $blockedDomains = [
+                'storebotmail.joonix.net',
+                // Can add more disposable/bot domains here
+            ];
+            
+            if (in_array($emailDomain, $blockedDomains)) {
+                \Illuminate\Support\Facades\Log::warning('Bot blocked by email domain at checkout.', ['email' => $email, 'ip' => $request->ip()]);
+                return redirect()->route('cart.index')->with('error', 'Orders from this email domain are not permitted.');
+            }
+        }
+        // -------------------------
+
         $request->validate([
             'first_name' => 'required|string',
             'last_name' => 'required|string',

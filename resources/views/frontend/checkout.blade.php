@@ -63,6 +63,12 @@
         <form action="{{ route('checkout.store') }}" method="POST" class="checkout-layout">
             @csrf
 
+            <!-- Anti-Bot Honeypot Field -->
+            <div style="display:none;" aria-hidden="true">
+                <label for="_website_url">Leave this field empty</label>
+                <input type="text" name="_website_url" id="_website_url" tabindex="-1" autocomplete="off">
+            </div>
+
             <!-- LEFT COLUMN: INPUTS -->
             <div class="checkout-forms">
 
