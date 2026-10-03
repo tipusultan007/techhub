@@ -35,8 +35,9 @@ class ExpenseController extends Controller
 
         // Data for dropdowns
         $categories = ExpenseCategory::all();
+        $accounts = \App\Models\Account::where('type', 'asset')->get();
 
-        return view('admin.expenses.index', compact('expenses', 'categories'));
+        return view('admin.expenses.index', compact('expenses', 'categories', 'accounts'));
     }
 
     public function store(Request $request)
@@ -45,6 +46,7 @@ class ExpenseController extends Controller
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0',
             'expense_category_id' => 'required|exists:expense_categories,id',
+            'account_id' => 'required|exists:accounts,id',
             'tax_method' => 'required|in:inclusive,exclusive,no_tax',
         ]);
 
@@ -74,6 +76,9 @@ class ExpenseController extends Controller
             $expense->addMediaFromRequest('attachment')->toMediaCollection('attachment');
         }
 
+        // Record Accounting Entry
+        app(\App\Services\AccountingService::class)->recordExpense($expense);
+
         $this->logActivity('Expense', 'Create', "Recorded Expense of {$expense->amount} for category {$expense->category->name}", [
             'expense_id' => $expense->id,
             'amount' => $expense->amount,
@@ -97,6 +102,7 @@ class ExpenseController extends Controller
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0',
             'expense_category_id' => 'required|exists:expense_categories,id',
+            'account_id' => 'required|exists:accounts,id',
             'tax_method' => 'required|in:inclusive,exclusive,no_tax',
         ]);
 
@@ -125,6 +131,10 @@ class ExpenseController extends Controller
             $expense->addMediaFromRequest('attachment')->toMediaCollection('attachment');
         }
 
+        // Re-record Accounting Entry
+        $expense->journalEntries()->delete();
+        app(\App\Services\AccountingService::class)->recordExpense($expense);
+
         $this->logActivity('Expense', 'Edit', "Updated Expense of {$expense->amount} for category {$expense->category->name}", [
             'expense_id' => $expense->id,
             'amount' => $expense->amount,
@@ -145,6 +155,7 @@ class ExpenseController extends Controller
             'amount' => $expense->amount,
         ]);
 
+        $expense->journalEntries()->delete();
         $expense->delete();
         return back()->with('success', 'Expense deleted.');
     }

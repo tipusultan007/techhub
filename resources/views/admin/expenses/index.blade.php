@@ -3,7 +3,7 @@
 
 @section('content')
     <!-- Alpine.js Main Container -->
-    <div class="max-w-7xl mx-auto" x-data="{ showModal: false, editData: {} }">
+    <div class="w-full mx-auto" x-data="{ showModal: false, editData: {} }">
 
         <!-- === CREATE & FILTER SECTION === -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -40,6 +40,15 @@
                                 </select>
                                 <a href="{{ route('expense-categories.index') }}" class="mt-1 bg-gray-200 px-3 py-2 rounded flex items-center justify-center hover:bg-gray-300" title="Manage Categories">+</a>
                             </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Paid From Account</label>
+                            <select name="account_id" class="w-full border p-2 rounded mt-1 bg-white" required>
+                                <option value="" disabled selected>Select an account...</option>
+                                @foreach($accounts as $acc)
+                                    <option value="{{ $acc->id }}">{{ $acc->name }} ({{ $acc->code }})</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700">Reference / Note</label>
@@ -87,6 +96,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Category</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Paid From</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Amount</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Added By</th>
                         <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Attach.</th>
@@ -98,6 +108,7 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm">{{ $expense->date->format('d M Y') }}</td>
                             <td class="px-6 py-4 text-sm">{{ $expense->category->name }}</td>
+                            <td class="px-6 py-4 text-sm">{{ $expense->account ? $expense->account->name : '-' }}</td>
                             <td class="px-6 py-4 text-sm font-bold text-red-600">{{ number_format($expense->amount, 2) }}</td>
                              <td class="px-6 py-4 text-sm text-gray-500">{{ $expense->user->name }}</td>
                             <td class="px-6 py-4 text-center text-sm">
@@ -110,23 +121,25 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right text-sm">
-                                <a href="{{ route('expenses.show', $expense) }}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View"><i class="fas fa-eye"></i></a>
-                                <button @click="showModal = true; editData = {{ $expense }}" class="text-blue-600 hover:text-blue-900 mr-3" title="Edit"><i class="fas fa-edit"></i></button>
-                                <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="inline">
-                                    @csrf @method('DELETE')
-                                    <button type="button" 
-                                        class="text-red-600 hover:text-red-900 btn-delete-confirm" 
-                                        title="Delete"
-                                        data-type="Expense"
-                                        data-title="Delete Expense Record?"
-                                        data-summary='{
-                                            "Date": "{{ $expense->date->format("d M Y") }}",
-                                            "Category": "{{ $expense->category->name }}",
-                                            "Amount": "AED {{ number_format($expense->amount, 2) }}"
-                                        }'>
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <div class="flex items-center justify-end gap-4">
+                                    <a href="{{ route('expenses.show', $expense) }}" class="text-indigo-600 hover:text-indigo-900" title="View"><i class="fas fa-eye"></i></a>
+                                    <button @click="showModal = true; editData = {{ $expense }}" class="text-blue-600 hover:text-blue-900" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <form action="{{ route('expenses.destroy', $expense) }}" method="POST" class="inline m-0 p-0 flex">
+                                        @csrf @method('DELETE')
+                                        <button type="button" 
+                                            class="text-red-600 hover:text-red-900 btn-delete-confirm" 
+                                            title="Delete"
+                                            data-type="Expense"
+                                            data-title="Delete Expense Record?"
+                                            data-summary='{
+                                                "Date": "{{ $expense->date->format("d M Y") }}",
+                                                "Category": "{{ $expense->category->name }}",
+                                                "Amount": "AED {{ number_format($expense->amount, 2) }}"
+                                            }'>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -168,11 +181,19 @@
                                 <option value="no_tax">No Tax / Exempt</option>
                             </select>
                         </div>
-                        <div class="md:col-span-2">
+                        <div class="md:col-span-1">
                             <label class="block text-sm font-bold text-gray-700">Category</label>
                             <select name="expense_category_id" class="w-full border p-2 rounded mt-1 bg-white">
                                 @foreach($categories as $cat)
                                     <option :value="{{ $cat->id }}" :selected="editData.expense_category_id == {{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-bold text-gray-700">Paid From Account</label>
+                            <select name="account_id" class="w-full border p-2 rounded mt-1 bg-white">
+                                @foreach($accounts as $acc)
+                                    <option :value="{{ $acc->id }}" :selected="editData.account_id == {{ $acc->id }}">{{ $acc->name }} ({{ $acc->code }})</option>
                                 @endforeach
                             </select>
                         </div>

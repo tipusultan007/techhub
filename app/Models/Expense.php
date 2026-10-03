@@ -21,8 +21,18 @@ class Expense extends Model implements HasMedia
         return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
     }
 
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function journalEntries()
+    {
+        return $this->morphMany(JournalEntry::class, 'reference');
     }
 }

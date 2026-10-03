@@ -6,6 +6,7 @@ use App\Models\IncompleteOrder;
 use App\Models\Order;
 use App\Services\RakbankPaymentService;
 use App\Services\OrderService;
+use App\Services\AccountingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\PaymentSuccessNotification;
@@ -16,11 +17,13 @@ class RakbankPaymentController extends Controller
 {
     protected $rakbankService;
     protected $orderService;
+    protected $accountingService;
 
-    public function __construct(RakbankPaymentService $rakbankService, OrderService $orderService)
+    public function __construct(RakbankPaymentService $rakbankService, OrderService $orderService, AccountingService $accountingService)
     {
         $this->rakbankService = $rakbankService;
         $this->orderService = $orderService;
+        $this->accountingService = $accountingService;
     }
 
     /**
@@ -165,6 +168,9 @@ class RakbankPaymentController extends Controller
                         throw new \Exception('Data integrity check failed for ' . implode(', ', $mismatch));
                     }
 
+                    // Record Accounting Entry
+                    $this->accountingService->recordSale($order);
+
                     // 4. Delete incomplete order trace
                     $incompleteOrder->delete();
 
@@ -292,6 +298,9 @@ class RakbankPaymentController extends Controller
                         ]);
                         throw new \Exception('Data integrity check failed for ' . implode(', ', $mismatch));
                     }
+
+                    // Record Accounting Entry
+                    $this->accountingService->recordSale($order);
 
                     // 4. Delete incomplete order trace
                     $incompleteOrder->delete();

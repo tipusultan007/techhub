@@ -245,6 +245,16 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
     Route::group(['middleware' => ['permission:view expenses|manage expenses']], function () {
         Route::resource('expense-categories', App\Http\Controllers\ExpenseCategoryController::class)->except(['create', 'edit', 'show', 'update']);
         Route::resource('expenses', App\Http\Controllers\ExpenseController::class);
+        Route::resource('capital-transactions', App\Http\Controllers\CapitalTransactionController::class)->except(['create', 'show', 'edit']);
+
+        // Accounting
+        Route::get('/accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts'])->name('accounting.accounts');
+        Route::get('/accounting/accounts/{account}', [\App\Http\Controllers\AccountingController::class, 'showAccount'])->name('accounting.accounts.show');
+        Route::get('/accounting/journals', [\App\Http\Controllers\AccountingController::class, 'journals'])->name('accounting.journals');
+        Route::get('/accounting/reports/pl', [\App\Http\Controllers\AccountingController::class, 'profitAndLoss'])->name('accounting.pl');
+        Route::get('/accounting/reports/pl/pdf', [\App\Http\Controllers\AccountingController::class, 'profitAndLossPdf'])->name('accounting.pl.pdf');
+        Route::get('/accounting/reports/balance-sheet', [\App\Http\Controllers\AccountingController::class, 'balanceSheet'])->name('accounting.balance_sheet');
+        Route::get('/accounting/reports/balance-sheet/pdf', [\App\Http\Controllers\AccountingController::class, 'balanceSheetPdf'])->name('accounting.balance_sheet.pdf');
     });
 
     // --- ORDERS MANAGEMENT ---
@@ -269,8 +279,7 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
             Route::get('/reports/purchases', [ReportController::class, 'purchases'])->name('reports.purchases');
             Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit_loss');
             Route::get('/reports/profit-loss/pdf', [ReportController::class, 'profitLossPdf'])->name('reports.profit_loss.pdf');
-            Route::get('/reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance_sheet');
-            Route::get('/reports/balance-sheet/pdf', [ReportController::class, 'balanceSheetPdf'])->name('reports.balance_sheet.pdf');
+
             Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
             Route::get('/reports/vat', [ReportController::class, 'vat'])->name('reports.vat');
             Route::get('/reports/vat/pdf', [ReportController::class, 'vatPdf'])->name('reports.vat.pdf');
@@ -278,7 +287,8 @@ Route::group(['middleware' => ['auth', 'two-factor'], 'prefix' => 'backend'], fu
             Route::get('/reports/expenses', [ReportController::class, 'expenses'])->name('reports.expenses');
             Route::get('/reports/expenses/pdf', [ReportController::class, 'expensesPdf'])->name('reports.expenses.pdf');
             Route::get('/reports/sales-by-person', [ReportController::class, 'salesByPerson'])->name('reports.sales-by-person');
-            Route::get('/reports/sales-by-person/pdf', [ReportController::class, 'salesByPersonPdf'])->name('reports.sales-by-person.pdf');
+            Route::get('/reports/stock-mismatch', [ReportController::class, 'stockMismatch'])->name('reports.stock-mismatch');
+            Route::post('/reports/stock-mismatch/reconcile', [ReportController::class, 'reconcileStock'])->name('reports.stock-reconcile');
         });
 
         // System Settings

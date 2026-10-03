@@ -736,145 +736,176 @@ class ReportController extends Controller
         return $pdf->download('Sales-by-Person-' . $startDate->format('d-M-Y') . '.pdf');
     }
 
-    /**
-     * Balance Sheet Report
-     */
-    public function balanceSheet(Request $request)
-    {
-        $data = $this->getBalanceSheetData($request);
-        return view('admin.reports.balance_sheet', $data);
-    }
+
 
     /**
-     * Balance Sheet PDF
+     * Stock Mismatch / Audit Report
      */
-    public function balanceSheetPdf(Request $request)
+    public function stockMismatch(Request $request)
     {
-        $data = $this->getBalanceSheetData($request);
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.balance_sheet_pdf', $data);
-        return $pdf->download('Balance-Sheet-As-Of-' . $data['asOfDate']->format('d-M-Y') . '.pdf');
-    }
+        $search = $request->input('search');
+        $filterStatus = $request->input('filter_status', 'mismatched');
 
-    private function getBalanceSheetData(Request $request)
-    {
-        $asOfDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
-        
-        // --- 1. ASSETS ---
-        // Accounts Receivable (Orders due amount)
-        $accountsReceivable = Order::where('created_at', '<=', $asOfDate)
-            ->where('status', '!=', 'cancelled')
-            ->sum('due_amount');
-            
-        // Inventory Asset (Current stock value)
-        $simpleProducts = Product::where('type', 'simple')->get();
-        $inventoryAsset = $simpleProducts->sum(function ($p) {
-            return $p->stock_quantity * $p->cost_price;
-        });
-        $variants = ProductVariant::with('product')->get();
-        $inventoryAsset += $variants->sum(function ($v) {
-            return $v->stock_quantity * $v->cost_price;
-        });
+        $query = Product::with('variants');
 
-        // Cash and Cash Equivalents (Calculated Cash Flow)
-        $totalPaidSales = Order::where('created_at', '<=', $asOfDate)
-            ->where('status', '!=', 'cancelled')
-            ->sum('paid_amount');
-            
-        $totalPurchases = \App\Models\PurchaseOrder::where('date', '<=', $asOfDate)
-            ->whereIn('status', ['received', 'completed', 'partial_received'])
-            ->sum('total_cost');
-            
-        $expenses = \App\Models\Expense::where('date', '<=', $asOfDate)->get();
-        $totalExpensesPaid = $expenses->sum(function($e) {
-            $net = $e->net_amount ?? $e->amount;
-            return $net + ($e->tax_amount ?? 0);
-        });
-
-        $calculatedCash = $totalPaidSales - $totalPurchases - $totalExpensesPaid;
-        $totalAssets = $calculatedCash + $accountsReceivable + $inventoryAsset;
-
-        // --- 2. LIABILITIES ---
-        // VAT Payable = Output VAT - Input VAT
-        $sales = Order::where('created_at', '<=', $asOfDate)
-            ->where('status', '!=', 'cancelled')
-            ->get();
-        $outputVat = $sales->sum('vat_amount');
-        
-        $returns = ReturnOrder::where('created_at', '<=', $asOfDate)->get();
-        $taxRate = 0.05;
-        $vatOnReturns = $returns->sum(function($return) use ($taxRate) {
-            $net = $return->total_refund / (1 + $taxRate);
-            return $return->total_refund - $net;
-        });
-        $outputVat -= $vatOnReturns;
-
-        $purchases = \App\Models\PurchaseOrder::where('date', '<=', $asOfDate)
-            ->whereIn('status', ['received', 'completed', 'partial_received'])
-            ->get();
-        $inputVat = $purchases->sum('tax_amount') + $expenses->sum('tax_amount');
-        
-        $vatPayable = $outputVat - $inputVat;
-        $totalLiabilities = $vatPayable; // Accounts Payable skipped as requested
-
-        // --- 3. EQUITIES ---
-        $startOfCurrentYear = Carbon::now()->startOfYear();
-        if ($asOfDate->lessThan($startOfCurrentYear)) {
-            $startOfCurrentYear = $asOfDate->copy()->startOfYear();
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhereHas('variants', function ($vq) use ($search) {
+                      $vq->where('sku', 'like', "%{$search}%")
+                         ->orWhere('variant_name', 'like', "%{$search}%");
+                  });
+            });
         }
-        
-        $calculateNetProfit = function($startDate, $endDate) {
-            $sales = Order::whereBetween('created_at', [$startDate, $endDate])
-                ->where('status', '!=', 'cancelled')
-                ->with(['items.product', 'items.variant'])
-                ->get();
-            $totalRevenue = $sales->sum('total');
-            $totalVAT = $sales->sum('vat_amount');
-            
-            $returns = ReturnOrder::whereBetween('created_at', [$startDate, $endDate])
-                ->with(['items.product', 'items.variant'])
-                ->get();
-            $totalReturns = $returns->sum('total_refund');
-            $taxRate = 0.05;
-            $vatOnReturns = $returns->sum(function($r) use ($taxRate) {
-                return $r->total_refund - ($r->total_refund / (1 + $taxRate));
-            });
-            $netReturns = $totalReturns - $vatOnReturns;
-            
-            $cogs = 0;
-            foreach($sales as $order) {
-                foreach($order->items as $item) {
-                    $product = $item->product;
-                    $cost = $item->variant ? $item->variant->cost_price : ($product ? $product->cost_price : 0);
-                    $cogs += ($cost * $item->quantity);
-                }
-            }
-            foreach($returns as $return) {
-                foreach($return->items as $item) {
-                    $product = $item->product;
-                    $cost = $item->variant ? $item->variant->cost_price : ($product ? $product->cost_price : 0);
-                    $cogs -= ($cost * $item->quantity);
-                }
-            }
-            
-            $netRevenueExclVat = ($totalRevenue - $totalVAT) - $netReturns;
-            $grossProfit = $netRevenueExclVat - $cogs;
-            
-            $expenses = \App\Models\Expense::whereBetween('date', [$startDate, $endDate])->get();
-            $expensesNet = $expenses->sum(function($e) {
-                return $e->net_amount ?? $e->amount;
-            });
-            
-            return $grossProfit - $expensesNet;
-        };
 
-        $retainedEarnings = $calculateNetProfit(Carbon::create(2000, 1, 1), $startOfCurrentYear->copy()->subSecond());
-        $currentYearEarnings = $calculateNetProfit($startOfCurrentYear, $asOfDate);
-        $historicalAdjustments = $totalAssets - $totalLiabilities - $retainedEarnings - $currentYearEarnings;
-        $totalEquities = $retainedEarnings + $currentYearEarnings + $historicalAdjustments;
+        $products = $query->get();
+        $auditList = collect();
 
-        return compact(
-            'asOfDate', 'calculatedCash', 'accountsReceivable', 'inventoryAsset', 'totalAssets',
-            'vatPayable', 'totalLiabilities', 'retainedEarnings', 'currentYearEarnings', 'historicalAdjustments', 'totalEquities'
+        foreach ($products as $p) {
+            if ($p->type === 'variable') {
+                foreach ($p->variants as $v) {
+                    $purchased = (int) \Illuminate\Support\Facades\DB::table('purchase_order_items')
+                        ->join('purchase_orders', 'purchase_orders.id', '=', 'purchase_order_items.purchase_order_id')
+                        ->where('purchase_order_items.product_variant_id', $v->id)
+                        ->whereIn('purchase_orders.status', ['completed', 'received', 'partial'])
+                        ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(NULLIF(purchase_order_items.received_quantity, 0), purchase_order_items.quantity)'));
+
+                    $sold = (int) \Illuminate\Support\Facades\DB::table('order_items')
+                        ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                        ->where('order_items.product_variant_id', $v->id)
+                        ->where('orders.status', '!=', 'cancelled')
+                        ->sum('order_items.quantity');
+
+                    $returned = (int) \Illuminate\Support\Facades\DB::table('return_items')
+                        ->join('returns', 'returns.id', '=', 'return_items.return_id')
+                        ->where('return_items.product_variant_id', $v->id)
+                        ->where('return_items.restock_status', 'restockable')
+                        ->sum('return_items.quantity');
+
+                    $expected = $purchased - $sold + $returned;
+                    $current = (int) $v->stock_quantity;
+                    $diff = $current - $expected;
+                    $isMismatched = ($current !== $expected);
+
+                    if ($filterStatus === 'mismatched' && !$isMismatched) {
+                        continue;
+                    }
+                    if ($filterStatus === 'matched' && $isMismatched) {
+                        continue;
+                    }
+
+                    $auditList->push([
+                        'type' => 'variant',
+                        'product_id' => $p->id,
+                        'variant_id' => $v->id,
+                        'name' => $p->name,
+                        'variant_name' => $v->variant_name,
+                        'sku' => $v->sku,
+                        'current_stock' => $current,
+                        'total_purchased' => $purchased,
+                        'total_sold' => $sold,
+                        'total_returned' => $returned,
+                        'expected_stock' => $expected,
+                        'diff' => $diff,
+                        'is_mismatched' => $isMismatched,
+                    ]);
+                }
+            } else {
+                $purchased = (int) \Illuminate\Support\Facades\DB::table('purchase_order_items')
+                    ->join('purchase_orders', 'purchase_orders.id', '=', 'purchase_order_items.purchase_order_id')
+                    ->where('purchase_order_items.product_id', $p->id)
+                    ->whereIn('purchase_orders.status', ['completed', 'received', 'partial'])
+                    ->sum(\Illuminate\Support\Facades\DB::raw('COALESCE(NULLIF(purchase_order_items.received_quantity, 0), purchase_order_items.quantity)'));
+
+                $sold = (int) \Illuminate\Support\Facades\DB::table('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->where('order_items.product_id', $p->id)
+                    ->where('orders.status', '!=', 'cancelled')
+                    ->sum('order_items.quantity');
+
+                $returned = (int) \Illuminate\Support\Facades\DB::table('return_items')
+                    ->join('returns', 'returns.id', '=', 'return_items.return_id')
+                    ->where('return_items.product_id', $p->id)
+                    ->where('return_items.restock_status', 'restockable')
+                    ->sum('return_items.quantity');
+
+                $expected = $purchased - $sold + $returned;
+                $current = (int) $p->stock_quantity;
+                $diff = $current - $expected;
+                $isMismatched = ($current !== $expected);
+
+                if ($filterStatus === 'mismatched' && !$isMismatched) {
+                    continue;
+                }
+                if ($filterStatus === 'matched' && $isMismatched) {
+                    continue;
+                }
+
+                $auditList->push([
+                    'type' => 'simple',
+                    'product_id' => $p->id,
+                    'variant_id' => null,
+                    'name' => $p->name,
+                    'variant_name' => null,
+                    'sku' => $p->sku,
+                    'current_stock' => $current,
+                    'total_purchased' => $purchased,
+                    'total_sold' => $sold,
+                    'total_returned' => $returned,
+                    'expected_stock' => $expected,
+                    'diff' => $diff,
+                    'is_mismatched' => $isMismatched,
+                ]);
+            }
+        }
+
+        $totalChecked = $auditList->count();
+        $mismatchedCount = $auditList->where('is_mismatched', true)->count();
+        $totalDiffUnits = $auditList->where('is_mismatched', true)->sum(function ($item) {
+            return abs($item['diff']);
+        });
+
+        // Manual Pagination for Collection
+        $page = request()->get('page', 1);
+        $perPage = 25;
+        $paginatedItems = new \Illuminate\Pagination\LengthAwarePaginator(
+            $auditList->forPage($page, $perPage),
+            $auditList->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
         );
+
+        return view('admin.reports.stock_mismatch', compact(
+            'paginatedItems', 'totalChecked', 'mismatchedCount', 'totalDiffUnits',
+            'search', 'filterStatus'
+        ));
+    }
+
+    /**
+     * Reconcile/Fix product stock to expected stock.
+     */
+    public function reconcileStock(Request $request)
+    {
+        $type = $request->input('type');
+        $id = $request->input('id');
+
+        if ($type === 'all') {
+            \Illuminate\Support\Facades\Artisan::call('stock:audit --fix');
+            return back()->with('success', 'All mismatched product stocks have been reconciled successfully!');
+        }
+
+        $expected = (int) $request->input('expected_stock');
+
+        if ($type === 'variant') {
+            $variant = ProductVariant::findOrFail($id);
+            $variant->update(['stock_quantity' => $expected]);
+        } else {
+            $product = Product::findOrFail($id);
+            $product->update(['stock_quantity' => $expected]);
+        }
+
+        return back()->with('success', 'Stock quantity reconciled successfully.');
     }
 }

@@ -95,4 +95,9 @@ class Order extends Model implements HasMedia
     {
         return $this->hasMany(OrderHistory::class)->latest();
     }
+
+    public function journalEntries()
+    {
+        return $this->morphMany(JournalEntry::class, 'reference');
+    }
 }

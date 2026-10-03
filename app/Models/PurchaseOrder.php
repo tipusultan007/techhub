@@ -52,4 +52,8 @@ class PurchaseOrder extends Model implements HasMedia
 
         return 'PO-'.str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
     }
+    public function journalEntries()
+    {
+        return $this->morphMany(JournalEntry::class, 'reference');
+    }
 }

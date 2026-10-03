@@ -276,8 +276,8 @@
                 </a>
                 @endif
 
-                <!-- FINANCIALS -->
-                <div class="sidebar-header">Financial Resources</div>
+                <!-- ACCOUNTING & FINANCE -->
+                <div class="sidebar-header">Accounting & Finance</div>
                 
                 <a href="{{ route('suppliers.index') }}"
                    class="sidebar-item {{ request()->routeIs('suppliers*') ? 'active' : '' }}">
@@ -290,6 +290,31 @@
                     <i class="fas fa-receipt"></i> <span>Expense Tracking</span>
                 </a>
                 @endcan
+
+                <a href="{{ route('capital-transactions.index') }}"
+                   class="sidebar-item {{ request()->routeIs('capital-transactions*') ? 'active' : '' }}">
+                    <i class="fas fa-building-columns"></i> <span>Capital & Investments</span>
+                </a>
+
+                <a href="{{ route('accounting.accounts') }}"
+                   class="sidebar-item {{ request()->routeIs('accounting.accounts') ? 'active' : '' }}">
+                    <i class="fas fa-book"></i> <span>Chart of Accounts</span>
+                </a>
+
+                <a href="{{ route('accounting.journals') }}"
+                   class="sidebar-item {{ request()->routeIs('accounting.journals') ? 'active' : '' }}">
+                    <i class="fas fa-book-open"></i> <span>Journal Entries</span>
+                </a>
+
+                <a href="{{ route('accounting.pl') }}"
+                   class="sidebar-item {{ request()->routeIs('accounting.pl') ? 'active' : '' }}">
+                    <i class="fas fa-file-invoice-dollar"></i> <span>Profit & Loss Statement</span>
+                </a>
+
+                <a href="{{ route('accounting.balance_sheet') }}"
+                   class="sidebar-item {{ request()->routeIs('accounting.balance_sheet') ? 'active' : '' }}">
+                    <i class="fas fa-balance-scale"></i> <span>Balance Sheet</span>
+                </a>
 
                 <!-- MARKETING -->
                 <div class="sidebar-header">Growth & Content</div>
@@ -348,16 +373,6 @@
                     <i class="fas fa-shopping-cart"></i> <span>Purchase Reports</span>
                 </a>
 
-                <a href="{{ route('reports.profit_loss') }}"
-                   class="sidebar-item {{ request()->routeIs('reports.profit_loss') ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice-dollar"></i> <span>Profit & Loss Statement</span>
-                </a>
-
-                <a href="{{ route('reports.balance_sheet') }}"
-                   class="sidebar-item {{ request()->routeIs('reports.balance_sheet') ? 'active' : '' }}">
-                    <i class="fas fa-balance-scale"></i> <span>Balance Sheet</span>
-                </a>
-
                 <a href="{{ route('reports.inventory') }}"
                    class="sidebar-item {{ request()->routeIs('reports.inventory') ? 'active' : '' }}">
                     <i class="fas fa-cubes"></i> <span>Stock Evaluation</span>
@@ -366,6 +381,11 @@
                 <a href="{{ route('inventory.transactions') }}"
                    class="sidebar-item {{ request()->routeIs('inventory.transactions') ? 'active' : '' }}">
                     <i class="fas fa-history"></i> <span>Inventory History</span>
+                </a>
+
+                <a href="{{ route('reports.stock-mismatch') }}"
+                   class="sidebar-item {{ request()->routeIs('reports.stock-mismatch') ? 'active' : '' }}">
+                    <i class="fas fa-balance-scale-unbalanced"></i> <span>Stock Audit & Mismatch</span>
                 </a>
 
                 <a href="{{ route('reports.vat') }}"
